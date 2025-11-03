@@ -1,0 +1,51 @@
+﻿@page "/"
+@using LaboratorioClinicoApp.DTO
+@using LaboratorioClinicoApp.Services
+
+
+<PageTitle>Login</PageTitle>
+
+-<EditForm Model="usuario" OnValidSubmit="Login">
+
+    <div class="mb-3">
+        <label class="form-label">Nombre Usuario</label>
+        <InputText class="form-control" @bind-Value="usuario.Username " />
+    </div>
+
+    <div class="mb-3">
+
+        <label class="form-label">Contraseña</label>
+
+        <InputText type="password" class="form-control" @bind-Value="usuario.Password" />
+
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</EditForm>
+
+@inject NavigationManager navigationManager
+@inject AuthServices authServices
+
+@code {
+    private Usuario usuario = new Usuario();
+    private string errorMessage;
+
+    private async Task Login()
+    {
+        var token = await authServices.Login(usuario);
+        if (string .IsNullOrEmpty(token))
+        {
+            errorMessage = "Credenciales inválidas. Por favor, inténtelo de nuevo.";
+            return;
+        }
+        
+        await authServices.SetToken(token);
+        navigationManager.NavigateTo("/weather");
+    }
+
+}

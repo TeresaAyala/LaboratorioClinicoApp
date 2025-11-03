@@ -1,0 +1,55 @@
+﻿@using LaboratorioClinicoApp.Services
+@inherits LayoutComponentBase
+
+<div class="page">
+    @if (isAuthenticated)
+    { 
+        <div class="sidebar">
+            <NavMenu/>
+        </div>
+        
+    }
+
+    <main>
+        <div class="top-row px-4">
+            @if (isAuthenticated)
+            {
+                <a href="#" @onclick=Logout >Cerrar Sesion</a>
+            }
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@inject NavigationManager navigationManager
+@inject AuthServices authServices
+
+@code{
+    private bool isAuthenticated;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isAuthenticated = await authServices.IsAuthenticated();
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task Logout()
+    {
+        await authServices.Logout();
+        navigationManager.NavigateTo("/");
+    }
+
+}
