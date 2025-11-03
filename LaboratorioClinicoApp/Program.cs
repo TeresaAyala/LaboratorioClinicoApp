@@ -13,7 +13,13 @@ builder.Services.AddScoped(o=> new HttpClient
     BaseAddress = new Uri("http://laboratorioclinicoapi.somee.com/")
 });
 
+//Builder de Login
 builder.Services.AddScoped<AuthServices>();
+
+//Los builder de cada entidad
+builder.Services.AddScoped<DoctorService>();
+builder.Services.AddScoped<PacienteService>();
+builder.Services.AddScoped<CitaService>();
 
 var app = builder.Build();
 

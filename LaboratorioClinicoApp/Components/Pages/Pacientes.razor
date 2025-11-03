@@ -1,0 +1,87 @@
+﻿@page "/pacientes"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject PacienteService pacienteService
+@inject NavigationManager navManager
+
+<h3>Lista de Pacientes</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (pacientes == null)
+{
+    <p><em>Cargando pacientes...</em></p>
+}
+else if (pacientes.Count == 0)
+{
+    <p>No hay pacientes registrados.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Fecha Nac.</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var paciente in pacientes)
+            {
+                <tr>
+                    <td>@paciente.Nombre</td>
+                    <td>@paciente.Apellido</td>
+                    <td>@paciente.FechaNacimiento.ToShortDateString()</td>
+                    <td>@paciente.Telefono</td>
+                    <td>@paciente.Email</td>
+                    <td>@(paciente.Estado ? "Activo" : "Inactivo")</td>
+                    <td>
+                        <!-- Se van a cambiar la ruta despues, cuando se creen los formularios -->
+                        <!-- Botón Editar con ruta placeholder -->
+                        <button class="btn btn-sm btn-primary"
+                                @onclick='() => navManager.NavigateTo($"/pacientes/editar/{paciente.Id}")'>
+                            Editar
+                        </button>
+
+                        <!-- Botón Agregar con ruta placeholder -->
+                        <button class="btn btn-sm btn-success"
+                                @onclick='() => navManager.NavigateTo("/pacientes/agregar-placeholder")'>
+                            Agregar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<PacienteDTO>? pacientes = null;
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPacientes();
+    }
+
+    private async Task LoadPacientes()
+    {
+        try
+        {
+            pacientes = await pacienteService.GetPacientes();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar pacientes: {ex.Message}";
+        }
+    }
+}
+
