@@ -1,0 +1,77 @@
+﻿@page "/roles"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject RolService rolService
+@inject NavigationManager navManager
+
+<h3>Lista de Roles</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (roles == null)
+{
+    <p><em>Cargando roles...</em></p>
+}
+else if (roles.Count == 0)
+{
+    <p>No hay roles registrados.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rol in roles)
+            {
+                <tr>
+                    <td>@rol.Nombre</td>
+                    <td>@rol.Descripcion</td>
+                    <td>@(rol.Estado ? "Activo" : "Inactivo")</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary"
+                                @onclick='() => navManager.NavigateTo($"/roles/editar/{rol.IdRol}")'>
+                            Editar
+                        </button>
+
+                        <button class="btn btn-sm btn-success"
+                                @onclick='() => navManager.NavigateTo("/roles/agregar")'>
+                            Agregar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<RolDTO>? roles = null;
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRoles();
+    }
+
+    private async Task LoadRoles()
+    {
+        try
+        {
+            roles = await rolService.GetRoles();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar roles: {ex.Message}";
+        }
+    }
+}

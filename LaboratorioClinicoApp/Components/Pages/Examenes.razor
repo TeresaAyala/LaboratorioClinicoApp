@@ -1,0 +1,82 @@
+﻿@page "/examenes"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject ExamenService examenService
+@inject NavigationManager navManager
+
+<h3>Lista de examenes</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+        <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (examenes == null)
+{
+        <p><em>Cargando examenes...</em></p>
+}
+else if (examenes.Count == 0)
+{
+        <p>No hay examenes registrados.</p>
+}
+else
+{
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tipo de examen</th>
+                    <th>Fecha</th>
+                    <th>Descripcion</th>
+                    <th>Paciente ID</th>
+                    <th>Cita ID</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var examen in examenes)
+            {
+                        <tr>
+                            <td>@examen.TipoExamen</td>
+                            <td>@examen.Fecha.ToString("g")</td>
+                            <td>@examen.Descripcion</td>
+                            <td>@examen.IdPaciente</td>
+                            <td>@examen.IdCita</td>
+                            <td>@(examen.Estado ? "Activa" : "Cancelada")</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary"
+                                        @onclick='() => navManager.NavigateTo($"/examenes/editar/{examen.IdExamen}")'>
+                                    Editar
+                                </button>
+                                <button class="btn btn-sm btn-success"
+                                        @onclick='() => navManager.NavigateTo("/examenes/agregar-placeholder")'>
+                                    Agregar
+                                </button>
+                            </td>
+                        </tr>
+            }
+            </tbody>
+        </table>
+}
+
+@code {
+    private List<ExamenDTO>? examenes = null;
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadExamen();
+    }
+
+    private async Task LoadExamen()
+    {
+        try
+        {
+            examenes = await examenService.GetExamenes();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar examenes: {ex.Message}";
+        }
+    }
+}

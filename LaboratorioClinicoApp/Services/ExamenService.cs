@@ -1,8 +1,7 @@
 ﻿using LaboratorioClinicoApp.DTO;
-using LaboratorioClinicoApp.Services;
 using System.Net.Http.Headers;
 
-namespace LaboratorioClinicoApp.Components.Services
+namespace LaboratorioClinicoApp.Services
 {
     public class ExamenService
     {
