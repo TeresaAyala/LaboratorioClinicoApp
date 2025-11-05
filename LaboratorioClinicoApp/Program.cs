@@ -8,10 +8,13 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 
-builder.Services.AddScoped(o=> new HttpClient
+// Dirección de tu API (ajusta si está en la nube o local)
+builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("http://laboratorioclinicoapi.somee.com/")
+    BaseAddress = new Uri("https://localhost:7011/")
 });
+
+
 
 //Builder de Login
 builder.Services.AddScoped<AuthServices>();

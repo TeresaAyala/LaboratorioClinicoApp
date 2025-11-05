@@ -1,6 +1,8 @@
 ﻿using LaboratorioClinicoApp.DTO;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.AspNetCore.Identity.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
 
 namespace LaboratorioClinicoApp.Services
 {
@@ -9,6 +11,47 @@ namespace LaboratorioClinicoApp.Services
         private readonly ProtectedLocalStorage _LocalStorage;
         private readonly HttpClient _httpClient;
         private string _token;
+
+        //////////////////////////////////////////////////////////////////////////////////////
+
+        public AuthServices(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+        public class LoginRequest
+        {
+            public int Id { get; set; } = 0;
+            public string Username { get; set; } = string.Empty;
+            public string PasswordHash { get; set; } = string.Empty;
+            public string Password { get; set; } = string.Empty;
+            public int IdRol { get; set; } = 1;
+        }
+
+        public class LoginResponse
+        {
+            public string Token { get; set; } = string.Empty;
+        }
+
+        public async Task<string?> LoginAsync(string username, string password)
+        {
+            var request = new LoginRequest
+            {
+                Username = username,
+                Password = password,
+                PasswordHash = password
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/auth/login", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                return result?.Token;
+            }
+
+            return null;
+        }
+        //////////////////////////////////////////////////////////////////////////////////////
 
         public AuthServices(ProtectedLocalStorage localStorage, HttpClient httpClient)
         {
@@ -19,7 +62,7 @@ namespace LaboratorioClinicoApp.Services
         //Enviar datos a endpoint login
         public async Task<string> Login(Usuario usuario)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Auth/login", usuario);
+            var response = await _httpClient.PostAsJsonAsync("api/auth/login", usuario);
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<string>();
