@@ -1,5 +1,6 @@
 using LaboratorioClinicoApp.Components;
 using LaboratorioClinicoApp.Services;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,13 +12,14 @@ builder.Services.AddRazorComponents()
 // Dirección de tu API (ajusta si está en la nube o local)
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://localhost:7011/")
+    BaseAddress = new Uri("https://localhost:44320/")
 });
 
 
 
 //Builder de Login
 builder.Services.AddScoped<AuthServices>();
+builder.Services.AddScoped<ProtectedLocalStorage>();
 
 //Los builder de cada entidad
 builder.Services.AddScoped<DoctorService>();
