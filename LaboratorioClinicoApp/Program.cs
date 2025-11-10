@@ -25,6 +25,9 @@ builder.Services.AddScoped<ProtectedLocalStorage>();
 builder.Services.AddScoped<DoctorService>();
 builder.Services.AddScoped<PacienteService>();
 builder.Services.AddScoped<CitaService>();
+builder.Services.AddScoped<ExamenService>();
+builder.Services.AddScoped<ResultadoService>();
+builder.Services.AddScoped<RolService>();
 
 var app = builder.Build();
 
