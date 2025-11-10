@@ -1,37 +1,55 @@
-﻿@page "/"
+﻿@page "/login"
 @inject LaboratorioClinicoApp.Services.AuthServices AuthService
 @inject NavigationManager NavManager
 
-<h3 class="mb-4 text-center">Iniciar Sesión</h3>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" 
+integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" 
+crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger">@errorMessage</div>
-}
+<link href="css/login.css" rel="stylesheet" />
 
-<div class="card p-4 shadow-sm mx-auto" style="max-width: 400px;">
-    <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<!-- Contenedor principal con fondo de imagen y centrado -->
+<div class="login-page-container">
 
-        <div class="mb-3">
-            <label class="form-label">Nombre de Usuario</label>
-            <InputText class="form-control" @bind-Value="loginModel.Username" />
+    <!-- Tarjeta del formulario flotante -->
+    <div class="login-card">
+
+        <!-- Icono de usuario flotante (Requiere Font Awesome: fas fa-user) -->
+        <div class="login-icon">
+            <i class="fas fa-user"></i>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Contraseña</label>
-            <InputText type="password" class="form-control" @bind-Value="loginModel.Password" />
-        </div>
+        <h3 class="text-center">Iniciar Sesión</h3>
 
-        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
-    </EditForm>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre de Usuario</label>
+                <InputText class="form-control" @bind-Value="loginModel.Username" placeholder="..." />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Contraseña</label>
+                <InputText type="password" class="form-control" @bind-Value="loginModel.Password" placeholder="..." />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+        </EditForm>
+    </div>
 </div>
 
 @code {
     private LoginModel loginModel = new();
     private string? errorMessage;
 
+    // Clase LoginModel
     public class LoginModel
     {
         public string Username { get; set; } = string.Empty;
@@ -42,12 +60,14 @@
     {
         errorMessage = null;
 
+        // Simulamos la llamada al servicio de autenticación
         var token = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
 
         if (!string.IsNullOrEmpty(token))
         {
             await AuthService.SetToken(token);
-            NavManager.NavigateTo("/"); // Redirige al inicio o a otra página
+            // Redirige al inicio o a otra página
+            NavManager.NavigateTo("/doctores");
         }
         else
         {
@@ -55,4 +75,5 @@
         }
     }
 }
+
 

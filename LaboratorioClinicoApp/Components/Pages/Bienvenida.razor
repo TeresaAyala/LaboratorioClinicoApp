@@ -1,0 +1,131 @@
+﻿@page "/"
+
+<link href="css/bienvenida.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+
+<!-- ✅ HEADER
+<header class="top-header d-flex justify-content-between align-items-center px-4">
+    <h2 class="header-logo mb-0">Innovación para la Salud 💙</h2>
+</header> -->
+<!-- ✅ HERO PRINCIPAL -->
+<section class="hero-section text-start">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-12 col-md-7">
+                <h2 class="hero-title mb-3">Transformando Vidas,</h2>
+                <h2 class="hero-title mb-4">Innovando en Diagnóstico y Bienestar.</h2>
+                <p class="hero-subtitle mb-5">
+                    Modernizamos la gestión clínica con tecnología confiable, segura y eficiente.
+                    Simplifica la administración, mejora la atención y lleva tu institución al siguiente nivel.
+                </p>
+                <div class="hero-buttons d-flex gap-3">
+                    <a href="/login" class="cta-button">Iniciar Sesión</a>
+                    <a href="/registro" class="cta-button-outline">Registrarse</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Imagen circular centrada -->
+    <div class="doctor-circle">
+        <img src="/images/logo.png" alt="Doctor sonriente" class="doctor-image" />
+    </div>
+</section>
+
+<!-- ✅ INFO RÁPIDA -->
+<section class="info-section py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-12 col-sm-4">
+                <div class="info-card">
+                    <i class="fas fa-calendar-alt fa-2x text-primary me-3"></i>
+                    <div>
+                        <h6 class="card-title mb-0">Agenda Fácil</h6>
+                        <small>Gestiona citas de forma intuitiva.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4">
+                <div class="info-card purple">
+                    <i class="fas fa-flask fa-2x text-dark me-3"></i>
+                    <div>
+                        <h6 class="card-title mb-0">Resultados Rápidos</h6>
+                        <small>Entrega y acceso inmediato.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4">
+                <div class="info-card sky">
+                    <i class="fas fa-lock fa-2x text-dark me-3"></i>
+                    <div>
+                        <h6 class="card-title mb-0">Seguridad</h6>
+                        <small>Protección total de datos.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ✅ CARRUSEL CONTINUO DE 5 IMÁGENES -->
+<section class="innovation-section py-5">
+    <div class="container text-center">
+        <h3 class="section-title">Impulsando la Gestión Clínica con Innovación</h3>
+        <h6 class="sub-title mb-5">
+            El Sistema de Consultas y Laboratorio Clínico está diseñado para transformar
+            la forma en que tu institución de salud opera.
+        </h6>
+
+        <div class="continuous-carousel">
+            <div class="carousel-track">
+                <img src="/images/f1.png" alt="Gestión de citas" />
+                <img src="/images/f2.png" alt="Procesos optimizados" />
+                <img src="/images/f3.png" alt="Seguridad de datos" />
+                <img src="/images/f4.png" alt="Atención moderna" />
+                <img src="/images/f5.png" alt="Tecnología confiable" />
+                <img src="/images/f1.png" alt="Gestión de citas" />
+                <img src="/images/f2.png" alt="Procesos optimizados" />
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ✅ CONTACTO -->
+<section class="contact-section py-5 text-center">
+    <div class="container">
+        <h3 class="section-title mb-4">Contáctanos</h3>
+        <p class="sub-title mb-5">Estamos listos para ayudarte a transformar tu clínica.</p>
+
+        <div class="contact-container d-flex justify-content-center flex-wrap gap-4">
+            <div class="contact-item">
+                <i class="fas fa-phone fa-2x"></i>
+                <p class="mb-0">+503 7777-1234</p>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-envelope fa-2x"></i>
+                <p class="mb-0">info@laboratorioclinico.com</p>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-map-marker-alt fa-2x"></i>
+                <p class="mb-0">San Salvador, El Salvador</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ✅ FOOTER -->
+<footer class="footer-section text-center">
+    <div class="container">
+        <p class="mb-1">
+            &copy; @DateTime.Now.Year Sistema de Consultas y Laboratorio Clínico. Todos los derechos reservados.
+        </p>
+        <p class="mb-3">Desarrollado por TuEmpresaTech.</p>
+        <div class="d-flex justify-content-center">
+            <a href="#" class="text-white mx-2"><i class="fab fa-linkedin fa-lg"></i></a>
+            <a href="#" class="text-white mx-2"><i class="fab fa-github fa-lg"></i></a>
+        </div>
+    </div>
+</footer>

@@ -1,55 +1,30 @@
-﻿@using LaboratorioClinicoApp.Services
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
-<div class="page">
-    @if (isAuthenticated)
-    { 
-        <div class="sidebar">
-            <NavMenu/>
-        </div>
-        
-    }
+<NavMenu />
 
-    <main>
-        <div class="top-row px-4">
-            @if (isAuthenticated)
-            {
-                <a href="#" @onclick=Logout >Cerrar Sesion</a>
-            }
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+<!-- Contenido principal -->
+<div class="main-content" id="mainContent">
+    @Body
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
-
-@inject NavigationManager navigationManager
-@inject AuthServices authServices
-
-@code{
-    private bool isAuthenticated;
+@code {
+    [Inject] IJSRuntime JSRuntime { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            isAuthenticated = await authServices.IsAuthenticated();
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                const menuToggle = document.getElementById('menuToggle');
+                const sideMenu = document.getElementById('sideMenu');
+                const mainContent = document.getElementById('mainContent');
 
-            StateHasChanged();
+                menuToggle.addEventListener('click', () => {
+                    sideMenu.classList.toggle('open');
+                    menuToggle.classList.toggle('open');
+                    mainContent.classList.toggle('shifted');
+                });
+            ");
         }
     }
-
-    private async Task Logout()
-    {
-        await authServices.Logout();
-        navigationManager.NavigateTo("/");
-    }
-
 }

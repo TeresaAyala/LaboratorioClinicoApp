@@ -1,30 +1,62 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">LaboratorioClinicoApp</a>
-    </div>
+﻿@* ✅ Menú Hamburguesa Responsive *@
+<link href="css/menu.css" rel="stylesheet" />
+
+<div class="hamburger-menu-container">
+    <!-- Botón hamburguesa -->
+    <button class="hamburger-btn" id="menuToggle">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+
+    <!-- Logo / Título -->
+    <h4 class="menu-logo">Laboratorio Clinico</h4>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
+<!-- ✅ Menú desplegable -->
+<nav class="side-menu" id="sideMenu">
+    <ul>
+        <li>
+            <a href="/">
+                <i class="fas fa-home"></i>
+                <span>Inicio</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Citas">
+                <i class="fas fa-calendar-check"></i>
+                <span>Citas</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Doctores">
+                <i class="fas fa-user-md"></i>
+                <span>Doctores</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Pacientes">
+                <i class="fas fa-users"></i>
+                <span>Pacientes</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Examenes">
+                <i class="fas fa-microscope"></i>
+                <span>Exámenes</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Resultados">
+                <i class="fas fa-vials"></i>
+                <span>Resultados</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Roles">
+                <i class="fas fa-user-shield"></i>
+                <span>Roles</span>
+            </a>
+        </li>
+    </ul>
+</nav>

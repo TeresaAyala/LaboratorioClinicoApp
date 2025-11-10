@@ -1,0 +1,140 @@
+﻿/* --- Paleta de Colores ---
+#98B5ED - Light Blue/Purple (Fondo principal)
+#6169BA - Medium Purple/Blue (Fondo de tarjeta/Formulario)
+#1A3966 - Dark Navy Blue (Fondo muy oscuro)
+#397AC1 - Medium Blue (Botones/Énfasis)
+#9692D2 - Light Purple (Énfasis claro)
+#DEF2F8 - Casi Blanco (Texto claro)
+*/
+
+/* 1. Contenedor principal y fondo */
+.login-page-container {
+    
+    /* --- IMAGEN DE FONDO --- */
+    /* CAMBIA '/images/your-background-image.jpg' por la ruta real de tu imagen */
+    background-image: url('/images/f6.png'); 
+    background-size: cover; 
+    background-position: center center; 
+    background-repeat: no-repeat; 
+    
+    position: relative; 
+    z-index: 0; 
+
+    min-height: 100vh; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden; 
+}
+
+/* Overlay para oscurecer la imagen de fondo y mejorar la legibilidad */
+.login-page-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Oscurecimiento con un color de la paleta (#1A3966) con transparencia */
+    background-color: rgba(26, 57, 102, 0.6); 
+    z-index: -1; 
+}
+
+
+/* 2. Tarjeta del formulario */
+.login-card {
+    max-width: 400px;
+    width: 100%;
+    /* Fondo semi-transparente que usa el color oscuro de la paleta */
+    background-color: rgba(26, 57, 102, 0.7); 
+    border-radius: 20px; 
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+    color: #DEF2F8; 
+    backdrop-filter: blur(5px); 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative; 
+    padding-top: 60px; /* Aumenta el padding para dar espacio al icono */
+}
+
+/* --- ICONO DE USUARIO --- */
+.login-icon {
+    position: absolute;
+    top: -40px; /* Posiciona el icono para que sobresalga de la tarjeta */
+    left: 50%;
+    transform: translateX(-50%);
+    /* ******* CORRECCIÓN PARA HACERLO CÍRCULO PERFECTO ******* */
+    width: 80px; /* Define ancho fijo */
+    height: 80px; /* Define alto fijo igual al ancho */
+    display: flex; /* Permite centrar el contenido */
+    justify-content: center; /* Centra horizontalmente el icono */
+    align-items: center; /* Centra verticalmente el icono */
+    padding: 0; /* Quitamos el padding que causaba la forma ovalada */
+    /* ********************************************************* */
+
+    background-color: #397AC1; /* Color principal del icono */
+    border-radius: 50%; /* Garantiza la forma circular */
+    font-size: 40px;
+    color: #DEF2F8;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    border: 3px solid #98B5ED; /* Borde de contraste */
+}
+
+
+/* 3. Títulos y texto */
+.login-card h3 {
+    color: #DEF2F8; 
+    font-weight: 700;
+    margin-bottom: 30px !important;
+}
+
+.login-card .form-label {
+    color: #98B5ED; /* Color de énfasis para etiquetas */
+    font-weight: 500;
+}
+
+/* 4. Inputs del formulario */
+.login-card .form-control {
+    background-color: rgba(255, 255, 255, 0.1); 
+    border: 1px solid #397AC1; 
+    color: #DEF2F8; 
+    border-radius: 10px; 
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.login-card .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: #45BDF7; 
+    box-shadow: 0 0 0 0.25rem rgba(69, 189, 247, 0.5);
+    color: #DEF2F8;
+}
+
+/* 5. Botón de Ingresar */
+.login-card .btn-primary {
+    /* Degradado vibrante para el botón */
+    background: linear-gradient(90deg, #397AC1 0%, #6169BA 100%);
+    border: none;
+    border-radius: 15px; 
+    font-weight: 700;
+    padding: 10px 0;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(57, 122, 193, 0.4);
+}
+
+.login-card .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 20px rgba(57, 122, 193, 0.6);
+    opacity: 0.9;
+}
+
+/* 6. Mensaje de error */
+.alert-danger {
+    background-color: #FF6B6B; 
+    border-color: #FF6B6B;
+    color: #1A3966;
+    border-radius: 10px;
+    font-weight: 600;
+}
