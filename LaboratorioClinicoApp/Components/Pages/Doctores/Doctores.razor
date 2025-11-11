@@ -1,0 +1,126 @@
+﻿@page "/doctores"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject DoctorService doctorService
+@inject NavigationManager navManager
+
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+            <h3 class="mb-0">
+                <i class="bi bi-person-badge"></i> Lista de Doctores
+            </h3>
+        </div>
+
+        <div class="card-body">
+            <!-- 🔹 Barra de acciones superior -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <button class="btn btn-success" @onclick='() => navManager.NavigateTo("/doctores/agregarDoctor")'>
+                        <i class="bi bi-plus-circle me-1"></i> Agregar doctor
+                    </button>
+                    <button class="btn btn-outline-secondary">
+                        <i class="bi bi-funnel me-1"></i> Filtrar
+                    </button>
+                </div>
+
+                <div class="input-group" style="max-width: 300px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Buscar doctor..." />
+                </div>
+            </div>
+
+            <!-- 🔹 Fin barra superior -->
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger text-center">@errorMessage</div>
+            }
+
+            @if (doctores == null)
+            {
+                <div class="text-center my-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Cargando doctores...</p>
+                </div>
+            }
+            else if (doctores.Count == 0)
+            {
+                <div class="alert alert-warning text-center">
+                    <i class="bi bi-exclamation-circle"></i> No hay doctores registrados.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-primary text-center">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Especialidad</th>
+                                <th>Teléfono</th>
+                                <th>Email</th>
+                                <th>Licencia Médica</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var doctor in doctores)
+                            {
+                                <tr>
+                                    <td>@doctor.Nombre</td>
+                                    <td>@doctor.Apellido</td>
+                                    <td>@doctor.Especialidad</td>
+                                    <td>@doctor.Telefono</td>
+                                    <td>@doctor.Email</td>
+                                    <td>@doctor.LicenciaMedica</td>
+                                    <td>
+                                        @if (doctor.Estado)
+                                        {
+                                            <span class="badge bg-success">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    @onclick='() => navManager.NavigateTo($"/doctores/editarDoctor/{doctor.Id}")'>
+                                                <i class="bi bi-pencil-square"></i> Editar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<DoctorDTO>? doctores = null;
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDoctor();
+    }
+
+    private async Task LoadDoctor()
+    {
+        try
+        {
+            doctores = await doctorService.GetDoctors();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar doctores: {ex.Message}";
+        }
+    }
+}
