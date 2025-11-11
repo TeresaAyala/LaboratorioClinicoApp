@@ -1,0 +1,98 @@
+﻿@page "/doctores/agregarDoctor"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject DoctorService doctorService
+@inject NavigationManager navManager
+
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-success text-white text-center">
+            <h3 class="mb-0">
+                <i class="bi bi-person-plus"></i> Agregar Nuevo Doctor
+            </h3>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="alert alert-info text-center">@mensaje</div>
+            }
+
+            <EditForm Model="@nuevoDoctor" OnValidSubmit="GuardarDoctor">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre</label>
+                        <InputText class="form-control" @bind-Value="nuevoDoctor.Nombre" placeholder="Ej: Carlos" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Apellido</label>
+                        <InputText class="form-control" @bind-Value="nuevoDoctor.Apellido" placeholder="Ej: Pérez" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Especialidad</label>
+                        <InputText class="form-control" @bind-Value="nuevoDoctor.Especialidad" placeholder="Ej: Cardiología" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <InputText class="form-control" @bind-Value="nuevoDoctor.Telefono" placeholder="Ej: +503 7000-0000" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Correo electrónico</label>
+                        <InputText class="form-control" @bind-Value="nuevoDoctor.Email" placeholder="Ej: doctor@mail.com" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Licencia Médica</label>
+                        <InputText class="form-control" @bind-Value="nuevoDoctor.LicenciaMedica" placeholder="Ej: LM-12345" />
+                    </div>
+
+                    <div class="col-md-6 d-flex align-items-center">
+                        <label class="form-label me-3 mb-0">Estado</label>
+                        <InputCheckbox class="form-check-input" @bind-Value="nuevoDoctor.Estado" />
+                        <span class="ms-2">@((nuevoDoctor.Estado) ? "Activo" : "Inactivo")</span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save me-1"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick='() => navManager.NavigateTo("/doctores")'>
+                        <i class="bi bi-arrow-left me-1"></i> Volver
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DoctorDTO nuevoDoctor = new DoctorDTO
+    {
+        Estado = true
+    };
+
+    private string? mensaje;
+
+    private async Task GuardarDoctor()
+    {
+        try
+        {
+            await doctorService.AddDoctor(nuevoDoctor);
+            mensaje = "✅ Doctor agregado correctamente.";
+            await Task.Delay(1500);
+            navManager.NavigateTo("/doctores");
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"❌ Error al guardar el doctor: {ex.Message}";
+        }
+    }
+}
