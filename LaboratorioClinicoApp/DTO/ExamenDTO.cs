@@ -3,7 +3,7 @@
     public class ExamenDTO
 
     {
-        public int IdExamen { get; set; }
+        public int Id { get; set; }
         public string TipoExamen { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
         public string Descripcion { get; set; } = string.Empty;

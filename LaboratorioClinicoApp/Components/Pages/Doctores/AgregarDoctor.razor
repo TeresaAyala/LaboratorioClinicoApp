@@ -53,6 +53,11 @@
                         <InputText class="form-control" @bind-Value="nuevoDoctor.LicenciaMedica" placeholder="Ej: LM-12345" />
                     </div>
 
+                    <div class="col-md-6">
+                        <label class="form-label">ID de la Usuario</label>
+                        <InputNumber class="form-control" @bind-Value="nuevoDoctor.IdUsuario" />
+                    </div>
+
                     <div class="col-md-6 d-flex align-items-center">
                         <label class="form-label me-3 mb-0">Estado</label>
                         <InputCheckbox class="form-check-input" @bind-Value="nuevoDoctor.Estado" />
