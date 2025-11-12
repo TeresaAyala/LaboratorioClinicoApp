@@ -1,74 +1,130 @@
-﻿@page "/examenes/editarExamen"
-@using LaboratorioClinicoApp.Services
+﻿@page "/examenes/editarExamen/{id:int}"
 @using LaboratorioClinicoApp.DTO
+@using LaboratorioClinicoApp.Services
 @inject ExamenService examenService
 @inject NavigationManager navManager
 
-<h3 class="text-center mb-4">Editar Examen</h3>
-
-<div class="card p-4 shadow-sm">
-    <EditForm Model="@examen" OnValidSubmit="GuardarCambios">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="mb-3">
-            <label class="form-label">Tipo de Examen</label>
-            <InputText @bind-Value="examen.TipoExamen" class="form-control" placeholder="Ingrese el tipo de examen" />
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+            <h3 class="mb-0">
+                <i class="bi bi-pencil-square"></i> Editar Examen
+            </h3>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Fecha</label>
-            <InputDate @bind-Value="examen.Fecha" class="form-control" />
-        </div>
+        <div class="card-body">
+            @if (errorMessage != null)
+            {
+                <div class="alert alert-danger text-center">@errorMessage</div>
+            }
 
-        <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <InputTextArea @bind-Value="examen.Descripcion" class="form-control" rows="3" placeholder="Escriba una breve descripción" />
-        </div>
+            @if (examen == null)
+            {
+                <div class="text-center my-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Cargando información del examen...</p>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="@examen" OnValidSubmit="GuardarCambios">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
 
-        <div class="form-check mb-3">
-            <InputCheckbox @bind-Value="examen.Estado" class="form-check-input" />
-            <label class="form-check-label">Activo</label>
-        </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tipo de Examen</label>
+                            <InputText class="form-control" @bind-Value="examen.TipoExamen" />
+                            <ValidationMessage For="@(() => examen.TipoExamen)" />
+                        </div>
 
-        <div class="mb-3">
-            <label class="form-label">ID Cita</label>
-            <InputNumber @bind-Value="examen.IdCita" class="form-control" />
-        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha</label>
+                            <InputDate class="form-control" @bind-Value="examen.Fecha" />
+                            <ValidationMessage For="@(() => examen.Fecha)" />
+                        </div>
 
-        <div class="mb-4">
-            <label class="form-label">ID Paciente</label>
-            <InputNumber @bind-Value="examen.IdPaciente" class="form-control" />
-        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Descripción</label>
+                            <InputTextArea class="form-control" @bind-Value="examen.Descripcion" rows="3" />
+                            <ValidationMessage For="@(() => examen.Descripcion)" />
+                        </div>
 
-        <div class="d-flex justify-content-between">
-            <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">ID Paciente</label>
+                            <InputNumber class="form-control" @bind-Value="examen.IdPaciente" />
+                            <ValidationMessage For="@(() => examen.IdPaciente)" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">ID Cita</label>
+                            <InputNumber class="form-control" @bind-Value="examen.IdCita" />
+                            <ValidationMessage For="@(() => examen.IdCita)" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Estado</label>
+                            <InputSelect class="form-select" @bind-Value="examen.Estado">
+                                <option value="true">Activa</option>
+                                <option value="false">Cancelada</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => examen.Estado)" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar Cambios
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="Volver">
+                            <i class="bi bi-arrow-left-circle"></i> Volver
+                        </button>
+                    </div>
+                </EditForm>
+            }
         </div>
-    </EditForm>
+    </div>
 </div>
 
 @code {
-    ExamenDTO examen = new ExamenDTO()
-    {
-        Id = 1,
-        TipoExamen = "Sangre",
-        Fecha = DateTime.Now,
-        Descripcion = "Análisis general de sangre",
-        Estado = true,
-        IdCita = 2,
-        IdPaciente = 3
-    };
+    [Parameter] public int id { get; set; }
+    private ExamenDTO? examen;
+    private string? errorMessage;
 
-    void GuardarCambios()
+    protected override async Task OnInitializedAsync()
     {
-        // Aquí puedes enviar los datos a tu API
-        Console.WriteLine($"Examen editado: {examen.TipoExamen}");
+        try
+        {
+            examen = await examenService.GetExamenById(id);
+            if (examen == null)
+            {
+                errorMessage = "No se encontró el examen especificado.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar el examen: {ex.Message}";
+        }
     }
 
-    void Cancelar()
+    private async Task GuardarCambios()
     {
-        // Acción al cancelar (por ejemplo, volver a la lista)
-        Console.WriteLine("Edición cancelada");
+        try
+        {
+            if (examen != null)
+            {
+                await examenService.UpdateExamen(examen.Id, examen);
+                navManager.NavigateTo("/examenes");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al guardar los cambios: {ex.Message}";
+        }
+    }
+
+    private void Volver()
+    {
+        navManager.NavigateTo("/examenes");
     }
 }

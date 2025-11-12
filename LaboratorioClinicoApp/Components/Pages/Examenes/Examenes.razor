@@ -57,6 +57,7 @@
                     <table class="table table-hover align-middle">
                         <thead class="table-primary text-center">
                             <tr>
+                                <th>ID</th>
                                 <th>Tipo de examen</th>
                                 <th>Fecha</th>
                                 <th>Descripción</th>
@@ -70,6 +71,7 @@
                             @foreach (var examen in examenes)
                             {
                                 <tr>
+                                    <td>@examen.Id</td>
                                     <td>@examen.TipoExamen</td>
                                     <td>@examen.Fecha.ToString("g")</td>
                                     <td>@examen.Descripcion</td>
@@ -88,9 +90,10 @@
                                     <td class="text-center">
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-primary"
-                                                    @onclick='() => navManager.NavigateTo($"/examenes/editarExamen")'>
+                                                    @onclick='() => navManager.NavigateTo($"/examenes/editarExamen/{examen.Id}")'>
                                                 <i class="bi bi-pencil-square"></i> Editar
                                             </button>
+
                                         </div>
                                     </td>
                                 </tr>

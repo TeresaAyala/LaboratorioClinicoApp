@@ -1,93 +1,170 @@
 ﻿@page "/examenes/agregarExamen"
-@using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
+@using LaboratorioClinicoApp.Services
 @inject ExamenService examenService
+@inject PacienteService pacienteService
+@inject CitaService citaService
 @inject NavigationManager navManager
 
 <div class="container my-5">
     <div class="card shadow-lg border-0">
-        <div class="card-header bg-success text-white text-center">
+        <div class="card-header bg-primary text-white text-center">
             <h3 class="mb-0">
-                <i class="bi bi-plus-circle"></i> Agregar Nuevo Examen
+                <i class="bi bi-plus-circle"></i> Agregar Examen
             </h3>
         </div>
 
         <div class="card-body">
-            @if (!string.IsNullOrEmpty(mensaje))
+            @if (!string.IsNullOrEmpty(errorMessage))
             {
-                <div class="alert alert-info text-center">@mensaje</div>
+                <div class="alert alert-danger text-center">@errorMessage</div>
             }
 
-            <EditForm Model="@nuevoExamen" OnValidSubmit="GuardarExamen">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success text-center">@successMessage</div>
+            }
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Tipo de examen</label>
-                        <InputText class="form-control" @bind-Value="nuevoExamen.TipoExamen" placeholder="Ej: Hemograma completo" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Fecha</label>
-                        <InputDate class="form-control" @bind-Value="nuevoExamen.Fecha" />
-                    </div>
-
-                    <div class="col-md-12">
-                        <label class="form-label">Descripción</label>
-                        <InputTextArea class="form-control" @bind-Value="nuevoExamen.Descripcion" rows="3" placeholder="Detalles del examen..." />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">ID del Paciente</label>
-                        <InputNumber class="form-control" @bind-Value="nuevoExamen.IdPaciente" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">ID de la Cita</label>
-                        <InputNumber class="form-control" @bind-Value="nuevoExamen.IdCita" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Estado</label>
-                        <InputCheckbox class="form-check-input ms-2" @bind-Value="nuevoExamen.Estado" />
-                        <span class="ms-2">@((nuevoExamen.Estado) ? "Activo" : "Cancelado")</span>
-                    </div>
+            @if (pacientes == null || todasLasCitas == null)
+            {
+                <div class="text-center my-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Cargando información...</p>
                 </div>
+            }
+            else
+            {
+                <EditForm Model="@nuevoExamen" OnValidSubmit="GuardarExamen">
+                    <DataAnnotationsValidator />
+                    <!-- Se quitó ValidationSummary para evitar mensajes duplicados -->
 
-                <div class="d-flex justify-content-end mt-4 gap-2">
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-save me-1"></i> Guardar
-                    </button>
-                    <button type="button" class="btn btn-secondary" @onclick='() => navManager.NavigateTo("/examenes")'>
-                        <i class="bi bi-arrow-left me-1"></i> Volver
-                    </button>
-                </div>
-            </EditForm>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tipo de Examen</label>
+                            <InputText class="form-control" @bind-Value="nuevoExamen.TipoExamen" />
+                            <ValidationMessage For="@(() => nuevoExamen.TipoExamen)" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha del Examen</label>
+                            <InputDate class="form-control" @bind-Value="nuevoExamen.Fecha" />
+                            <ValidationMessage For="@(() => nuevoExamen.Fecha)" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Descripción</label>
+                            <InputTextArea class="form-control" @bind-Value="nuevoExamen.Descripcion" rows="3" />
+                            <ValidationMessage For="@(() => nuevoExamen.Descripcion)" />
+                        </div>
+
+                        <!-- Selección de Paciente -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre del Paciente</label>
+                            <InputSelect class="form-select" @bind-Value="nuevoExamen.IdPaciente" @onchange="FiltrarCitas">
+                                <option value="">-- Seleccione un paciente --</option>
+                                @foreach (var p in pacientes)
+                                {
+                                    <option value="@p.Id">@p.Nombre @p.Apellido</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => nuevoExamen.IdPaciente)" />
+                        </div>
+
+                        <!-- Selección de Cita (filtrada según paciente) -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha de la Cita</label>
+                            <InputSelect class="form-select" @bind-Value="nuevoExamen.IdCita" disabled="@(!citasFiltradas.Any())">
+                                <option value="">-- Seleccione una cita --</option>
+                                @foreach (var c in citasFiltradas)
+                                {
+                                    <option value="@c.Id">@c.FechaHora.ToString("g")</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => nuevoExamen.IdCita)" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Estado</label>
+                            <InputSelect class="form-select" @bind-Value="nuevoExamen.Estado">
+                                <option value="true">Activa</option>
+                                <option value="false">Cancelada</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => nuevoExamen.Estado)" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Guardar Examen
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="Volver">
+                            <i class="bi bi-arrow-left-circle"></i> Volver
+                        </button>
+                    </div>
+                </EditForm>
+            }
         </div>
     </div>
 </div>
 
 @code {
-    private ExamenDTO nuevoExamen = new ExamenDTO
+    private ExamenDTO nuevoExamen = new();
+    private List<PacienteDTO>? pacientes;
+    private List<CitaDTO>? todasLasCitas;
+    private List<CitaDTO> citasFiltradas = new();
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
     {
-        Fecha = DateTime.Now,
-        Estado = true
-    };
-    private string? mensaje;
+        try
+        {
+            pacientes = await pacienteService.GetPacientes();
+            todasLasCitas = await citaService.GetCitas();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar pacientes o citas: {ex.Message}";
+        }
+    }
+
+    private void FiltrarCitas(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int Idpaciente))
+        {
+            citasFiltradas = todasLasCitas!
+                .Where(c => c.IdPaciente == Idpaciente)
+                .OrderBy(c => c.FechaHora)
+                .ToList();
+        }
+        else
+        {
+            citasFiltradas.Clear();
+        }
+
+        nuevoExamen.IdCita = 0;
+    }
 
     private async Task GuardarExamen()
     {
         try
         {
             await examenService.AddExamen(nuevoExamen);
-            mensaje = "✅ Examen agregado correctamente.";
-            await Task.Delay(1500);
-            navManager.NavigateTo("/examenes");
+            successMessage = "✅ Examen agregado exitosamente.";
+            errorMessage = null;
+
+            nuevoExamen = new();
+            citasFiltradas.Clear();
         }
         catch (Exception ex)
         {
-            mensaje = $"❌ Error al guardar el examen: {ex.Message}";
+            successMessage = null;
+            errorMessage = $"Error al agregar examen: {ex.Message}";
         }
+    }
+
+    private void Volver()
+    {
+        navManager.NavigateTo("/examenes");
     }
 }
