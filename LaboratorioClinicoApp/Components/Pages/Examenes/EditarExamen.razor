@@ -2,129 +2,213 @@
 @using LaboratorioClinicoApp.DTO
 @using LaboratorioClinicoApp.Services
 @inject ExamenService examenService
+@inject PacienteService pacienteService
+@inject CitaService citaService
 @inject NavigationManager navManager
 
 <div class="container my-5">
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white text-center">
-            <h3 class="mb-0">
-                <i class="bi bi-pencil-square"></i> Editar Examen
-            </h3>
-        </div>
+    <div class="card shadow-lg border-0 p-4" style="background-color:#f9f9ff;">
+        <h3 class="text-center mb-4 text-primary">
+            <i class="bi bi-pencil-square"></i> Editar Examen
+        </h3>
 
-        <div class="card-body">
-            @if (errorMessage != null)
-            {
-                <div class="alert alert-danger text-center">@errorMessage</div>
-            }
+        @if (!string.IsNullOrEmpty(mensaje))
+        {
+            <div style="background-color:@(mensajeError ? "#ffdddd" : "#ddffdd");
+                        padding:10px;
+                        border-radius:8px;
+                        border:1px solid @(mensajeError ? "red" : "green");
+                        margin-bottom:15px;
+                        text-align:center;">
+                @mensaje
+            </div>
+        }
 
-            @if (examen == null)
-            {
-                <div class="text-center my-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-3">Cargando información del examen...</p>
+        @if (examen == null)
+        {
+            <p class="text-center text-muted">Cargando información del examen...</p>
+        }
+        else
+        {
+            <EditForm Model="@examen" OnValidSubmit="ConfirmarGuardar">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger mb-3" />
+
+                <!-- 🧩 PACIENTE -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Paciente <span class="text-danger">*</span></label>
+                    <select class="form-select border-primary shadow-sm"
+                            @bind="examen.IdPaciente"
+                            @bind:after="OnPacienteChange"
+                            required>
+                        <option value="">Seleccione un paciente</option>
+                        @foreach (var p in pacientes)
+                        {
+                            <option value="@p.Id">@($"{p.Nombre} {p.Apellido}")</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => examen.IdPaciente)" class="text-danger" />
                 </div>
-            }
-            else
-            {
-                <EditForm Model="@examen" OnValidSubmit="GuardarCambios">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
 
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tipo de Examen</label>
-                            <InputText class="form-control" @bind-Value="examen.TipoExamen" />
-                            <ValidationMessage For="@(() => examen.TipoExamen)" />
-                        </div>
+                <!-- 🧩 CITA -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Fecha y hora de la cita <span class="text-danger">*</span></label>
+                    <select class="form-select border-primary shadow-sm"
+                            @bind="examen.IdCita"
+                            required>
+                        <option value="">Seleccione una cita</option>
+                        @foreach (var c in citasFiltradas)
+                        {
+                            var diaSemana = c.FechaHora.ToString("ddd", new System.Globalization.CultureInfo("es-ES"));
+                            <option value="@c.Id">@($"{char.ToUpper(diaSemana[0]) + diaSemana.Substring(1)}, {c.FechaHora:dd/MM/yyyy HH:mm}")</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => examen.IdCita)" class="text-danger" />
+                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Fecha</label>
-                            <InputDate class="form-control" @bind-Value="examen.Fecha" />
-                            <ValidationMessage For="@(() => examen.Fecha)" />
-                        </div>
+                <!-- 🧩 TIPO DE EXAMEN -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Tipo de Examen <span class="text-danger">*</span></label>
+                    <InputText class="form-control border-primary shadow-sm" @bind-Value="examen.TipoExamen" required />
+                    <ValidationMessage For="@(() => examen.TipoExamen)" class="text-danger" />
+                </div>
 
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Descripción</label>
-                            <InputTextArea class="form-control" @bind-Value="examen.Descripcion" rows="3" />
-                            <ValidationMessage For="@(() => examen.Descripcion)" />
-                        </div>
+                <!-- 🧩 FECHA -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Fecha <span class="text-danger">*</span></label>
+                    <InputDate class="form-control border-primary shadow-sm" @bind-Value="examen.Fecha" required />
+                    <ValidationMessage For="@(() => examen.Fecha)" class="text-danger" />
+                </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">ID Paciente</label>
-                            <InputNumber class="form-control" @bind-Value="examen.IdPaciente" />
-                            <ValidationMessage For="@(() => examen.IdPaciente)" />
-                        </div>
+                <!-- 🧩 DESCRIPCIÓN -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Descripción <span class="text-danger">*</span></label>
+                    <InputTextArea class="form-control border-primary shadow-sm" rows="3" @bind-Value="examen.Descripcion" required />
+                    <ValidationMessage For="@(() => examen.Descripcion)" class="text-danger" />
+                </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">ID Cita</label>
-                            <InputNumber class="form-control" @bind-Value="examen.IdCita" />
-                            <ValidationMessage For="@(() => examen.IdCita)" />
-                        </div>
+                <!-- 🧩 ESTADO -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Estado <span class="text-danger">*</span></label>
+                    <InputSelect class="form-select border-primary shadow-sm" @bind-Value="examen.Estado" required>
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => examen.Estado)" class="text-danger" />
+                </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Estado</label>
-                            <InputSelect class="form-select" @bind-Value="examen.Estado">
-                                <option value="true">Activa</option>
-                                <option value="false">Cancelada</option>
-                            </InputSelect>
-                            <ValidationMessage For="@(() => examen.Estado)" />
-                        </div>
-                    </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success px-4 me-2">
+                        <i class="bi bi-check-circle"></i> Guardar Cambios
+                    </button>
+                    <button type="button" class="btn btn-secondary px-4" @onclick='()=>navManager.NavigateTo("/examenes")'>
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+            </EditForm>
+        }
 
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Guardar Cambios
-                        </button>
-                        <button type="button" class="btn btn-secondary" @onclick="Volver">
-                            <i class="bi bi-arrow-left-circle"></i> Volver
-                        </button>
-                    </div>
-                </EditForm>
-            }
-        </div>
+        @if (mostrarConfirmacion)
+        {
+            <div style="position:fixed;
+                        top:0; left:0; right:0; bottom:0;
+                        background-color:rgba(0,0,0,0.4);
+                        display:flex;
+                        justify-content:center;
+                        align-items:center;">
+                <div style="background:white; padding:25px; border-radius:10px; width:320px; text-align:center; box-shadow:0 0 15px rgba(0,0,0,0.2);">
+                    <h5 class="text-primary mb-3">Confirmar acción</h5>
+                    <p>¿Desea guardar los cambios realizados?</p>
+                    <button class="btn btn-primary me-2" @onclick="GuardarCambios">Aceptar</button>
+                    <button class="btn btn-danger" @onclick="()=>mostrarConfirmacion=false">Cancelar</button>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
 @code {
     [Parameter] public int id { get; set; }
+
     private ExamenDTO? examen;
-    private string? errorMessage;
+    private List<PacienteDTO> pacientes = new();
+    private List<CitaDTO> citasFiltradas = new();
+    private string? mensaje;
+    private bool mensajeError;
+    private bool mostrarConfirmacion;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             examen = await examenService.GetExamenById(id);
-            if (examen == null)
+            pacientes = await pacienteService.GetPacientes();
+
+            if (examen != null)
             {
-                errorMessage = "No se encontró el examen especificado.";
+                var citas = await citaService.GetCitas();
+                citasFiltradas = citas
+                    .Where(c => c.IdPaciente == examen.IdPaciente)
+                    .OrderByDescending(c => c.FechaHora)
+                    .Take(5)
+                    .ToList();
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error al cargar el examen: {ex.Message}";
+            mensaje = $"❌ Error al cargar el examen: {ex.Message}";
+            mensajeError = true;
         }
+    }
+
+    private async Task OnPacienteChange()
+    {
+        if (examen?.IdPaciente > 0)
+        {
+            var citas = await citaService.GetCitas();
+            citasFiltradas = citas
+                .Where(c => c.IdPaciente == examen.IdPaciente)
+                .OrderByDescending(c => c.FechaHora)
+                .Take(5)
+                .ToList();
+
+            examen.IdCita = 0;
+        }
+    }
+
+    private void ConfirmarGuardar()
+    {
+        // Si hay algún campo vacío, mostrar error y no abrir confirmación
+        if (examen == null ||
+            examen.IdPaciente == 0 ||
+            examen.IdCita == 0 ||
+            string.IsNullOrWhiteSpace(examen.TipoExamen) ||
+            examen.Fecha == default ||
+            string.IsNullOrWhiteSpace(examen.Descripcion))
+        {
+            mensaje = "⚠️ Debe completar todos los campos obligatorios antes de guardar.";
+            mensajeError = true;
+            return;
+        }
+
+        mostrarConfirmacion = true;
     }
 
     private async Task GuardarCambios()
     {
+        mostrarConfirmacion = false;
         try
         {
-            if (examen != null)
-            {
-                await examenService.UpdateExamen(examen.Id, examen);
-                navManager.NavigateTo("/examenes");
-            }
+            await examenService.UpdateExamen(examen.Id, examen);
+            mensaje = "✅ Cambios guardados correctamente.";
+            mensajeError = false;
+            await Task.Delay(2000);
+            navManager.NavigateTo("/examenes");
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error al guardar los cambios: {ex.Message}";
+            mensaje = $"❌ Error: {ex.Message}";
+            mensajeError = true;
         }
-    }
-
-    private void Volver()
-    {
-        navManager.NavigateTo("/examenes");
     }
 }
