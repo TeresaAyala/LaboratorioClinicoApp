@@ -69,6 +69,51 @@ namespace LaboratorioClinicoApp.Services
             return null;
         }
 
+        // ---- REGISTRO ----
+        public async Task<(bool ok, string message)> RegisterAsync(string username, string password, int idRol)
+        {
+            var request = new LoginRequest
+            {
+                Username = username,
+                Password = password,
+                PasswordHash = password,
+                IdRol = idRol
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/auth/register", request);
+            var resultado = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Sin redirigir aquí: el componente manejará la navegación
+                return (true, "Usuario registrado correctamente. Inicie sesión para continuar.");
+            }
+
+            return (false, resultado);
+        }
+
+        // ---- ROLES ----
+        public List<RolDTO> GetDefaultRoles() => new()
+        {
+            new RolDTO { IdRol = 1, Nombre = "Administrador", Descripcion = "Control total del sistema", Estado = true },
+            new RolDTO { IdRol = 2, Nombre = "Empleado", Descripcion = "Gestión de tareas internas", Estado = true },
+            new RolDTO { IdRol = 3, Nombre = "Paciente", Descripcion = "Acceso a información médica personal", Estado = true },
+            new RolDTO { IdRol = 4, Nombre = "Doctor", Descripcion = "Atención y gestión de pacientes", Estado = true },
+            new RolDTO { IdRol = 5, Nombre = "Enfermera", Descripcion = "Apoyo y seguimiento médico", Estado = true }
+        };
+
+        public async Task<List<RolDTO>?> TryGetRolesFromApiAsync()
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<List<RolDTO>>("api/roles");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         // ✅ Guardar token manualmente
         public async Task SetToken(string token)
         {

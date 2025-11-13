@@ -1,0 +1,124 @@
+﻿@page "/registrar"
+@inject LaboratorioClinicoApp.Services.AuthServices AuthService
+@inject NavigationManager NavManager
+@using LaboratorioClinicoApp.DTO
+@using System.ComponentModel.DataAnnotations
+
+<link href="css/registro.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<div class="register-page-container">
+    <div class="register-card">
+        <div class="register-icon">
+            <i class="bi bi-person-plus"></i>
+        </div>
+
+        <h3 class="text-center mb-4">Crear Usuario</h3>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert @alertClass text-center">@message</div>
+        }
+
+        <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre de usuario</label>
+                <InputText class="form-control" @bind-Value="registerModel.Username" />
+                <ValidationMessage For="@(() => registerModel.Username)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <InputText class="form-control" @bind-Value="registerModel.Password" type="password" />
+                <ValidationMessage For="@(() => registerModel.Password)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Rol</label>
+                <InputSelect class="form-control" @bind-Value="registerModel.IdRol">
+                    <option value="0">Seleccione un rol</option>
+                    @foreach (var rol in roles)
+                    {
+                        <option value="@rol.IdRol">@rol.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => registerModel.IdRol)" />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <span>Registrando...</span>
+                }
+                else
+                {
+                    <i class="bi bi-person-check me-2"></i>
+                    <span>Registrar</span>
+                }
+            </button>
+
+            <div class="text-center mt-3">
+                <span>¿Ya tienes una cuenta?</span>
+                <a href="/login" class="register-link">Inicia sesión aquí</a>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+    private string? message;
+    private string alertClass = "";
+    private List<RolDTO> roles = new();
+    private bool isLoading = false;
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
+        public string Username { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        [MinLength(4, ErrorMessage = "Debe tener al menos 4 caracteres")]
+        public string Password { get; set; } = string.Empty;
+
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un rol válido")]
+        public int IdRol { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Carga rápida con roles predeterminados
+        roles = AuthService.GetDefaultRoles();
+
+        // Intento de carga desde API
+        var rolesApi = await AuthService.TryGetRolesFromApiAsync();
+        if (rolesApi?.Any() == true)
+        {
+            roles = rolesApi;
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        isLoading = true;
+        message = null;
+
+        var (ok, msg) = await AuthService.RegisterAsync(
+            registerModel.Username,
+            registerModel.Password,
+            registerModel.IdRol
+        );
+
+        isLoading = false;
+        message = msg;
+        alertClass = ok ? "alert-success" : "alert-danger";
+
+        if (ok)
+        {
+            NavManager.NavigateTo("/login", forceLoad: true);
+        }
+    }
+}

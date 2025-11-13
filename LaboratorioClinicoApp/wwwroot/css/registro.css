@@ -1,0 +1,157 @@
+﻿/* --- Paleta de Colores ---
+#98B5ED - Light Blue/Purple (Fondo principal)
+#6169BA - Medium Purple/Blue (Fondo de tarjeta/Formulario)
+#1A3966 - Dark Navy Blue (Fondo muy oscuro)
+#397AC1 - Medium Blue (Botones/Énfasis)
+#9692D2 - Light Purple (Énfasis claro)
+#DEF2F8 - Casi Blanco (Texto claro)
+*/
+
+/* Fondo principal */
+.register-page-container {
+    background-image: url('/images/f6.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    z-index: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* <-- antes estaba center */
+    padding: 120px 20px 40px 20px; /* ⬅️ bajado más el formulario */
+    overflow: hidden;
+}
+
+    .register-page-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(26, 57, 102, 0.6);
+        z-index: -1;
+    }
+
+/* Tarjeta del formulario */
+.register-card {
+    max-width: 420px;
+    width: 100%;
+    background-color: rgba(26, 57, 102, 0.7);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: #DEF2F8;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    padding-top: 60px;
+}
+
+/* Icono principal */
+.register-icon {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #397AC1;
+    border-radius: 50%;
+    font-size: 40px;
+    color: #DEF2F8;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    border: 3px solid #98B5ED;
+}
+
+/* Títulos */
+.register-card h3 {
+    color: #DEF2F8;
+    font-weight: 700;
+    margin-bottom: 30px !important;
+}
+
+/* Etiquetas */
+.register-card .form-label {
+    color: #98B5ED;
+    font-weight: 500;
+}
+
+/* Inputs */
+.register-card .form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid #397AC1;
+    color: #DEF2F8;
+    border-radius: 10px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+    .register-card .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: #45BDF7;
+        box-shadow: 0 0 0 0.25rem rgba(69, 189, 247, 0.5);
+        color: #DEF2F8;
+    }
+
+/* 🔹 Cambio agregado: Select con texto negro por defecto y hover/focus azul con texto blanco */
+.register-card select.form-control {
+    color: black; /* texto negro por defecto */
+}
+
+    .register-card select.form-control:focus {
+        background-color: #397AC1; /* fondo azul al enfocar */
+        color: white; /* texto blanco al enfocar */
+    }
+
+/* Botón principal */
+.register-card .btn-primary {
+    background: linear-gradient(90deg, #397AC1 0%, #6169BA 100%);
+    border: none;
+    border-radius: 15px;
+    font-weight: 700;
+    padding: 10px 0;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(57, 122, 193, 0.4);
+    color: #DEF2F8;
+}
+
+    .register-card .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 7px 20px rgba(57, 122, 193, 0.6);
+        opacity: 0.9;
+    }
+
+/* Mensajes de alerta */
+.alert-success {
+    background-color: #5cd18c;
+    color: #1A3966;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.alert-danger {
+    background-color: #FF6B6B;
+    color: #1A3966;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* Enlace al login */
+.register-link {
+    color: #98B5ED;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 5px;
+    transition: color 0.3s ease;
+}
+
+    .register-link:hover {
+        color: #45BDF7;
+        text-decoration: underline;
+    }
