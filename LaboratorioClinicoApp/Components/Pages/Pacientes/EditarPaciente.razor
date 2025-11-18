@@ -1,0 +1,147 @@
+﻿@page "/pacientes/editarPaciente/{id:int}"
+@using LaboratorioClinicoApp.DTO
+@using LaboratorioClinicoApp.Services
+@inject PacienteService pacienteService
+@inject DoctorService doctorService
+@inject NavigationManager navManager
+
+<h3 class="text-center mb-4">Editar Paciente</h3>
+
+<div class="card p-4 shadow-sm">
+
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger text-center">@errorMessage</div>
+    }
+
+    @if (successMessage != null)
+    {
+        <div class="alert alert-success text-center">@successMessage</div>
+    }
+
+    @if (paciente == null)
+    {
+        <div class="text-center my-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3">Cargando información del paciente...</p>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@paciente" OnValidSubmit="GuardarCambios">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label">Nombre</label>
+                    <InputText class="form-control" @bind-Value="paciente.Nombre" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Apellido</label>
+                    <InputText class="form-control" @bind-Value="paciente.Apellido" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Fecha Nacimiento</label>
+                    <InputDate class="form-control" @bind-Value="paciente.FechaNacimiento" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Teléfono</label>
+                    <InputText class="form-control" @bind-Value="paciente.Telefono" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <InputText class="form-control" @bind-Value="paciente.Email" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Dirección</label>
+                    <InputText class="form-control" @bind-Value="paciente.Direccion" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Usuario ID</label>
+                    <InputNumber class="form-control" @bind-Value="paciente.IdUsuario" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Doctor</label>
+                    <InputSelect class="form-select" @bind-Value="paciente.IdDoctor">
+                        @if (doctores == null)
+                        {
+                            <option disabled>Cargando doctores...</option>
+                        }
+                        else
+                        {
+                            <option value="">-- Seleccione un doctor --</option>
+                            @foreach (var doc in doctores)
+                            {
+                                <option value="@doc.Id">@doc.Nombre @doc.Apellido</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Estado</label>
+                    <InputSelect class="form-select" @bind-Value="paciente.Estado">
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </InputSelect>
+                </div>
+
+            </div>
+
+            <div class="mt-4 text-center">
+                <button class="btn btn-primary px-4 me-2" type="submit">
+                    <i class="bi bi-save"></i> Guardar Cambios
+                </button>
+
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    private PacienteDTO? paciente = null;
+    private List<DoctorDTO>? doctores = null;
+
+    private string? errorMessage = null;
+    private string? successMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            paciente = await pacienteService.GetPacienteById(id);
+            doctores = await doctorService.GetDoctors();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error al cargar información: " + ex.Message;
+        }
+    }
+
+    private async Task GuardarCambios()
+    {
+        try
+        {
+            await pacienteService.UpdatePaciente(paciente.Id, paciente);
+            successMessage = "Paciente actualizado correctamente.";
+
+            await Task.Delay(1500);
+            navManager.NavigateTo("/pacientes");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error al guardar los cambios: " + ex.Message;
+        }
+    }
+}
