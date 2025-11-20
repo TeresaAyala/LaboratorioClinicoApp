@@ -1,0 +1,194 @@
+﻿.agregar-container {
+    padding: 20px;
+    max-width: 700px;
+    margin: auto;
+    padding-top: var(--navbar-height);
+    color: #111827;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.btn-back {
+    background: #374151;
+    border: none;
+    color: white;
+    font-size: 20px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+    .btn-back:hover {
+        background: #4b5563;
+    }
+
+/* FORMULARIO */
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.label-text {
+    font-weight: 600;
+    color: #111827; /* negro */
+}
+
+/* Inputs */
+.input {
+    background: #ffffff; /* blanco */
+    border: 1px solid #9ca3af;
+    padding: 12px;
+    border-radius: 8px;
+    color: #111827;
+}
+
+    .input::placeholder {
+        color: #6b7280;
+    }
+
+    .input:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+
+/* Botón Guardar */
+.btn-guardar {
+    background: #3b82f6;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+    .btn-guardar:hover {
+        background: #2563eb;
+    }
+
+/* Error */
+.error {
+    background: #b91c1c;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: white;
+}
+
+/* NAVBAR HEIGHT */
+:root {
+    --navbar-height: 90px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .agregar-container {
+        padding: 15px;
+    }
+
+    .btn-back {
+        font-size: 18px;
+    }
+
+    :root {
+        --navbar-height: 120px;
+    }
+}
+/* Estilos generales */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Inputs */
+.form-control {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+/* SOLO el input de Estado (disabled) */
+.input[disabled] {
+    width: 150px; /* tamaño que quieres */
+    text-align: center;
+    font-weight: 600;
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+
+/* Botón Guardar */
+.btn-guardar {
+    background-color: #0d6efd;
+    color: white;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 6px;
+    width: 100%;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+    .btn-guardar:hover {
+        background-color: #0b5ed7;
+    }
+
+/* Tabla estado Activo */
+.estado-activo {
+    background-color: #22c55e; /* 🌿 verde más vivo */
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    width: fit-content;
+    display: inline-block;
+    text-align: center;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+
+/* ---- BORDE ROJO PARA CAMPOS VACÍOS ---- */
+.error-border {
+    border: 1px solid #dc2626 !important;
+}
+
+/* ---- SWITCH ESTADO (ACTIVO / INACTIVO) ---- */
+.switch-container {
+    width: 140px;
+    cursor: pointer;
+}
+
+.switch {
+    padding: 12px;
+    text-align: center;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    transition: 0.2s ease-in-out;
+    user-select: none;
+}
+
+    .switch.on {
+        background-color: #22c55e; /* verde */
+    }
+
+    .switch.off {
+        background-color: #ef4444; /* rojo */
+    }

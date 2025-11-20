@@ -37,14 +37,14 @@
 
             <div class="mb-3">
                 <label class="form-label">Rol</label>
-                <InputSelect class="form-control" @bind-Value="registerModel.IdRol">
+                <InputSelect class="form-control" @bind-Value="registerModel.Id">
                     <option value="0">Seleccione un rol</option>
                     @foreach (var rol in roles)
                     {
-                        <option value="@rol.IdRol">@rol.Nombre</option>
+                        <option value="@rol.Id">@rol.Nombre</option>
                     }
                 </InputSelect>
-                <ValidationMessage For="@(() => registerModel.IdRol)" />
+                <ValidationMessage For="@(() => registerModel.Id)" />
             </div>
 
             <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
@@ -85,7 +85,7 @@
         public string Password { get; set; } = string.Empty;
 
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un rol válido")]
-        public int IdRol { get; set; }
+        public int Id { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
@@ -109,7 +109,7 @@
         var (ok, msg) = await AuthService.RegisterAsync(
             registerModel.Username,
             registerModel.Password,
-            registerModel.IdRol
+            registerModel.Id
         );
 
         isLoading = false;

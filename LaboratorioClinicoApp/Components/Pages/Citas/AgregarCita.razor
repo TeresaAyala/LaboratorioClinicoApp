@@ -1,0 +1,254 @@
+﻿@page "/citas/agregarCita"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject CitaService citaService
+@inject DoctorService doctorService
+@inject PacienteService pacienteService
+@inject NavigationManager nav
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white text-center">
+            <h4>Registrar Nueva Cita</h4>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="alert alert-info">@mensaje</div>
+            }
+
+            <EditForm Model="@nuevaCita" OnValidSubmit="GuardarCita">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="row g-3">
+
+                    <!-- Doctor -->
+                    <div class="col-md-6">
+                        <label class="form-label">Doctor</label>
+                        <InputSelect class="form-select" @bind-Value="nuevaCita.IdDoctor" @onchange="OnDoctorSeleccionado">
+                            <option value="0">Seleccione un doctor</option>
+                            @foreach (var doc in doctores)
+                            {
+                                <option value="@doc.Id">@doc.Nombre @doc.Apellido (@doc.Especialidad)</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => nuevaCita.IdDoctor)" />
+                    </div>
+
+                    <!-- Paciente con búsqueda -->
+                    <div class="col-md-6 position-relative">
+                        <label class="form-label">Paciente</label>
+
+                        <input class="form-control"
+                               placeholder="Buscar paciente..."
+                               @bind="nombrePaciente"
+                               @oninput="FiltrarPacientes"
+                               @onblur="ValidarPacienteSeleccionado"
+                               disabled="@pacienteSeleccionado" />
+
+                        @if (pacientesFiltrados.Count > 0 && !pacienteSeleccionado)
+                        {
+                            <ul class="list-group position-absolute w-100" style="z-index:2000; max-height:150px; overflow-y:auto;">
+                                @foreach (var p in pacientesFiltrados)
+                                {
+                                    <li class="list-group-item list-group-item-action"
+                                        @onclick="() => SeleccionarPaciente(p)">
+                                        @p.Nombre @p.Apellido
+                                    </li>
+                                }
+                            </ul>
+                        }
+
+                        @if (pacienteSeleccionado)
+                        {
+                            <button class="btn btn-sm btn-danger mt-2" @onclick="QuitarSeleccionPaciente">Cambiar paciente</button>
+                        }
+
+                        <ValidationMessage For="@(() => nuevaCita.IdPaciente)" />
+                    </div>
+
+                    <!-- Fecha y Hora -->
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha y Hora</label>
+
+                        <div class="input-group">
+                            <InputDate class="form-control"
+                                       @bind-Value="fechaSeleccionada"
+                                       @onchange="OnFechaChange"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                       disabled="@(nuevaCita.IdDoctor == 0)" />
+
+                            <select class="form-select" @bind="horaSeleccionada" disabled="@(!horasDisponibles.Any())">
+                                <option value="">Hora</option>
+                                @foreach (var h in horasDisponibles)
+                                {
+                                    <option value="@h.ToShortTimeString()">@h.ToShortTimeString()</option>
+                                }
+                            </select>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(mensajeHorario))
+                        {
+                            <div class="text-muted small">@mensajeHorario</div>
+                        }
+                    </div>
+
+                    <!-- Motivo -->
+                    <div class="col-md-6">
+                        <label class="form-label">Motivo</label>
+                        <InputText class="form-control" @bind-Value="nuevaCita.Motivo" />
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="col-12">
+                        <label class="form-label">Notas (Opcional)</label>
+                        <InputTextArea class="form-control" @bind-Value="nuevaCita.NotasConsulta" rows="3" />
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="col-md-4">
+                        <label class="form-label">Estado</label>
+                        <InputCheckbox class="form-check-input" @bind-Value="nuevaCita.Estado" />
+                        <span class="ms-2">@((nuevaCita.Estado) ? "Activa" : "Cancelada")</span>
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-end mt-3 gap-2">
+                    <button type="submit" class="btn btn-success">Guardar Cita</button>
+                    <button class="btn btn-secondary" @onclick="@(() => nav.NavigateTo("/citas"))">Regresar</button>
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private CitaDTO nuevaCita = new() { Estado = true };
+    private string mensaje = "";
+    private string mensajeHorario = "";
+
+    private List<DoctorDTO> doctores = new();
+    private List<PacienteDTO> pacientes = new();
+    private List<PacienteDTO> pacientesFiltrados = new();
+
+    private bool pacienteSeleccionado = false;
+    private string nombrePaciente = "";
+
+    private DateTime fechaSeleccionada = DateTime.Today;
+    private string horaSeleccionada = "";
+
+    private List<DateTime> horasDisponibles = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        doctores = await doctorService.GetDoctors();
+        pacientes = await pacienteService.GetPacientes();
+    }
+
+    private async Task OnDoctorSeleccionado(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int id))
+        {
+            nuevaCita.IdDoctor = id;
+
+            if (id > 0)
+                await CargarHorasDisponibles();
+        }
+    }
+
+    private async Task OnFechaChange(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value.ToString(), out DateTime fecha))
+        {
+            fechaSeleccionada = fecha;
+
+            if (nuevaCita.IdDoctor > 0)
+                await CargarHorasDisponibles();
+        }
+    }
+
+    private async Task CargarHorasDisponibles()
+    {
+        mensajeHorario = "Cargando horarios...";
+
+        horasDisponibles = await citaService.GetHorasDisponiblesAsync(nuevaCita.IdDoctor);
+
+        horasDisponibles = horasDisponibles
+            .Where(h => h.Date == fechaSeleccionada.Date)
+            .ToList();
+
+        mensajeHorario = horasDisponibles.Any()
+            ? "Seleccione un horario disponible"
+            : "No hay horarios disponibles para este día.";
+    }
+
+    private void FiltrarPacientes(ChangeEventArgs e)
+    {
+        nombrePaciente = e.Value?.ToString() ?? "";
+
+        pacientesFiltrados = pacientes
+            .Where(p => $"{p.Nombre} {p.Apellido}"
+            .Contains(nombrePaciente, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void SeleccionarPaciente(PacienteDTO p)
+    {
+        nuevaCita.IdPaciente = p.Id;
+        nombrePaciente = $"{p.Nombre} {p.Apellido}";
+        pacienteSeleccionado = true;
+        pacientesFiltrados.Clear();
+    }
+
+    private void QuitarSeleccionPaciente()
+    {
+        nuevaCita.IdPaciente = 0;
+        nombrePaciente = "";
+        pacienteSeleccionado = false;
+    }
+
+    private void ValidarPacienteSeleccionado(FocusEventArgs e)
+    {
+        if (!pacienteSeleccionado)
+        {
+            var existe = pacientes.Any(p =>
+                $"{p.Nombre} {p.Apellido}".Equals(nombrePaciente));
+
+            if (!existe)
+            {
+                nombrePaciente = "";
+                nuevaCita.IdPaciente = 0;
+            }
+
+            pacientesFiltrados.Clear();
+        }
+    }
+
+    private async Task GuardarCita()
+    {
+        if (string.IsNullOrWhiteSpace(horaSeleccionada))
+        {
+            mensaje = "Debe seleccionar una hora válida.";
+            return;
+        }
+
+        nuevaCita.FechaHora = DateTime.Parse($"{fechaSeleccionada:yyyy-MM-dd} {horaSeleccionada}");
+
+        try
+        {
+            mensaje = await citaService.AddCita(nuevaCita);
+            await Task.Delay(1000);
+            nav.NavigateTo("/citas");
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+        }
+    }
+}

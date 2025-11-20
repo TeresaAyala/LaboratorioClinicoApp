@@ -1,0 +1,82 @@
+﻿@page "/roles/agregar"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject RolService rolService
+@inject NavigationManager navManager
+
+<link rel="stylesheet" href="css/Rol/agregarRol.css" />
+
+<div class="agregar-container">
+
+    <div class="header">
+        <button class="btn-back" @onclick="Volver">
+            ←
+        </button>
+        <h2>Crear Nuevo Rol</h2>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="error">@mensajeError</div>
+    }
+
+    <div class="formulario">
+
+        <!-- Nombre -->
+        <label class="label-text">Nombre del Rol</label>
+        <input class="input"
+               placeholder="Escribe el nombre del rol..."
+               @bind="nuevoRol.Nombre" />
+
+        <!-- Descripción -->
+        <label class="label-text">Descripción</label>
+        <textarea class="input"
+                  placeholder="Escribe una descripción del rol..."
+                  @bind="nuevoRol.Descripcion">
+        </textarea>
+
+        <!-- Estado FIJO -->
+        <label class="label-text">Estado</label>
+        <div class="estado-activo">Activo</div>
+
+
+        <!-- Valor real invisible -->
+        <input type="hidden" @bind="nuevoRol.Estado" />
+
+
+        <button class="btn-guardar" @onclick="GuardarRol">
+            Guardar Rol
+        </button>
+
+    </div>
+</div>
+
+@code {
+    RolDTO nuevoRol = new RolDTO
+    {
+        Estado = true  // SIEMPRE ACTIVO
+    };
+
+    string? mensajeError;
+
+    async Task GuardarRol()
+    {
+        try
+        {
+            nuevoRol.Estado = true; // Por si acaso
+
+            await rolService.AddRol(nuevoRol);
+            navManager.NavigateTo("/roles");
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+    }
+
+    void Volver()
+    {
+        navManager.NavigateTo("/roles");
+    }
+}
+

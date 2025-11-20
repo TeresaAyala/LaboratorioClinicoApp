@@ -9,5 +9,6 @@
         public string? NotasConsulta { get; set; }
         public int IdPaciente { get; set; }
         public int IdDoctor { get; set; }
+
     }
 }

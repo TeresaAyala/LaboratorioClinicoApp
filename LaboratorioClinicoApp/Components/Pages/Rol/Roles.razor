@@ -1,0 +1,104 @@
+﻿@page "/roles"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject RolService rolService
+@inject NavigationManager navManager
+
+<link rel="stylesheet" href="/css/Rol/rol.css" />
+
+<div class="roles-container">
+
+    <!-- ENCABEZADO -->
+    <div class="header">
+        <h2>Roles del Sistema</h2>
+
+        <button class="btn-add"
+                @onclick='() => navManager.NavigateTo("/roles/agregar")'>
+            + Crear Rol
+        </button>
+    </div>
+
+    <!-- 🔍 BUSCADOR -->
+    <input type="text"
+           class="search-box"
+           placeholder="Buscar rol..."
+           @bind="searchText"
+           @bind:event="oninput" />
+
+    @if (errorMessage != null)
+    {
+        <div class="error">@errorMessage</div>
+    }
+    else if (roles == null)
+    {
+        <p class="loading">Cargando roles...</p>
+    }
+    else if (FilteredRoles.Count == 0)
+    {
+        <p class="loading">No se encontraron roles que coincidan.</p>
+    }
+    else
+    {
+        <div class="roles-list">
+            @foreach (var rol in FilteredRoles)
+            {
+                <div class="rol-card">
+
+                    <div class="rol-info">
+                        <h3>@rol.Nombre</h3>
+                        <p>@rol.Descripcion</p>
+
+                        <span class="estado @(rol.Estado ? "activo" : "inactivo")">
+                            @(rol.Estado ? "Activo" : "Inactivo")
+                        </span>
+                    </div>
+
+                    <button class="btn-edit"
+                            @onclick="() => Editar(rol.Id)">
+                        Editar
+                    </button>
+
+                </div>
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    private List<RolDTO>? roles = null;
+    private string? errorMessage;
+
+    private string searchText = "";
+
+    // Lista filtrada
+    private List<RolDTO> FilteredRoles =>
+        string.IsNullOrWhiteSpace(searchText)
+            ? roles!
+            : roles!.Where(r =>
+                r.Nombre.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+             ).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarRoles();
+    }
+
+    private async Task CargarRoles()
+    {
+        try
+        {
+            roles = await rolService.GetRoles();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error al obtener roles: " + ex.Message;
+        }
+    }
+
+    void Editar(int id)
+    {
+        navManager.NavigateTo($"/roles/editar/{id}", forceLoad: true);
+    }
+}
+

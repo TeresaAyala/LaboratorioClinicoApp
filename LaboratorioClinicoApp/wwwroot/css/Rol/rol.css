@@ -1,0 +1,174 @@
+﻿/* Ajuste para que NO se oculte detrás de la navbar */
+:root {
+    --navbar-height: 90px;
+}
+
+/* Contenedor principal */
+.roles-container {
+    padding: 20px;
+    padding-top: var(--navbar-height);
+    max-width: 900px;
+    margin: auto;
+    font-family: sans-serif;
+}
+
+/* MODO CLARO AUTOMÁTICO */
+@media (prefers-color-scheme: light) {
+    body {
+        background: #ffffff;
+        color: #1f2937; /* texto oscuro */
+    }
+
+    .rol-card {
+        background: #f3f4f6; /* gris claro */
+        border: 1px solid #d1d5db;
+        color: #1f2937;
+    }
+
+    .btn-add {
+        background: #3b82f6;
+        color: white;
+    }
+}
+
+/* MODO OSCURO AUTOMÁTICO */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #0f172a;
+        color: #ffffff;
+    }
+
+    .rol-card {
+        background: #1e293b; /* azul oscuro */
+        border: 1px solid #334155;
+        color: white;
+    }
+
+    .btn-add {
+        background: #3b82f6;
+        color: white;
+    }
+}
+
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .header h2 {
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+/*filtrado de busqueda */
+.search-box {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+.dark .search-box {
+    background: #1e293b;
+    color: white;
+    border: 1px solid #334155;
+}
+
+
+/* Botón agregar */
+.btn-add {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+    .btn-add:hover {
+        filter: brightness(0.85);
+    }
+
+/* Lista */
+.roles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Tarjetas de roles */
+.rol-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    border-radius: 10px;
+    transition: 0.1s ease-in-out;
+}
+
+    .rol-card:hover {
+        transform: scale(1.01);
+    }
+
+/* Texto */
+.rol-info h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.rol-info p {
+    margin: 4px 0;
+    opacity: 0.8;
+}
+
+/* Estados */
+.estado {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+    .estado.activo {
+        background: #16a34a;
+        color: white;
+    }
+
+    .estado.inactivo {
+        background: #b91c1c;
+        color: white;
+    }
+
+/* Botón editar */
+.btn-edit {
+    background: #0284c7;
+    border: none;
+    padding: 10px 16px;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+    .btn-edit:hover {
+        background: #0369a1;
+    }
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .rol-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-edit {
+        width: 100%;
+    }
+}

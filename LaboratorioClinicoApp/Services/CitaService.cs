@@ -67,5 +67,21 @@ namespace LaboratorioClinicoApp.Services
             // Código deshabilitado para no borrar registros
             return "Funcionalidad de eliminación deshabilitada.";
         }
+
+        public async Task<List<DateTime>> GetHorasDisponiblesAsync(int idDoctor)
+        {
+            await AgregarTokenAsync();
+            var response = await _httpClient.GetFromJsonAsync<List<DateTime>>($"/api/cita/horasDisponibles/{idDoctor}");
+            return response ?? new List<DateTime>();
+        }
+
+        public async Task<List<CitaDTO>> GetCitasPorDoctorYFecha(int idDoctor, DateTime fecha)
+        {
+            await AgregarTokenAsync();
+            string fechaISO = fecha.ToString("yyyy-MM-dd");
+            var response = await _httpClient.GetFromJsonAsync<List<CitaDTO>>($"/api/cita/doctor/{idDoctor}/fecha/{fechaISO}");
+            return response ?? new List<CitaDTO>();
+        }
+
     }
 }
