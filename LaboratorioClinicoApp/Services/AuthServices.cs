@@ -95,11 +95,11 @@ namespace LaboratorioClinicoApp.Services
         // ---- ROLES ----
         public List<RolDTO> GetDefaultRoles() => new()
         {
-            new RolDTO { Id = 1, Nombre = "Administrador", Descripcion = "Control total del sistema", Estado = true },
-            new RolDTO { Id = 2, Nombre = "Empleado", Descripcion = "Gestión de tareas internas", Estado = true },
-            new RolDTO { Id = 3, Nombre = "Paciente", Descripcion = "Acceso a información médica personal", Estado = true },
-            new RolDTO { Id = 4, Nombre = "Doctor", Descripcion = "Atención y gestión de pacientes", Estado = true },
-            new RolDTO { Id = 5, Nombre = "Enfermera", Descripcion = "Apoyo y seguimiento médico", Estado = true }
+            new RolDTO { Id = 1, Nombre = "Administrador", Descripcion = "Control total del sistema", Estado = "Activo" },
+            new RolDTO { Id = 2, Nombre = "Empleado", Descripcion = "Gestión de tareas internas", Estado = "Activo" },
+            new RolDTO { Id = 3, Nombre = "Paciente", Descripcion = "Acceso a información médica personal", Estado = "Activo" },
+            new RolDTO { Id = 4, Nombre = "Doctor", Descripcion = "Atención y gestión de pacientes", Estado = "Activo" },
+            new RolDTO { Id = 5, Nombre = "Enfermera", Descripcion = "Apoyo y seguimiento médico", Estado = "Activo" }
         };
 
         public async Task<List<RolDTO>?> TryGetRolesFromApiAsync()
@@ -167,6 +167,3 @@ namespace LaboratorioClinicoApp.Services
         }
     }
 }
-
-
-

@@ -1,10 +1,10 @@
-﻿@page "/examenes"
+﻿@page "/consultas"
 @using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
-@inject ExamenService examenService
+@inject ConsultaService consultaService
 @inject PacienteService pacienteService
-@inject CitaService citaService
 @inject DoctorService doctorService
+@inject CitaService citaService
 @inject NavigationManager navManager
 
 <link rel="stylesheet" href="css/Examenes/examenes.css" />
@@ -13,7 +13,7 @@
     <div class="card shadow-lg border-0">
         <div class="card-header bg-primary text-white text-center">
             <h3 class="mb-0">
-                <i class="bi bi-flask"></i> Lista de Exámenes
+                <i class="bi bi-journal-medical"></i> Lista de Consultas
             </h3>
         </div>
 
@@ -23,13 +23,13 @@
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
 
                 <button class="btn btn-success"
-                        @onclick='() => navManager.NavigateTo("/examenes/agregarExamen")'>
-                    <i class="bi bi-plus-circle me-1"></i> Agregar examen
+                        @onclick='() => navManager.NavigateTo("/consultas/agregarConsulta")'>
+                    <i class="bi bi-plus-circle me-1"></i> Agregar consulta
                 </button>
 
                 <div class="input-group" style="max-width: 300px;">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Buscar examen..."
+                    <input type="text" class="form-control" placeholder="Buscar consulta..."
                            @bind="searchText" @bind:event="oninput" />
                 </div>
 
@@ -40,90 +40,84 @@
                 <div class="alert alert-danger text-center">@errorMessage</div>
             }
 
-            <!-- TIPOS -->
+            <!-- ESTADOS -->
             <div class="d-flex gap-2 flex-wrap mb-4">
-                <button class='btn @(tipoSeleccionado == "Todos" ? "btn-primary" : "btn-outline-primary")'
-                        @onclick='() => SeleccionarTipo("Todos")'>
+                <button class='btn @(estadoSeleccionado == "Todos" ? "btn-primary" : "btn-outline-primary")'
+                        @onclick='() => SeleccionarEstado("Todos")'>
                     Todos
                 </button>
 
-                @foreach (var tipo in TiposUnicos)
+                @foreach (var estado in EstadosUnicos)
                 {
-                    <button class='btn @(tipoSeleccionado == tipo ? "btn-primary" : "btn-outline-primary")'
-                            @onclick='() => SeleccionarTipo(tipo)'>
-                        @tipo
+                    <button class='btn @(estadoSeleccionado == estado ? "btn-primary" : "btn-outline-primary")'
+                            @onclick='() => SeleccionarEstado(estado)'>
+                        @estado
                     </button>
                 }
             </div>
 
             <!-- LISTA -->
-            @if (examenes == null)
+            @if (consultas == null)
             {
                 <div class="text-center my-4">
                     <div class="spinner-border text-primary"></div>
-                    <p class="mt-3">Cargando exámenes...</p>
+                    <p class="mt-3">Cargando consultas...</p>
                 </div>
             }
-            else if (!examenes.Any())
+            else if (!consultas.Any())
             {
                 <div class="alert alert-warning text-center">
-                    <i class="bi bi-exclamation-circle"></i> No hay exámenes registrados.
+                    <i class="bi bi-exclamation-circle"></i> No hay consultas registradas.
                 </div>
             }
             else
             {
                 <div class="row g-3">
-                    @foreach (var examen in FiltradosPorTipo)
+                    @foreach (var consulta in FiltradasPorEstado)
                     {
-                        var cita = citas.FirstOrDefault(c => c.Id == examen.IdCita);
-                        var doctorNombre = ObtenerNombreDoctor(cita?.IdDoctor ?? 0);
-
                         <div class="col-12 col-md-6 col-lg-4">
                             <div class="exam-card exam-click shadow-sm"
-                                 @onclick='() => navManager.NavigateTo($"/examenes/detalle/{examen.Id}")'>
+                                 @onclick='() => navManager.NavigateTo($"/consultas/detalle/{consulta.Id}")'>
 
                                 <!-- Título -->
                                 <div class="exam-title">
-                                    <i class="bi bi-file-earmark-medical"></i>
-                                    <strong>@examen.TipoExamen</strong>
+                                    <i class="bi bi-stethoscope"></i>
+                                    <strong>@consulta.Motivo</strong>
                                 </div>
-
-                                <!-- Descripción -->
-                                <p class="text-muted small">@examen.Descripcion</p>
 
                                 <!-- Información -->
                                 <div class="info-box">
                                     <span class="label">Paciente:</span>
-                                    <span class="value">@ObtenerNombrePaciente(examen.IdPaciente)</span>
+                                    <span class="value">@ObtenerNombrePaciente(consulta.IdPaciente)</span>
                                 </div>
 
                                 <div class="info-box">
                                     <span class="label">Doctor:</span>
-                                    <span class="value">@doctorNombre</span>
+                                    <span class="value">@ObtenerNombreDoctor(consulta.IdDoctor)</span>
                                 </div>
 
                                 <div class="info-box">
-                                    <span class="label">Fecha de examen:</span>
-                                    <span class="value">@examen.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                                    <span class="label">Fecha de consulta:</span>
+                                    <span class="value">@consulta.FechaConsulta.ToString("dd/MM/yyyy HH:mm")</span>
                                 </div>
 
                                 <div class="info-box">
-                                    <span class="label">Fecha de cita:</span>
+                                    <span class="label">Cita:</span>
                                     <span class="value">
-                                        @cita?.FechaHora.ToString("dd/MM/yyyy HH:mm")
+                                        @citas.FirstOrDefault(c => c.Id == consulta.IdCita)?.FechaHora.ToString("dd/MM/yyyy HH:mm")
                                     </span>
                                 </div>
 
                                 <!-- ESTADO + EDITAR -->
                                 <div class="d-flex justify-content-between align-items-center mt-3">
 
-                                    <span class="badge px-3 py-2 text-white @ClaseEstado(examen.Estado)">
-                                        @examen.Estado
+                                    <span class="badge px-3 py-2 text-white @ClaseEstado(consulta.Estado)">
+                                        @consulta.Estado
                                     </span>
 
                                     <button class="btn btn-outline-primary btn-sm"
                                             @onclick:stopPropagation="true"
-                                            @onclick="() => EditarExamen(examen.Id)">
+                                            @onclick="() => EditarConsulta(consulta.Id)">
                                         <i class="bi bi-pencil-square"></i> Editar
                                     </button>
 
@@ -139,40 +133,40 @@
 </div>
 
 @code {
-    private List<ExamenDTO>? examenes = null;
+    private List<ConsultaDTO>? consultas = null;
     private List<PacienteDTO> pacientes = new();
-    private List<CitaDTO> citas = new();
     private List<DoctorDTO> doctores = new();
+    private List<CitaDTO> citas = new();
 
     private string searchText = "";
     private string? errorMessage = null;
-    private string tipoSeleccionado = "Todos";
+    private string estadoSeleccionado = "Todos";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadExamen();
+        await LoadConsultas();
     }
 
-    private async Task LoadExamen()
+    private async Task LoadConsultas()
     {
         try
         {
-            examenes = await examenService.GetExamenes();
+            consultas = await consultaService.GetConsultas();
             pacientes = await pacienteService.GetPacientes();
-            citas = await citaService.GetCitas();
             doctores = await doctorService.GetDoctors();
+            citas = await citaService.GetCitas();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error al cargar exámenes: {ex.Message}";
+            errorMessage = $"Error al cargar consultas: {ex.Message}";
         }
     }
 
-    private IEnumerable<ExamenDTO> Filtrados =>
+    private IEnumerable<ConsultaDTO> Filtrados =>
         string.IsNullOrWhiteSpace(searchText)
-            ? examenes
-            : examenes.Where(e =>
-                ObtenerNombrePaciente(e.IdPaciente)
+            ? consultas
+            : consultas.Where(c =>
+                ObtenerNombrePaciente(c.IdPaciente)
                     .Contains(searchText, StringComparison.OrdinalIgnoreCase)
             );
 
@@ -188,39 +182,38 @@
         return d == null ? "" : $"{d.Nombre} {d.Apellido}".Trim();
     }
 
-    private List<String> TiposUnicos =>
-        examenes?
-            .Select(e => e.TipoExamen)
-            .Where(t => !string.IsNullOrWhiteSpace(t))
+    private List<String> EstadosUnicos =>
+        consultas?
+            .Select(c => c.Estado)
+            .Where(e => !string.IsNullOrWhiteSpace(e))
             .Distinct()
-            .OrderBy(t => t)
+            .OrderBy(e => e)
             .ToList()
         ?? new List<string>();
 
-    private IEnumerable<ExamenDTO> FiltradosPorTipo =>
-        tipoSeleccionado == "Todos"
+    private IEnumerable<ConsultaDTO> FiltradasPorEstado =>
+        estadoSeleccionado == "Todos"
             ? Filtrados
-            : Filtrados.Where(e => e.TipoExamen == tipoSeleccionado);
+            : Filtrados.Where(c => c.Estado == estadoSeleccionado);
 
-    private void SeleccionarTipo(string tipo)
+    private void SeleccionarEstado(string estado)
     {
-        tipoSeleccionado = tipo;
+        estadoSeleccionado = estado;
     }
 
-    private void EditarExamen(int id)
+    private void EditarConsulta(int id)
     {
-        navManager.NavigateTo($"/examenes/editarExamen/{id}");
+        navManager.NavigateTo($"/consultas/editarConsulta/{id}");
     }
 
     private string ClaseEstado(string estado)
     {
         return estado switch
         {
-            "Pendiente" => "bg-secondary",
-            "En proceso" => "bg-primary",
-            "Completado" => "bg-success",
-            "Entregado" => "bg-info",
-            "Cancelado" => "bg-danger",
+            "Activa" => "bg-primary",
+            "Finalizada" => "bg-success",
+            "Cancelada" => "bg-danger",
+            "Inactiva" => "bg-secondary",
             _ => "bg-dark"
         };
     }

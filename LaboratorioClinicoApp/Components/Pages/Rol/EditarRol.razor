@@ -17,44 +17,44 @@
 
     @if (!string.IsNullOrEmpty(mensajeError))
     {
-        <div class="error">@mensajeError</div>
+            <div class="error">@mensajeError</div>
     }
 
     @if (rol == null)
     {
-        <p>Cargando datos...</p>
+            <p>Cargando datos...</p>
     }
     else
     {
-        <div class="formulario">
+            <div class="formulario">
 
-            <!-- Nombre -->
-            <label class="label-text">Nombre del Rol</label>
-            <input class="@GetInputClass(rol.Nombre)"
-                   placeholder="Escribe el nombre del rol..."
-                   @bind="rol.Nombre" />
+                <!-- Nombre -->
+                <label class="label-text">Nombre del Rol</label>
+                <input class="@GetInputClass(rol.Nombre)"
+                       placeholder="Escribe el nombre del rol..."
+                       @bind="rol.Nombre" />
 
-            <!-- Descripción -->
-            <label class="label-text">Descripción</label>
-            <textarea class="@GetInputClass(rol.Descripcion)"
-                      placeholder="Escribe una descripción del rol..."
-                      @bind="rol.Descripcion">
-                </textarea>
+                <!-- Descripción -->
+                <label class="label-text">Descripción</label>
+                <textarea class="@GetInputClass(rol.Descripcion)"
+                          placeholder="Escribe una descripción del rol..."
+                          @bind="rol.Descripcion">
+                    </textarea>
 
-            <!-- Estado Switch -->
-            <label class="label-text">Estado</label>
+                <!-- Estado Switch -->
+                <label class="label-text">Estado</label>
 
-            <div class="switch-container" @onclick="ToggleEstado">
-                <div class="switch @(rol.Estado ? "on" : "off")">
-                    @(rol.Estado ? "Activo" : "Inactivo")
+                <div class="switch-container" @onclick="ToggleEstado">
+                    <div class="switch @(rol.Estado == "Activo" ? "on" : "off")">
+                    @(rol.Estado == "Activo" ? "Activo" : "Inactivo")
+                    </div>
                 </div>
+
+                <button class="btn-guardar" @onclick="GuardarCambios">
+                    Guardar Cambios
+                </button>
+
             </div>
-
-            <button class="btn-guardar" @onclick="GuardarCambios">
-                Guardar Cambios
-            </button>
-
-        </div>
     }
 </div>
 
@@ -82,10 +82,10 @@
         }
     }
 
-    // Cambiar estado con switch
+    // Cambiar estado con switch STRING
     void ToggleEstado()
     {
-        rol.Estado = !rol.Estado;
+        rol.Estado = (rol.Estado == "Activo") ? "Inactivo" : "Activo";
     }
 
     // Validación visual

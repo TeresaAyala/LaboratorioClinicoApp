@@ -1,0 +1,112 @@
+﻿@page "/consulta/editar/{Id:int}"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+
+@inject ConsultaService consultaService
+@inject PacienteService pacienteService
+@inject DoctorService doctorService
+@inject CitaService citaService
+@inject NavigationManager navManager
+
+<h3 class="text-primary fw-bold mb-3">✏️ Editar Consulta</h3>
+
+@if (isLoading)
+{
+    <p>Cargando datos...</p>
+}
+else
+{
+    <EditForm Model="@consulta" OnValidSubmit="GuardarCambios">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="card p-4 shadow-sm">
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Motivo</label>
+                <InputText class="form-control" @bind-Value="consulta.Motivo" />
+                <ValidationMessage For="@(() => consulta.Motivo)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Diagnóstico</label>
+                <InputTextArea class="form-control" @bind-Value="consulta.Diagnostico" />
+                <ValidationMessage For="@(() => consulta.Diagnostico)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Fecha</label>
+                <InputDate class="form-control" @bind-Value="consulta.FechaConsulta" />
+                <ValidationMessage For="@(() => consulta.FechaConsulta)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Doctor</label>
+                <InputSelect class="form-select" @bind-Value="consulta.IdDoctor">
+                    <option value="">Seleccione un doctor</option>
+                    @foreach (var doctor in listaDoctores)
+                    {
+                        <option value="@doctor.Id">@doctor.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => consulta.IdDoctor)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Estado de Consulta</label>
+                <InputSelect class="form-select" @bind-Value="consulta.Estado">
+                    <option value="Programada">Programada</option>
+                    <option value="En proceso">En proceso</option>
+                    <option value="Finalizada">Finalizada</option>
+                    <option value="Cancelada">Cancelada</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => consulta.Estado)" />
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-success">
+                    💾 Guardar Cambios
+                </button>
+
+                <button class="btn btn-secondary" @onclick="Cancelar">
+                    ↩️ Volver
+                </button>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info mt-3">@mensaje</div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private ConsultaDTO consulta = new();
+    private List<DoctorDTO> listaDoctores = new();
+    private bool isLoading = true;
+    private string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        consulta = await consultaService.GetConsultaById(Id) ?? new ConsultaDTO();
+        listaDoctores = await doctorService.GetDoctors();
+
+        isLoading = false;
+    }
+
+    private async Task GuardarCambios()
+    {
+        await consultaService.UpdateConsulta(Id, consulta);
+        mensaje = "✅ Consulta actualizada correctamente.";
+    }
+
+    private void Cancelar()
+    {
+        navManager.NavigateTo("/consulta");
+    }
+}

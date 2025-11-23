@@ -1,0 +1,119 @@
+﻿@page "/examenes/detalle/{id:int}"
+
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+
+@inject ExamenService examenService
+@inject PacienteService pacienteService
+@inject CitaService citaService
+@inject NavigationManager navManager
+
+<link rel="stylesheet" href="css/Examenes/examenes.css" />
+
+@if (cargando)
+{
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary"></div>
+        <p>Cargando información...</p>
+    </div>
+}
+else if (examen == null)
+{
+    <div class="alert alert-danger text-center mt-5">
+        <strong>Error:</strong> No se encontró el examen solicitado.
+    </div>
+}
+else
+{
+    <div class="container my-5">
+        <div class="card shadow-lg p-4">
+
+            <h3 class="text-center mb-3">
+                <i class="bi bi-file-earmark-medical"></i>
+                Detalle del Examen
+            </h3>
+
+            <hr />
+
+            <p><strong>Tipo de examen:</strong> @examen.TipoExamen</p>
+            <p><strong>Descripción:</strong> @examen.Descripcion</p>
+
+            <p>
+                <strong>Paciente:</strong>
+                @($"{paciente?.Nombre} {paciente?.Apellido}")
+            </p>
+
+            <p>
+                <strong>Fecha del examen:</strong>
+                @examen.Fecha.ToString("dd/MM/yyyy")
+            </p>
+
+            <p>
+                <strong>Fecha de la cita:</strong>
+                @(cita == null ? "No asignada" : cita.FechaHora.ToString("dd/MM/yyyy HH:mm"))
+            </p>
+
+            <p>
+                <strong>Estado:</strong>
+                <span class="badge px-3 py-2 text-white @ClaseEstado(examen.Estado)">
+                    @examen.Estado
+                </span>
+            </p>
+
+            <hr />
+
+            <button class="btn btn-secondary" @onclick="Volver">
+                <i class="bi bi-arrow-left-circle"></i> Volver
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    ExamenDTO? examen;
+    PacienteDTO? paciente;
+    CitaDTO? cita;
+
+    bool cargando = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            examen = await examenService.GetExamenById(id);
+
+            if (examen != null)
+            {
+                paciente = await pacienteService.GetPacienteById(examen.IdPaciente);
+                var todasCitas = await citaService.GetCitas();
+                cita = todasCitas.FirstOrDefault(c => c.Id == examen.IdCita);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR cargando detalle examen: " + ex.Message);
+        }
+
+        cargando = false;
+    }
+
+    private string ClaseEstado(string estado)
+    {
+        return estado switch
+        {
+            "Pendiente" => "bg-secondary",
+            "En proceso" => "bg-primary",
+            "Completado" => "bg-success",
+            "Entregado" => "bg-info",
+            "Cancelado" => "bg-danger",
+            _ => "bg-dark"
+        };
+    }
+
+    private void Volver()
+    {
+        navManager.NavigateTo("/examenes");
+    }
+}

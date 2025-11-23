@@ -1,0 +1,57 @@
+﻿@page "/consulta/detalle/{Id:int}"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject ConsultaService ConsultaService
+@inject DoctorService DoctorService
+@inject NavigationManager NavigationManager
+
+<h3 class="text-info fw-bold mb-3">📄 Detalle de Consulta</h3>
+
+@if (Consulta == null)
+{
+    <p>Cargando detalles...</p>
+}
+else
+{
+    <div class="card shadow-sm p-4">
+
+        <p><strong>Motivo:</strong> @Consulta.Motivo</p>
+        <p><strong>Diagnóstico:</strong> @Consulta.Diagnostico</p>
+        <p><strong>Fecha:</strong> @Consulta.FechaConsulta.ToString("dd/MM/yyyy")</p>
+
+        <p><strong>Doctor:</strong> @NombreDoctor</p>
+
+        <p>
+            <strong>Estado:</strong>
+            <span class="badge bg-primary">@Consulta.Estado</span>
+        </p>
+
+        <div class="mt-4">
+            <button class="btn btn-secondary" @onclick="Volver">
+                ↩️ Volver
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    public ConsultaDTO? Consulta { get; set; }
+    public List<DoctorDTO> ListaDoctores { get; set; } = new();
+    public string NombreDoctor { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Consulta = await ConsultaService.GetConsultaById(Id);
+        ListaDoctores = await DoctorService.GetDoctors();
+
+        var doctor = ListaDoctores.FirstOrDefault(d => d.Id == Consulta?.IdDoctor);
+        NombreDoctor = doctor?.Nombre ?? "No asignado";
+    }
+
+    private void Volver()
+    {
+        NavigationManager.NavigateTo("/consulta");
+    }
+}

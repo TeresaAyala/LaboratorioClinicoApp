@@ -66,7 +66,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Usuario ID</label>
-                    <InputNumber class="form-control" @bind-Value="nuevoPaciente.IdUsuario"/>
+                    <InputNumber class="form-control" @bind-Value="nuevoPaciente.IdUsuario" />
                 </div>
 
                 <div class="col-md-6">
@@ -83,8 +83,8 @@
                 <div class="col-md-6">
                     <label class="form-label">Estado</label>
                     <InputSelect class="form-select" @bind-Value="nuevoPaciente.Estado">
-                        <option value="true">Activo</option>
-                        <option value="false">Inactivo</option>
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
                     </InputSelect>
                 </div>
 
@@ -103,23 +103,11 @@
 
 @code {
     private PacienteDTO nuevoPaciente = new()
-    {
-        Estado = true,
-        FechaNacimiento = DateTime.Now.AddYears(-20),
-        IdUsuario = 1 // Puedes modificarlo si usás un usuario logueado
-    };
-
-   /* private int GenerarIdRandom()
-    {
-        var random = new Random();
-        return random.Next(100, 1000); // genera un número entre 100 y 999
-    }
-
-    protected override void OnInitialized()
-    {
-        nuevoPaciente.IdUsuario = GenerarIdRandom();
-    }*/
-
+        {
+            Estado = "Activo",
+            FechaNacimiento = DateTime.Now.AddYears(-20),
+            IdUsuario = 1
+        };
 
     private List<DoctorDTO>? doctores;
     private string? errorMessage = null;

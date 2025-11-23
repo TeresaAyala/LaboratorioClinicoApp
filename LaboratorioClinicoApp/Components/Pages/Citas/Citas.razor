@@ -75,8 +75,8 @@
         <label>Estado</label>
         <select class="form-select" @onchange="OnFilterEstadoChange">
             <option value="">Todos</option>
-            <option value="true">Confirmada</option>
-            <option value="false">Pendiente</option>
+            <option value="Confirmada">Confirmada</option>
+            <option value="Pendiente">Pendiente</option>
         </select>
     </div>
 
@@ -123,8 +123,8 @@
 
                         <div class="meta-line">
                             <strong>Paciente:</strong> @(pacientes.Any()
-                                                ? GetNombrePaciente(cita.IdPaciente)
-                                                : "Cargando...")
+                    ? GetNombrePaciente(cita.IdPaciente)
+                    : "Cargando...")
 
                         </div>
 
@@ -132,17 +132,17 @@
                         <div class="meta-line">
                             <strong>Doctor:</strong>
                             @(doctor != null
-                                                ? $"{doctor.Nombre} {doctor.Apellido}"
-                                                : $"ID {cita.IdDoctor}")
+                                ? $"{doctor.Nombre} {doctor.Apellido}"
+                                : $"ID {cita.IdDoctor}")
                         </div>
 
-                @if (!string.IsNullOrWhiteSpace(cita.NotasConsulta))
+                        @if (!string.IsNullOrWhiteSpace(cita.NotasConsulta))
                         {
                             <p class="info-notas"><strong>Notas:</strong> @cita.NotasConsulta</p>
                         }
 
                         <div class="status-row">
-                            @if (cita.Estado)
+                            @if (cita.Estado == "Confirmada")
                             {
                                 <span class="badge badge-confirmed">Confirmada</span>
                             }
@@ -166,7 +166,6 @@
 </div>
 
 
-
 @code {
     private List<CitaDTO> citas = new();
     private List<CitaDTO> citasFiltradas = new();
@@ -178,7 +177,7 @@
 
     private int? filtroDoctor = null;
     private int? filtroPaciente = null;
-    private bool? filtroEstado = null;
+    private string? filtroEstado = null;
     private int? filtroMes = null;
 
     private bool isLoading = true;
@@ -219,8 +218,8 @@
         if (filtroPaciente.HasValue)
             query = query.Where(c => c.IdPaciente == filtroPaciente.Value);
 
-        if (filtroEstado.HasValue)
-            query = query.Where(c => c.Estado == filtroEstado.Value);
+        if (!string.IsNullOrEmpty(filtroEstado))
+            query = query.Where(c => c.Estado == filtroEstado);
 
         if (filtroMes.HasValue)
             query = query.Where(c => c.FechaHora.Month == filtroMes.Value);
@@ -283,8 +282,8 @@
 
         if (string.IsNullOrEmpty(s))
             filtroEstado = null;
-        else if (bool.TryParse(s, out bool b))
-            filtroEstado = b;
+        else
+            filtroEstado = s;
 
         FiltrarCitas();
     }

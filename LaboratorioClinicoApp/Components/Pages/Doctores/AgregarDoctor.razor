@@ -58,10 +58,13 @@
                         <InputNumber class="form-control" @bind-Value="nuevoDoctor.IdUsuario" />
                     </div>
 
-                    <div class="col-md-6 d-flex align-items-center">
-                        <label class="form-label me-3 mb-0">Estado</label>
-                        <InputCheckbox class="form-check-input" @bind-Value="nuevoDoctor.Estado" />
-                        <span class="ms-2">@((nuevoDoctor.Estado) ? "Activo" : "Inactivo")</span>
+                    <!-- ✅ CAMBIO — Estado ahora es string -->
+                    <div class="col-md-6">
+                        <label class="form-label">Estado</label>
+                        <InputSelect class="form-control" @bind-Value="nuevoDoctor.Estado">
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </InputSelect>
                     </div>
                 </div>
 
@@ -81,7 +84,7 @@
 @code {
     private DoctorDTO nuevoDoctor = new DoctorDTO
     {
-        Estado = true
+        Estado = "Activo" // ✅ AHORA STRING
     };
 
     private string? mensaje;

@@ -39,10 +39,8 @@
         <label class="label-text">Estado</label>
         <div class="estado-activo">Activo</div>
 
-
         <!-- Valor real invisible -->
         <input type="hidden" @bind="nuevoRol.Estado" />
-
 
         <button class="btn-guardar" @onclick="GuardarRol">
             Guardar Rol
@@ -54,7 +52,7 @@
 @code {
     RolDTO nuevoRol = new RolDTO
     {
-        Estado = true  // SIEMPRE ACTIVO
+        Estado = "Activo"  // SIEMPRE ACTIVO
     };
 
     string? mensajeError;
@@ -63,7 +61,7 @@
     {
         try
         {
-            nuevoRol.Estado = true; // Por si acaso
+            nuevoRol.Estado = "Activo"; // Por si acaso
 
             await rolService.AddRol(nuevoRol);
             navManager.NavigateTo("/roles");
@@ -79,4 +77,3 @@
         navManager.NavigateTo("/roles");
     }
 }
-

@@ -16,7 +16,7 @@
         <div class="card-body">
             @if (!string.IsNullOrEmpty(mensaje))
             {
-                <div class="alert alert-info">@mensaje</div>
+                    <div class="alert alert-info">@mensaje</div>
             }
 
             <EditForm Model="@nuevaCita" OnValidSubmit="GuardarCita">
@@ -32,7 +32,7 @@
                             <option value="0">Seleccione un doctor</option>
                             @foreach (var doc in doctores)
                             {
-                                <option value="@doc.Id">@doc.Nombre @doc.Apellido (@doc.Especialidad)</option>
+                                    <option value="@doc.Id">@doc.Nombre @doc.Apellido (@doc.Especialidad)</option>
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() => nuevaCita.IdDoctor)" />
@@ -51,20 +51,20 @@
 
                         @if (pacientesFiltrados.Count > 0 && !pacienteSeleccionado)
                         {
-                            <ul class="list-group position-absolute w-100" style="z-index:2000; max-height:150px; overflow-y:auto;">
+                                <ul class="list-group position-absolute w-100" style="z-index:2000; max-height:150px; overflow-y:auto;">
                                 @foreach (var p in pacientesFiltrados)
                                 {
-                                    <li class="list-group-item list-group-item-action"
-                                        @onclick="() => SeleccionarPaciente(p)">
+                                            <li class="list-group-item list-group-item-action"
+                                                @onclick="() => SeleccionarPaciente(p)">
                                         @p.Nombre @p.Apellido
-                                    </li>
+                                            </li>
                                 }
-                            </ul>
+                                </ul>
                         }
 
                         @if (pacienteSeleccionado)
                         {
-                            <button class="btn btn-sm btn-danger mt-2" @onclick="QuitarSeleccionPaciente">Cambiar paciente</button>
+                                <button class="btn btn-sm btn-danger mt-2" @onclick="QuitarSeleccionPaciente">Cambiar paciente</button>
                         }
 
                         <ValidationMessage For="@(() => nuevaCita.IdPaciente)" />
@@ -85,14 +85,14 @@
                                 <option value="">Hora</option>
                                 @foreach (var h in horasDisponibles)
                                 {
-                                    <option value="@h.ToShortTimeString()">@h.ToShortTimeString()</option>
+                                        <option value="@h.ToShortTimeString()">@h.ToShortTimeString()</option>
                                 }
                             </select>
                         </div>
 
                         @if (!string.IsNullOrEmpty(mensajeHorario))
                         {
-                            <div class="text-muted small">@mensajeHorario</div>
+                                <div class="text-muted small">@mensajeHorario</div>
                         }
                     </div>
 
@@ -111,8 +111,10 @@
                     <!-- Estado -->
                     <div class="col-md-4">
                         <label class="form-label">Estado</label>
-                        <InputCheckbox class="form-check-input" @bind-Value="nuevaCita.Estado" />
-                        <span class="ms-2">@((nuevaCita.Estado) ? "Activa" : "Cancelada")</span>
+                        <InputSelect class="form-select" @bind-Value="nuevaCita.Estado">
+                            <option value="Activa">Activa</option>
+                            <option value="Cancelada">Cancelada</option>
+                        </InputSelect>
                     </div>
 
                 </div>
@@ -129,7 +131,7 @@
 
 @code {
 
-    private CitaDTO nuevaCita = new() { Estado = true };
+    private CitaDTO nuevaCita = new() { Estado = "Activa" };
     private string mensaje = "";
     private string mensajeHorario = "";
 

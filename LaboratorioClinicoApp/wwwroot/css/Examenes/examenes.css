@@ -1,0 +1,50 @@
+﻿.exam-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    transition: 0.2s;
+}
+
+.exam-click {
+    cursor: pointer;
+}
+
+.exam-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.exam-title {
+    font-size: 18px;
+    color: #1a237e;
+    margin-bottom: 8px;
+}
+
+.info-box {
+    background: #f1f4ff;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.estado {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+    .estado.activo {
+        background: #d4f8d4;
+        color: #1b5e20;
+    }
+
+    .estado.inactivo {
+        background: #ffd6d6;
+        color: #b71c1c;
+    }

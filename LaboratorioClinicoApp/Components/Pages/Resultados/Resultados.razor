@@ -1,0 +1,129 @@
+﻿@page "/resultados"
+
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+
+@inject ResultadoService resultadoService
+@inject ExamenService examenService
+@inject DoctorService doctorService
+@inject PacienteService pacienteService
+@inject NavigationManager nav
+
+<link rel="stylesheet" href="css/Resultados/resultados.css" />
+
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+            <h3 class="mb-0">Resultados de Exámenes</h3>
+        </div>
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between mb-3">
+                <input class="form-control w-50"
+                       placeholder="Buscar por paciente o examen..."
+                       @oninput="Filtrar" />
+
+                <button class="btn btn-success" @onclick='()=>nav.NavigateTo("/resultados/crear")'>
+                    Nuevo Resultado
+                </button>
+            </div>
+
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Detalle</th>
+                        <th>Fecha Emisión</th>
+                        <th>Examen</th>
+                        <th>Doctor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var r in resultadosFiltrados)
+                    {
+                        <tr>
+                            <td>
+                                @(r.Paciente == null 
+                                    ? "Sin datos" 
+                                    : $"{r.Paciente.Nombre} {r.Paciente.Apellido}")
+                            </td>
+
+                            <td>@r.Detalle</td>
+
+                            <td>@r.FechaEmision.ToString("yyyy-MM-dd HH:mm")</td>
+
+                            <td>@r.Examen?.TipoExamen</td>
+
+                            <td>@($"{r.Doctor?.Nombre} {r.Doctor?.Apellido}")</td>
+
+                            <td>
+                                <button class="btn btn-primary btn-sm"
+                                        @onclick='() => nav.NavigateTo($"/resultados/detalle/{r.Id}")'>
+                                    Ver
+                                </button>
+
+                                <button class="btn btn-warning btn-sm"
+                                        @onclick='() => nav.NavigateTo($"/resultados/editar/{r.Id}")'>
+                                    Editar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+@code {
+
+    List<ResultadoDTO> resultados = new();
+    List<ResultadoDTO> resultadosFiltrados = new();
+
+    List<ExamenDTO> examenes = new();
+    List<DoctorDTO> doctores = new();
+    List<PacienteDTO> pacientes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        resultados = await resultadoService.GetResultados();
+        examenes = await examenService.GetExamenes();
+        doctores = await doctorService.GetDoctors();
+        pacientes = await pacienteService.GetPacientes();
+
+        // Vincular examen, doctor y paciente
+        foreach (var r in resultados)
+        {
+            r.Examen = examenes.FirstOrDefault(e => e.Id == r.IdExamen);
+            r.Doctor = doctores.FirstOrDefault(d => d.Id == r.IdDoctor);
+
+            // ⭐ VINCULAR PACIENTE DESDE EXAMEN.IdPaciente
+            if (r.Examen != null)
+            {
+                r.Paciente = pacientes.FirstOrDefault(p => p.Id == r.Examen.IdPaciente);
+            }
+        }
+
+        resultadosFiltrados = resultados.ToList();
+    }
+
+    private void Filtrar(ChangeEventArgs e)
+    {
+        string texto = e.Value?.ToString()?.ToLower() ?? "";
+
+        resultadosFiltrados = resultados.Where(r =>
+            $"{r.Paciente?.Nombre} {r.Paciente?.Apellido}".ToLower().Contains(texto) ||
+            r.Examen?.TipoExamen?.ToLower().Contains(texto) == true
+        ).ToList();
+    }
+
+}

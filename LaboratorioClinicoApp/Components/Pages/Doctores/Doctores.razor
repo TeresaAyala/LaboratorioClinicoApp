@@ -78,7 +78,7 @@
                                     <td>@doctor.LicenciaMedica</td>
                                     <td>@doctor.IdUsuario</td>
                                     <td>
-                                        @if (doctor.Estado)
+                                        @if (doctor.Estado == "Activo")
                                         {
                                             <span class="badge bg-success">Activo</span>
                                         }

@@ -90,10 +90,16 @@
                 <!-- 🧩 ESTADO -->
                 <div class="mb-3">
                     <label class="form-label fw-bold text-secondary">Estado <span class="text-danger">*</span></label>
+
                     <InputSelect class="form-select border-primary shadow-sm" @bind-Value="examen.Estado" required>
-                        <option value="true">Activo</option>
-                        <option value="false">Inactivo</option>
+                        <option value="">Seleccione un estado</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En proceso">En proceso</option>
+                        <option value="Completado">Completado</option>
+                        <option value="Entregado">Entregado</option>
+                        <option value="Cancelado">Cancelado</option>
                     </InputSelect>
+
                     <ValidationMessage For="@(() => examen.Estado)" class="text-danger" />
                 </div>
 
