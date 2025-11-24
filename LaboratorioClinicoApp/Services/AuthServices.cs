@@ -3,33 +3,35 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace LaboratorioClinicoApp.Services
 {
     public class AuthServices
     {
-        private readonly ProtectedLocalStorage _LocalStorage;
+        private readonly ProtectedLocalStorage _localStorage;
         private readonly HttpClient _httpClient;
         private readonly NavigationManager _navManager;
         private string _token;
 
-        // ✅ Constructor CORREGIDO: ahora recibe también NavigationManager
         public AuthServices(ProtectedLocalStorage localStorage, HttpClient httpClient, NavigationManager navManager)
         {
-            _LocalStorage = localStorage;
+            _localStorage = localStorage;
             _httpClient = httpClient;
             _navManager = navManager;
         }
 
-        // Clases internas
+        // ================================
+        // LOGIN
+        // ================================
         public class LoginRequest
         {
-            public int Id { get; set; } = 0;
+            public int Id { get; set; }
             public string Username { get; set; } = string.Empty;
             public string PasswordHash { get; set; } = string.Empty;
             public string Password { get; set; } = string.Empty;
-            public int IdRol { get; set; } = 0;
+            public int IdRol { get; set; }
         }
 
         public class LoginResponse
@@ -37,7 +39,6 @@ namespace LaboratorioClinicoApp.Services
             public string Token { get; set; } = string.Empty;
         }
 
-        // ✅ Login: guarda token y redirige al menú
         public async Task<string?> LoginAsync(string username, string password)
         {
             var request = new LoginRequest
@@ -48,28 +49,27 @@ namespace LaboratorioClinicoApp.Services
             };
 
             var response = await _httpClient.PostAsJsonAsync("api/auth/login", request);
-            var resultado = await response.Content.ReadAsStringAsync();
 
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+
+            if (!string.IsNullOrEmpty(result?.Token))
             {
-                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                await _localStorage.SetAsync("authToken", result.Token);
+                _token = result.Token;
 
-                if (result?.Token != null)
-                {
-                    // ✅ Guardamos el token en almacenamiento local
-                    await _LocalStorage.SetAsync("authToken", result.Token);
-
-                    // ✅ Redirigimos al menú principal (por ejemplo, doctores)
-                    _navManager.NavigateTo("/doctores", forceLoad: true);
-
-                    return result.Token;
-                }
+                _navManager.NavigateTo("/doctores", true);
+                return result.Token;
             }
 
             return null;
         }
 
-        // ---- REGISTRO ----
+        // ================================
+        // REGISTRO
+        // ================================
         public async Task<(bool ok, string message)> RegisterAsync(string username, string password, int idRol)
         {
             var request = new LoginRequest
@@ -84,29 +84,20 @@ namespace LaboratorioClinicoApp.Services
             var resultado = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
-            {
-                // Sin redirigir aquí: el componente manejará la navegación
-                return (true, "Usuario registrado correctamente. Inicie sesión para continuar.");
-            }
+                return (true, "Usuario registrado correctamente.");
 
             return (false, resultado);
         }
 
-        // ---- ROLES ----
-        public List<RolDTO> GetDefaultRoles() => new()
-        {
-            new RolDTO { Id = 1, Nombre = "Administrador", Descripcion = "Control total del sistema", Estado = "Activo" },
-            new RolDTO { Id = 2, Nombre = "Empleado", Descripcion = "Gestión de tareas internas", Estado = "Activo" },
-            new RolDTO { Id = 3, Nombre = "Paciente", Descripcion = "Acceso a información médica personal", Estado = "Activo" },
-            new RolDTO { Id = 4, Nombre = "Doctor", Descripcion = "Atención y gestión de pacientes", Estado = "Activo" },
-            new RolDTO { Id = 5, Nombre = "Enfermera", Descripcion = "Apoyo y seguimiento médico", Estado = "Activo" }
-        };
-
-        public async Task<List<RolDTO>?> TryGetRolesFromApiAsync()
+        // ================================
+        // ROLES DESDE API (SIN TOKEN)
+        // ================================
+        public async Task<List<RolDTO>?> GetRolesFromApiAsync()
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<List<RolDTO>>("api/roles");
+                // Llamada directa a la API sin agregar Authorization
+                return await _httpClient.GetFromJsonAsync<List<RolDTO>>("api/rol");
             }
             catch
             {
@@ -114,56 +105,56 @@ namespace LaboratorioClinicoApp.Services
             }
         }
 
-        // ✅ Guardar token manualmente
-        public async Task SetToken(string token)
-        {
-            _token = token;
-            await _LocalStorage.SetAsync("token", token);
-        }
 
-        // ✅ Obtener token guardado
+        // ================================
+        // TOKEN
+        // ================================
         public async Task<string?> GetToken()
         {
-            if (string.IsNullOrEmpty(_token))
+            if (!string.IsNullOrEmpty(_token))
+                return _token;
+
+            var result = await _localStorage.GetAsync<string>("authToken");
+
+            if (result.Success)
             {
-                var localStorageResult = await _LocalStorage.GetAsync<string>("token");
-                if (!localStorageResult.Success || string.IsNullOrEmpty(localStorageResult.Value))
-                {
-                    _token = null;
-                    return null;
-                }
-                _token = localStorageResult.Value;
+                _token = result.Value;
+                return _token;
             }
-            return _token;
+
+            return null;
         }
 
-        // ✅ Verificar autenticación
         public async Task<bool> IsAuthenticated()
         {
             var token = await GetToken();
             return !string.IsNullOrEmpty(token) && !IsTokenExpired(token);
         }
 
-        // ✅ Verificar expiración del token
         public bool IsTokenExpired(string token)
         {
             try
             {
-                var jwtToken = new JwtSecurityToken(token);
-                return jwtToken.ValidTo < DateTime.UtcNow;
+                var jwt = new JwtSecurityToken(token);
+                return jwt.ValidTo < DateTime.UtcNow;
             }
             catch
             {
-                return true; // Si el token no es válido, se considera expirado
+                return true;
             }
         }
 
-        // ✅ Cerrar sesión
+        // ================================
+        // LOGOUT
+        // ================================
         public async Task Logout()
         {
             _token = null;
-            await _LocalStorage.DeleteAsync("token");
-            _navManager.NavigateTo("/login", forceLoad: true);
+            await _localStorage.DeleteAsync("authToken");
+            _navManager.NavigateTo("/", true);
         }
     }
 }
+
+
+

@@ -1,62 +1,89 @@
-﻿@* ✅ Menú Hamburguesa Responsive *@
-<link href="css/menu.css" rel="stylesheet" />
+﻿@inject LaboratorioClinicoApp.Services.AuthServices AuthService
+
+@code {
+    private bool IsLoggedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoggedIn = await AuthService.IsAuthenticated();
+    }
+}
 
 <div class="hamburger-menu-container">
-    <!-- Botón hamburguesa -->
-    <button class="hamburger-btn" id="menuToggle">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
 
-    <!-- Logo / Título -->
+    @if (IsLoggedIn)
+    {
+        <button class="hamburger-btn" id="menuToggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    }
+
+    <!-- Logo siempre visible -->
     <h4 class="menu-logo">Laboratorio Clinico</h4>
 </div>
 
-<!-- ✅ Menú desplegable -->
-<nav class="side-menu" id="sideMenu">
-    <ul>
-        <li>
-            <a href="/">
-                <i class="fas fa-home"></i>
-                <span>Inicio</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Citas">
-                <i class="fas fa-calendar-check"></i>
-                <span>Citas</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Doctores">
-                <i class="fas fa-user-md"></i>
-                <span>Doctores</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Pacientes">
-                <i class="fas fa-users"></i>
-                <span>Pacientes</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Examenes">
-                <i class="fas fa-microscope"></i>
-                <span>Exámenes</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Resultados">
-                <i class="fas fa-vials"></i>
-                <span>Resultados</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Roles">
-                <i class="fas fa-user-shield"></i>
-                <span>Roles</span>
-            </a>
-        </li>
-    </ul>
-</nav>
+@if (IsLoggedIn)
+{
+    <nav class="side-menu" id="sideMenu">
+        <ul>
+            <li>
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/Citas">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Citas</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/Doctores">
+                    <i class="fas fa-user-md"></i>
+                    <span>Doctores</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/Pacientes">
+                    <i class="fas fa-users"></i>
+                    <span>Pacientes</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/Examenes">
+                    <i class="fas fa-microscope"></i>
+                    <span>Exámenes</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/Resultados">
+                    <i class="fas fa-vials"></i>
+                    <span>Resultados</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/Roles">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Roles</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar sesión</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+

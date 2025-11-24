@@ -1,6 +1,8 @@
 ﻿@page "/registrar"
+@inject LaboratorioClinicoApp.Services.RolService RolService
 @inject LaboratorioClinicoApp.Services.AuthServices AuthService
 @inject NavigationManager NavManager
+
 @using LaboratorioClinicoApp.DTO
 @using System.ComponentModel.DataAnnotations
 
@@ -23,30 +25,35 @@
         <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
             <DataAnnotationsValidator />
 
+            <!-- USUARIO -->
             <div class="mb-3">
                 <label class="form-label">Nombre de usuario</label>
                 <InputText class="form-control" @bind-Value="registerModel.Username" />
                 <ValidationMessage For="@(() => registerModel.Username)" />
             </div>
 
+            <!-- CONTRASEÑA -->
             <div class="mb-3">
                 <label class="form-label">Contraseña</label>
                 <InputText class="form-control" @bind-Value="registerModel.Password" type="password" />
                 <ValidationMessage For="@(() => registerModel.Password)" />
             </div>
 
+            <!-- ROLES -->
             <div class="mb-3">
                 <label class="form-label">Rol</label>
-                <InputSelect class="form-control" @bind-Value="registerModel.Id">
+                <InputSelect class="form-control" @bind-Value="registerModel.IdRol">
                     <option value="0">Seleccione un rol</option>
+
                     @foreach (var rol in roles)
                     {
                         <option value="@rol.Id">@rol.Nombre</option>
                     }
                 </InputSelect>
-                <ValidationMessage For="@(() => registerModel.Id)" />
+                <ValidationMessage For="@(() => registerModel.IdRol)" />
             </div>
 
+            <!-- BOTÓN -->
             <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
                 @if (isLoading)
                 {
@@ -85,19 +92,20 @@
         public string Password { get; set; } = string.Empty;
 
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un rol válido")]
-        public int Id { get; set; }
+        public int IdRol { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        // Carga rápida con roles predeterminados
-        roles = AuthService.GetDefaultRoles();
-
-        // Intento de carga desde API
-        var rolesApi = await AuthService.TryGetRolesFromApiAsync();
-        if (rolesApi?.Any() == true)
+        try
         {
-            roles = rolesApi;
+            // 🔹 Cambiado para usar el método que no requiere token
+            roles = await RolService.GetRolesWithoutTokenAsync() ?? new List<RolDTO>();
+        }
+        catch (Exception ex)
+        {
+            message = $"Error al cargar roles: {ex.Message}";
+            alertClass = "alert-danger";
         }
     }
 
@@ -109,7 +117,7 @@
         var (ok, msg) = await AuthService.RegisterAsync(
             registerModel.Username,
             registerModel.Password,
-            registerModel.Id
+            registerModel.IdRol
         );
 
         isLoading = false;
@@ -118,7 +126,10 @@
 
         if (ok)
         {
-            NavManager.NavigateTo("/login", forceLoad: true);
+            NavManager.NavigateTo("/login", true);
         }
     }
 }
+
+
+

@@ -14,6 +14,7 @@ namespace LaboratorioClinicoApp.Services
             _authService = authService;
         }
 
+        // 🔹 Agregar token a la cabecera
         private async Task AgregarTokenAsync()
         {
             var token = await _authService.GetToken();
@@ -24,6 +25,7 @@ namespace LaboratorioClinicoApp.Services
                 new AuthenticationHeaderValue("Bearer", token);
         }
 
+        // 🔹 Obtener todos los roles (con token)
         public async Task<List<RolDTO>> GetRoles()
         {
             await AgregarTokenAsync();
@@ -31,12 +33,27 @@ namespace LaboratorioClinicoApp.Services
             return response ?? new List<RolDTO>();
         }
 
+        // 🔹 Obtener todos los roles (sin token)
+        public async Task<List<RolDTO>?> GetRolesWithoutTokenAsync()
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<List<RolDTO>>("/api/rol");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // 🔹 Obtener un rol por Id (con token)
         public async Task<RolDTO?> GetRolById(int id)
         {
             await AgregarTokenAsync();
             return await _httpClient.GetFromJsonAsync<RolDTO>($"/api/rol/{id}");
         }
 
+        // 🔹 Agregar un rol (con token)
         public async Task<string> AddRol(RolDTO rol)
         {
             await AgregarTokenAsync();
@@ -49,6 +66,7 @@ namespace LaboratorioClinicoApp.Services
             throw new Exception($"Error al agregar rol: {error}");
         }
 
+        // 🔹 Actualizar un rol por Id (con token)
         public async Task<string> UpdateRol(int id, RolDTO rol)
         {
             await AgregarTokenAsync();
@@ -61,12 +79,13 @@ namespace LaboratorioClinicoApp.Services
             throw new Exception($"Error al actualizar Rol: {error}");
         }
 
-        // 🔹 Eliminar Rol (firma, sin código)
+        // 🔹 Eliminar rol (firma, sin implementación)
         public string DeleteRol(int id)
         {
-            // Código deshabilitado para no borrar registros
             return "Funcionalidad de eliminación deshabilitada.";
         }
     }
 }
+
+
 

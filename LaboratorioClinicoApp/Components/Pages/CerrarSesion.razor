@@ -1,0 +1,14 @@
+﻿@page "/logout"
+@inject LaboratorioClinicoApp.Services.AuthServices AuthService
+@inject NavigationManager NavManager
+
+<h3>Cerrando sesión...</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.Logout();
+        NavManager.NavigateTo("/", true); // 🔥 Redirige a la bienvenida (pagina principal)
+    }
+}
+

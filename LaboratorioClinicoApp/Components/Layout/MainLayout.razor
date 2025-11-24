@@ -1,8 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link href="css/menu.css" rel="stylesheet" />
 
-<NavMenu />
+@if (isAuthenticated)
+{
+    <NavMenu />
+}
 
 <!-- Contenido principal -->
 <div class="main-content" id="mainContent">
@@ -11,22 +15,40 @@
 
 @code {
     [Inject] IJSRuntime JSRuntime { get; set; }
+    [Inject] LaboratorioClinicoApp.Services.AuthServices AuthService { get; set; }
+
+    private bool isAuthenticated = false;
+    private bool checkedAuth = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("eval", @"
-                const menuToggle = document.getElementById('menuToggle');
-                const sideMenu = document.getElementById('sideMenu');
-                const mainContent = document.getElementById('mainContent');
+            // ⛔ Ya NO usamos OnInitializedAsync por error de prerender
+            if (!checkedAuth)
+            {
+                checkedAuth = true;
+                isAuthenticated = await AuthService.IsAuthenticated();
+                StateHasChanged();
+            }
 
-                menuToggle.addEventListener('click', () => {
-                    sideMenu.classList.toggle('open');
-                    menuToggle.classList.toggle('open');
-                    mainContent.classList.toggle('shifted');
-                });
-            ");
+            if (isAuthenticated)
+            {
+                await JSRuntime.InvokeVoidAsync("eval", @"
+                    const menuToggle = document.getElementById('menuToggle');
+                    const sideMenu = document.getElementById('sideMenu');
+                    const mainContent = document.getElementById('mainContent');
+
+                    if (menuToggle) {
+                        menuToggle.addEventListener('click', () => {
+                            sideMenu.classList.toggle('open');
+                            menuToggle.classList.toggle('open');
+                            mainContent.classList.toggle('shifted');
+                        });
+                    }
+                ");
+            }
         }
     }
 }
+

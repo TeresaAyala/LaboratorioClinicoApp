@@ -2,19 +2,16 @@
 @inject LaboratorioClinicoApp.Services.AuthServices AuthService
 @inject NavigationManager NavManager
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" 
-integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" 
-crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <link href="css/login.css" rel="stylesheet" />
 
-<!-- Contenedor principal con fondo de imagen y centrado -->
 <div class="login-page-container">
 
-    <!-- Tarjeta del formulario flotante -->
     <div class="login-card">
 
-        <!-- Icono de usuario flotante (Requiere Font Awesome: fas fa-user) -->
         <div class="login-icon">
             <i class="fas fa-user"></i>
         </div>
@@ -49,7 +46,6 @@ crossorigin="anonymous" referrerpolicy="no-referrer" />
     private LoginModel loginModel = new();
     private string? errorMessage;
 
-    // Clase LoginModel
     public class LoginModel
     {
         public string Username { get; set; } = string.Empty;
@@ -60,14 +56,13 @@ crossorigin="anonymous" referrerpolicy="no-referrer" />
     {
         errorMessage = null;
 
-        // Simulamos la llamada al servicio de autenticación
+        // Esto YA guarda el token en localStorage automáticamente.
         var token = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
 
         if (!string.IsNullOrEmpty(token))
         {
-            await AuthService.SetToken(token);
-            // Redirige al inicio o a otra página
-            NavManager.NavigateTo("/doctores");
+            // El LoginAsync ya navega a /doctores, pero si quieres puedes dejarlo doble por seguridad:
+            NavManager.NavigateTo("/doctores", forceLoad: true);
         }
         else
         {
@@ -75,5 +70,6 @@ crossorigin="anonymous" referrerpolicy="no-referrer" />
         }
     }
 }
+
 
 
