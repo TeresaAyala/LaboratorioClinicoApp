@@ -24,6 +24,9 @@ namespace LaboratorioClinicoApp.Services
                 new AuthenticationHeaderValue("Bearer", token);
         }
 
+        // ----------------------------------------------------
+        // Obtener todas las citas activas
+        // ----------------------------------------------------
         public async Task<List<CitaDTO>> GetCitas()
         {
             await AgregarTokenAsync();
@@ -37,51 +40,86 @@ namespace LaboratorioClinicoApp.Services
             return await _httpClient.GetFromJsonAsync<CitaDTO>($"/api/cita/{id}");
         }
 
+        // ----------------------------------------------------
+        // AGREGAR CITA
+        // ----------------------------------------------------
         public async Task<string> AddCita(CitaDTO cita)
         {
             await AgregarTokenAsync();
+
+            // Regla: Si es examen, IdDoctor debe ir null
+            if (cita.TipoCita == "EXAMEN")
+                cita.IdDoctor = null;
+
             var response = await _httpClient.PostAsJsonAsync("/api/cita", cita);
 
-            if (response.IsSuccessStatusCode)
-                return "Cita agregada exitosamente.";
+            var resultado = await response.Content.ReadAsStringAsync();
 
-            var error = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Error al agregar cita: {error}");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Error al agregar cita: {resultado}");
+
+            return resultado;
         }
 
+        // ----------------------------------------------------
+        // ACTUALIZAR CITA
+        // ----------------------------------------------------
         public async Task<string> UpdateCita(int id, CitaDTO cita)
         {
             await AgregarTokenAsync();
+
+            // Regla de API
+            if (cita.TipoCita == "EXAMEN")
+                cita.IdDoctor = null;
+
             var response = await _httpClient.PutAsJsonAsync($"/api/cita/{id}", cita);
 
-            if (response.IsSuccessStatusCode)
-                return "Cita actualizada correctamente.";
+            var resultado = await response.Content.ReadAsStringAsync();
 
-            var error = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Error al actualizar cita: {error}");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Error al actualizar cita: {resultado}");
+
+            return resultado;
         }
 
-        // 🔹 Eliminar Cita (firma, sin código)
+        // ----------------------------------------------------
+        // ELIMINAR (deshabilitado)
+        // ----------------------------------------------------
         public string DeleteCita(int id)
         {
-            // Código deshabilitado para no borrar registros
             return "Funcionalidad de eliminación deshabilitada.";
         }
 
-        public async Task<List<DateTime>> GetHorasDisponiblesAsync(int idDoctor)
+        // ----------------------------------------------------
+        // Horas disponibles
+        // ----------------------------------------------------
+        public async Task<List<DateTime>> GetHorasDisponiblesAsync(int? idDoctor)
         {
-            await AgregarTokenAsync();
-            var response = await _httpClient.GetFromJsonAsync<List<DateTime>>($"/api/cita/horasDisponibles/{idDoctor}");
+            if (idDoctor == null)
+                return new List<DateTime>(); // No hay doctor = no hay horas
+
+            var response = await _httpClient.GetFromJsonAsync<List<DateTime>>(
+                $"/api/cita/horasDisponibles/{idDoctor.Value}"
+            );
+
+
             return response ?? new List<DateTime>();
         }
 
+        // ----------------------------------------------------
+        // Citas por doctor y fecha
+        // ----------------------------------------------------
         public async Task<List<CitaDTO>> GetCitasPorDoctorYFecha(int idDoctor, DateTime fecha)
         {
             await AgregarTokenAsync();
+
             string fechaISO = fecha.ToString("yyyy-MM-dd");
-            var response = await _httpClient.GetFromJsonAsync<List<CitaDTO>>($"/api/cita/doctor/{idDoctor}/fecha/{fechaISO}");
+
+            var response = await _httpClient.GetFromJsonAsync<List<CitaDTO>>(
+                $"/api/cita/doctor/{idDoctor}/fecha/{fechaISO}"
+            );
+
             return response ?? new List<CitaDTO>();
         }
-
     }
 }
