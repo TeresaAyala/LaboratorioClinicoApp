@@ -1,6 +1,7 @@
 ﻿@page "/citas"
 @using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
+
 @inject CitaService citaService
 @inject PacienteService pacienteService
 @inject DoctorService doctorService
@@ -8,26 +9,44 @@
 
 <link href="/css/Cita/cita.css" rel="stylesheet" />
 
-<!-- AGENDA HEADER -->
 <div class="agenda-header">
-    <button class="icon-btn" title="Ir a hoy" @onclick="IrHoy">📅</button>
+    <button class="icon-btn" @onclick="IrHoy">📅</button>
 
     <div class="agenda-center">
         <div class="agenda-title">Agenda</div>
 
-        <div class="agenda-tabs" role="tablist" aria-label="Vistas">
-            <button class="tab @(vistaDia ? "active" : "")" @onclick="() => CambiarVista(true)">Día</button>
-            <button class="tab @(!vistaDia ? "active" : "")" @onclick="() => CambiarVista(false)">Semana</button>
+        <div class="agenda-tabs">
+            <button class="tab @(vistaDia ? "active" : "")" @onclick="() => CambiarVista(VistaType.Dia)">Día</button>
+            <button class="tab @(vistaSemana ? "active" : "")" @onclick="() => CambiarVista(VistaType.Semana)">Semana</button>
+            <button class="tab @(vistaMes ? "active" : "")" @onclick="() => CambiarVista(VistaType.Mes)">Mes</button>
         </div>
 
         <div class="agenda-date">
-            <button class="small-nav" @onclick="DiaAnterior" title="Anterior">◀</button>
-            <div class="today-label">@fechaSeleccionada.ToString("dddd, dd 'de' MMMM 'de' yyyy")</div>
-            <button class="small-nav" @onclick="DiaSiguiente" title="Siguiente">▶</button>
+            <button class="small-nav" @onclick="DiaAnterior">◀</button>
+            <div class="today-label">@fechaSeleccionada.ToString("dddd, dd 'de' MMMM yyyy")</div>
+            <button class="small-nav" @onclick="DiaSiguiente">▶</button>
         </div>
     </div>
 
-    <button class="icon-btn" title="Perfil">👤</button>
+    <button class="icon-btn">👤</button>
+</div>
+
+<!-- TABS SUPERIORES -->
+<div class="top-tabs">
+    <button class="top-tab active">Consulta Médica</button>
+
+    <div class="top-tabs">
+        <button class="top-tab active"
+                @onclick='() => navManager.NavigateTo("/citas")'>
+            Consulta Médica
+        </button>
+
+        <button class="top-tab"
+                @onclick='() => navManager.NavigateTo("/consulta")'>
+            Citas de Exámenes
+        </button>
+    </div>
+
 </div>
 
 <!-- FILTROS -->
@@ -54,7 +73,6 @@
         </select>
     </div>
 
-    <!-- FILTRO FECHA -->
     <div class="filtro-item">
         <label>Fecha</label>
         <input type="date" class="form-control" @onchange="OnFilterFechaChange" />
@@ -77,6 +95,7 @@
             <option value="">Todos</option>
             <option value="Confirmada">Confirmada</option>
             <option value="Pendiente">Pendiente</option>
+            <option value="Activo">Activo</option>
         </select>
     </div>
 
@@ -85,95 +104,77 @@
     </div>
 </div>
 
-<!-- CONTENIDO -->
+<!-- LISTADO -->
 <div class="page-container">
-    <div class="content">
-
-        @if (isLoading)
+    @if (isLoading)
+    {
+        <div class="loading">Cargando citas...</div>
+    }
+    else if (citasFiltradas.Count == 0)
+    {
+        <p class="sin-citas">No hay citas para esta fecha.</p>
+    }
+    else
+    {
+        @foreach (var cita in citasFiltradas)
         {
-            <div class="loading">Cargando citas...</div>
-        }
-        else if (citasFiltradas.Count == 0)
-        {
-            <p class="sin-citas">No hay citas para esta fecha.</p>
-        }
-        else
-        {
-            @foreach (var cita in citasFiltradas)
-            {
-                var paciente = pacientes.FirstOrDefault(p => p.Id == cita.IdPaciente);
-                var doctor = doctores.FirstOrDefault(d => d.Id == cita.IdDoctor);
+            <div class="cita-card">
 
-                <div class="cita-card">
-
-                    <!-- HORA -->
-                    <div class="cita-hora">
-                        <span class="hora-num">@cita.FechaHora.ToString("hh:mm")</span>
-                        <span class="hora-ampm">@cita.FechaHora.ToString("tt")</span>
-                    </div>
-
-                    <!-- INFORMACIÓN -->
-                    <div class="cita-info">
-
-                        <div class="motivo">@cita.Motivo</div>
-
-                        <div class="meta-line">
-                            <strong>Fecha:</strong> @cita.FechaHora.ToString("dd 'de' MMMM 'de' yyyy")
-                        </div>
-
-                        <div class="meta-line">
-                            <strong>Paciente:</strong> @(pacientes.Any()
-                    ? GetNombrePaciente(cita.IdPaciente)
-                    : "Cargando...")
-
-                        </div>
-
-
-                        <div class="meta-line">
-                            <strong>Doctor:</strong>
-                            @(doctor != null
-                                ? $"{doctor.Nombre} {doctor.Apellido}"
-                                : $"ID {cita.IdDoctor}")
-                        </div>
-
-                        @if (!string.IsNullOrWhiteSpace(cita.NotasConsulta))
-                        {
-                            <p class="info-notas"><strong>Notas:</strong> @cita.NotasConsulta</p>
-                        }
-
-                        <div class="status-row">
-                            @if (cita.Estado == "Confirmada")
-                            {
-                                <span class="badge badge-confirmed">Confirmada</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-pending">Pendiente</span>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- ACCIÓN -->
-                    <div class="cita-actions">
-                        <button class="btn-edit" @onclick='() => navManager.NavigateTo($"/citas/editar/{cita.Id}")'>
-                            Editar
-                        </button>
-                    </div>
+                <div class="cita-hora">
+                    <span class="hora-num">@cita.FechaHora.ToString("hh:mm")</span>
+                    <span class="hora-ampm">@cita.FechaHora.ToString("tt")</span>
                 </div>
-            }
+
+                <div class="cita-info">
+
+                    <div class="motivo">@cita.Motivo</div>
+
+                    <div class="meta-line">
+                        <strong>Fecha:</strong> @cita.FechaHora.ToString("dd 'de' MMMM yyyy")
+                    </div>
+
+                    <div class="meta-line">
+                        <strong>Paciente:</strong> @GetNombrePaciente(cita.IdPaciente)
+                    </div>
+
+                    <div class="meta-line">
+                        <strong>Doctor:</strong> @GetNombreDoctor(cita.IdDoctor)
+                    </div>
+
+                    <div class="status-row">
+                        @if (cita.Estado == "Confirmada")
+                        {
+                            <span class="badge badge-confirmed">Confirmada</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-pending">Pendiente</span>
+                        }
+                    </div>
+
+                </div>
+
+                <div class="cita-actions">
+                    <button class="btn-edit" @onclick='() => navManager.NavigateTo($"/citas/editar/{cita.Id}")'>Editar</button>
+                </div>
+
+            </div>
         }
-    </div>
+    }
 </div>
 
-
 @code {
+
     private List<CitaDTO> citas = new();
     private List<CitaDTO> citasFiltradas = new();
     private List<PacienteDTO> pacientes = new();
     private List<DoctorDTO> doctores = new();
 
     private DateTime fechaSeleccionada = DateTime.Today;
-    private bool vistaDia = true;
+
+    bool vistaDia = true;
+    bool vistaSemana = false;
+    bool vistaMes = false;
 
     private int? filtroDoctor = null;
     private int? filtroPaciente = null;
@@ -181,6 +182,8 @@
     private int? filtroMes = null;
 
     private bool isLoading = true;
+
+    enum VistaType { Dia, Semana, Mes }
 
     protected override async Task OnInitializedAsync()
     {
@@ -194,23 +197,12 @@
         isLoading = false;
     }
 
-
     private void FiltrarCitas()
     {
         var query = citas.AsQueryable();
 
         if (vistaDia)
-        {
             query = query.Where(c => c.FechaHora.Date == fechaSeleccionada.Date);
-        }
-        else
-        {
-            var day = (int)fechaSeleccionada.DayOfWeek;
-            var startOfWeek = fechaSeleccionada.Date.AddDays(-(day == 0 ? 6 : day - 1));
-            var endOfWeek = startOfWeek.AddDays(7).AddTicks(-1);
-
-            query = query.Where(c => c.FechaHora >= startOfWeek && c.FechaHora <= endOfWeek);
-        }
 
         if (filtroDoctor.HasValue)
             query = query.Where(c => c.IdDoctor == filtroDoctor.Value);
@@ -218,101 +210,77 @@
         if (filtroPaciente.HasValue)
             query = query.Where(c => c.IdPaciente == filtroPaciente.Value);
 
-        if (!string.IsNullOrEmpty(filtroEstado))
+        if (!string.IsNullOrWhiteSpace(filtroEstado))
             query = query.Where(c => c.Estado == filtroEstado);
 
         if (filtroMes.HasValue)
             query = query.Where(c => c.FechaHora.Month == filtroMes.Value);
 
         citasFiltradas = query.OrderBy(c => c.FechaHora).ToList();
+        StateHasChanged();
     }
 
-    private void DiaAnterior()
+    private void DiaAnterior() { fechaSeleccionada = fechaSeleccionada.AddDays(-1); FiltrarCitas(); }
+    private void DiaSiguiente() { fechaSeleccionada = fechaSeleccionada.AddDays(1); FiltrarCitas(); }
+
+    private void CambiarVista(VistaType t)
     {
-        fechaSeleccionada = fechaSeleccionada.AddDays(-1);
+        vistaDia = t == VistaType.Dia;
+        vistaSemana = t == VistaType.Semana;
+        vistaMes = t == VistaType.Mes;
+
         FiltrarCitas();
     }
 
-    private void DiaSiguiente()
-    {
-        fechaSeleccionada = fechaSeleccionada.AddDays(1);
-        FiltrarCitas();
-    }
+    private void IrHoy() { fechaSeleccionada = DateTime.Today; FiltrarCitas(); }
 
-    private void CambiarVista(bool dia)
-    {
-        vistaDia = dia;
-        FiltrarCitas();
-    }
-
-    private void IrHoy()
-    {
-        fechaSeleccionada = DateTime.Today;
-        FiltrarCitas();
-    }
-
-    private void NuevaCita()
-    {
-        navManager.NavigateTo("/citas/agregar");
-    }
+    private void NuevaCita() => navManager.NavigateTo("/citas/agregar");
 
     private void OnFilterDoctorChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e?.Value?.ToString(), out int id))
-            filtroDoctor = id;
-        else
-            filtroDoctor = null;
-
+        filtroDoctor = int.TryParse(e.Value?.ToString(), out int id) ? id : null;
         FiltrarCitas();
     }
 
     private void OnFilterPacienteChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e?.Value?.ToString(), out int id))
-            filtroPaciente = id;
-        else
-            filtroPaciente = null;
-
+        filtroPaciente = int.TryParse(e.Value?.ToString(), out int id) ? id : null;
         FiltrarCitas();
     }
 
     private void OnFilterEstadoChange(ChangeEventArgs e)
     {
-        var s = e?.Value?.ToString();
-
-        if (string.IsNullOrEmpty(s))
-            filtroEstado = null;
-        else
-            filtroEstado = s;
-
+        filtroEstado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : e.Value.ToString();
         FiltrarCitas();
     }
 
     private void OnFilterMesChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e?.Value?.ToString(), out int mes))
-            filtroMes = mes;
-        else
-            filtroMes = null;
-
+        filtroMes = int.TryParse(e.Value?.ToString(), out int mes) ? mes : null;
         FiltrarCitas();
     }
 
     private void OnFilterFechaChange(ChangeEventArgs e)
     {
-        if (DateTime.TryParse(e?.Value?.ToString(), out DateTime fecha))
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime fecha))
         {
             fechaSeleccionada = fecha;
             vistaDia = true;
+            vistaSemana = false;
+            vistaMes = false;
         }
-
         FiltrarCitas();
     }
 
-    private string GetNombrePaciente(int idPaciente)
+    private string GetNombrePaciente(int id)
     {
-        var p = pacientes.FirstOrDefault(x => x.Id == idPaciente);
-        return p != null ? $"{p.Nombre} {p.Apellido}" : $"ID {idPaciente}";
+        var p = pacientes.FirstOrDefault(x => x.Id == id);
+        return p == null ? "" : $"{p.Nombre} {p.Apellido}";
     }
 
+    private string GetNombreDoctor(int? id)
+    {
+        var d = doctores.FirstOrDefault(x => x.Id == id);
+        return d == null ? "" : $"{d.Nombre} {d.Apellido}";
+    }
 }

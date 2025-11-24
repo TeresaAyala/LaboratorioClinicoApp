@@ -13,18 +13,22 @@ namespace LaboratorioClinicoApp.DTO
         [Required(ErrorMessage = "⚠️ El motivo de la cita es requerido.")]
         public string Motivo { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "⚠️ El estado de la cita es requerido.")]
-        public string Estado { get; set; } = "Pendiente";
+        // ✔ NUEVO: Tipo de cita (CONSULTA | EXAMEN)
+        [Required(ErrorMessage = "⚠️ El tipo de cita es requerido.")]
+        public string TipoCita { get; set; } = "EXAMEN";
+
+        // ✔ Cambiado: Estado debe coincidir con API (Activo / Inactivo / Cancelado)
+        public string Estado { get; set; } = "Activo";
 
         public string? NotasConsulta { get; set; }
 
         [Required(ErrorMessage = "⚠️ El ID del paciente es requerido.")]
         public int IdPaciente { get; set; }
 
-        [Required(ErrorMessage = "⚠️ El ID del doctor es requerido.")]
-        public int IdDoctor { get; set; }
+        // ✔ IdDoctor ahora es OPCIONAL (nullable)
+        public int? IdDoctor { get; set; }
 
-        // ✅ Campos opcionales para evitar errores si la API envía datos adicionales
+        // ✔ Información opcional enviada por la API
         public string? PacienteNombre { get; set; }
         public string? DoctorNombre { get; set; }
     }
