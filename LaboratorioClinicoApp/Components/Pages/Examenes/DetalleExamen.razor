@@ -1,71 +1,45 @@
 ﻿@page "/examenes/detalle/{id:int}"
 
-@using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
+@using LaboratorioClinicoApp.Services
 
 @inject ExamenService examenService
 @inject PacienteService pacienteService
-@inject CitaService citaService
-@inject NavigationManager navManager
+@inject NavigationManager nav
 
-<link rel="stylesheet" href="css/Examenes/examenes.css" />
+<h3 class="mb-4">Detalle del Examen</h3>
 
-@if (cargando)
+@if (examen == null)
 {
-    <div class="text-center mt-5">
-        <div class="spinner-border text-primary"></div>
-        <p>Cargando información...</p>
-    </div>
-}
-else if (examen == null)
-{
-    <div class="alert alert-danger text-center mt-5">
-        <strong>Error:</strong> No se encontró el examen solicitado.
-    </div>
+    <p>Cargando...</p>
 }
 else
 {
-    <div class="container my-5">
-        <div class="card shadow-lg p-4">
+    <div class="card shadow-lg p-4">
 
-            <h3 class="text-center mb-3">
-                <i class="bi bi-file-earmark-medical"></i>
-                Detalle del Examen
-            </h3>
+        <h4>@examen.TipoExamen</h4>
 
-            <hr />
+        <p><strong>Descripción:</strong> @examen.Descripcion</p>
 
-            <p><strong>Tipo de examen:</strong> @examen.TipoExamen</p>
-            <p><strong>Descripción:</strong> @examen.Descripcion</p>
+        <p><strong>Fecha:</strong> 
+            @examen.Fecha.ToString("dd/MM/yyyy HH:mm")
+        </p>
 
-            <p>
-                <strong>Paciente:</strong>
-                @($"{paciente?.Nombre} {paciente?.Apellido}")
-            </p>
+        <p><strong>Estado:</strong>
+            <span class="badge bg-primary">@examen.Estado</span>
+        </p>
 
-            <p>
-                <strong>Fecha del examen:</strong>
-                @examen.Fecha.ToString("dd/MM/yyyy")
-            </p>
+        <p><strong>Paciente:</strong> @NombrePaciente()</p>
 
-            <p>
-                <strong>Fecha de la cita:</strong>
-                @(cita == null ? "No asignada" : cita.FechaHora.ToString("dd/MM/yyyy HH:mm"))
-            </p>
+        <button class="btn btn-primary"
+                @onclick='() => nav.NavigateTo($"/examenes/editarExamenes/{id}")'>
+            Editar
+        </button>
 
-            <p>
-                <strong>Estado:</strong>
-                <span class="badge px-3 py-2 text-white @ClaseEstado(examen.Estado)">
-                    @examen.Estado
-                </span>
-            </p>
-
-            <hr />
-
-            <button class="btn btn-secondary" @onclick="Volver">
-                <i class="bi bi-arrow-left-circle"></i> Volver
-            </button>
-        </div>
+        <button class="btn btn-secondary ms-2"
+                @onclick='() => nav.NavigateTo("/examenes")'>
+            Regresar
+        </button>
     </div>
 }
 
@@ -74,46 +48,23 @@ else
 
     ExamenDTO? examen;
     PacienteDTO? paciente;
-    CitaDTO? cita;
 
-    bool cargando = true;
-
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            examen = await examenService.GetExamenById(id);
+        examen = await examenService.GetExamenById(id);
 
-            if (examen != null)
-            {
-                paciente = await pacienteService.GetPacienteById(examen.IdPaciente);
-                var todasCitas = await citaService.GetCitas();
-                cita = todasCitas.FirstOrDefault(c => c.Id == examen.IdCita);
-            }
-        }
-        catch (Exception ex)
+        if (examen != null)
         {
-            Console.WriteLine("ERROR cargando detalle examen: " + ex.Message);
+            var allPacientes = await pacienteService.GetPacientes();
+            paciente = allPacientes.FirstOrDefault(p => p.Id == examen.IdPaciente);
         }
-
-        cargando = false;
     }
 
-    private string ClaseEstado(string estado)
+    private string NombrePaciente()
     {
-        return estado switch
-        {
-            "Pendiente" => "bg-secondary",
-            "En proceso" => "bg-primary",
-            "Completado" => "bg-success",
-            "Entregado" => "bg-info",
-            "Cancelado" => "bg-danger",
-            _ => "bg-dark"
-        };
-    }
+        if (paciente != null)
+            return $"{paciente.Nombre} {paciente.Apellido}";
 
-    private void Volver()
-    {
-        navManager.NavigateTo("/examenes");
+        return examen?.PacienteNombre ?? "Sin datos";
     }
 }

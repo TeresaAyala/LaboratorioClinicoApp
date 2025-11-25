@@ -1,196 +1,72 @@
 ﻿@page "/examenes/agregarExamen"
+
 @using LaboratorioClinicoApp.DTO
 @using LaboratorioClinicoApp.Services
+
 @inject ExamenService examenService
 @inject PacienteService pacienteService
-@inject CitaService citaService
-@inject NavigationManager navManager
+@inject NavigationManager nav
 
-<div class="container my-5">
-    <div class="card shadow-lg border-0 p-4" style="background-color:#f9f9ff;">
-        <h3 class="text-center mb-4 text-primary">
-            <i class="bi bi-plus-circle"></i> Agregar Examen
-        </h3>
+<h3 class="mb-4">Agregar Examen</h3>
 
-        @if (!string.IsNullOrEmpty(mensaje))
-        {
-            <div style="background-color:@(mensajeError ? "#ffdddd" : "#ddffdd");
-                        padding:10px;
-                        border-radius:8px;
-                        border:1px solid @(mensajeError ? "red" : "green");
-                        margin-bottom:15px;
-                        text-align:center;">
-                @mensaje
-            </div>
-        }
+@if (pacientes == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <EditForm Model="@examen" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
 
-        <EditForm Model="@examen" OnValidSubmit="ConfirmarGuardar">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger mb-3" />
+        <div class="mb-3">
+            <label class="form-label">Tipo de Examen</label>
+            <InputText class="form-control" @bind-Value="examen.TipoExamen" />
+        </div>
 
-            <!-- 🧩 PACIENTE -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Paciente <span class="text-danger">*</span></label>
-                <select class="form-select border-primary shadow-sm"
-                        @bind="examen.IdPaciente"
-                        @bind:after="OnPacienteChange"
-                        required>
-                    <option value="">Seleccione un paciente</option>
-                    @foreach (var p in pacientes)
-                    {
-                        <option value="@p.Id">@($"{p.Nombre} {p.Apellido}")</option>
-                    }
-                </select>
-                <ValidationMessage For="@(() => examen.IdPaciente)" class="text-danger" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Fecha</label>
+            <InputDate class="form-control" @bind-Value="examen.Fecha" />
+        </div>
 
-            <!-- 🧩 CITA -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Fecha y hora de la cita <span class="text-danger">*</span></label>
-                <select class="form-select border-primary shadow-sm"
-                        @bind="examen.IdCita"
-                        required>
-                    <option value="">Seleccione una cita</option>
-                    @foreach (var c in citasFiltradas)
-                    {
-                        var diaSemana = c.FechaHora.ToString("ddd", new System.Globalization.CultureInfo("es-ES"));
-                        <option value="@c.Id">@($"{char.ToUpper(diaSemana[0]) + diaSemana.Substring(1)}, {c.FechaHora:dd/MM/yyyy HH:mm}")</option>
-                    }
-                </select>
-                <ValidationMessage For="@(() => examen.IdCita)" class="text-danger" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Paciente</label>
+            <InputSelect class="form-select" @bind-Value="examen.IdPaciente">
+                <option value="0">Seleccione...</option>
+                @foreach (var p in pacientes)
+                {
+                    <option value="@p.Id">@p.Nombre @p.Apellido</option>
+                }
+            </InputSelect>
+        </div>
 
-            <!-- 🧩 TIPO DE EXAMEN -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Tipo de Examen <span class="text-danger">*</span></label>
-                <InputText class="form-control border-primary shadow-sm" @bind-Value="examen.TipoExamen" required />
-                <ValidationMessage For="@(() => examen.TipoExamen)" class="text-danger" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <InputTextArea class="form-control" @bind-Value="examen.Descripcion" />
+        </div>
 
-            <!-- 🧩 FECHA -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Fecha del Examen <span class="text-danger">*</span></label>
-                <InputDate class="form-control border-primary shadow-sm" @bind-Value="examen.Fecha" required />
-                <ValidationMessage For="@(() => examen.Fecha)" class="text-danger" />
-            </div>
-
-            <!-- 🧩 DESCRIPCIÓN -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Descripción <span class="text-danger">*</span></label>
-                <InputTextArea class="form-control border-primary shadow-sm" rows="3" @bind-Value="examen.Descripcion" required />
-                <ValidationMessage For="@(() => examen.Descripcion)" class="text-danger" />
-            </div>
-
-            <!-- 🧩 ESTADO -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Estado <span class="text-danger">*</span></label>
-                <InputSelect class="form-select border-primary shadow-sm" @bind-Value="examen.Estado">
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="En proceso">En proceso</option>
-                    <option value="Completado">Completado</option>
-                    <option value="Entregado">Entregado</option>
-                    <option value="Cancelado">Cancelado</option>
-                </InputSelect>
-                <ValidationMessage For="@(() => examen.Estado)" class="text-danger" />
-            </div>
-
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-success px-4 me-2">
-                    <i class="bi bi-save"></i> Guardar Examen
-                </button>
-                <button type="button" class="btn btn-secondary px-4" @onclick='()=>navManager.NavigateTo("/examenes")'>
-                    <i class="bi bi-x-circle"></i> Volver
-                </button>
-            </div>
-        </EditForm>
-
-        @if (mostrarConfirmacion)
-        {
-            <div style="position:fixed;
-                        top:0; left:0; right:0; bottom:0;
-                        background-color:rgba(0,0,0,0.4);
-                        display:flex;
-                        justify-content:center;
-                        align-items:center;">
-                <div style="background:white; padding:25px; border-radius:10px; width:320px; text-align:center; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-                    <h5 class="text-primary mb-3">Confirmar acción</h5>
-                    <p>¿Desea guardar este examen?</p>
-                    <button class="btn btn-primary me-2" @onclick="GuardarExamen">Aceptar</button>
-                    <button class="btn btn-danger" @onclick="()=>mostrarConfirmacion=false">Cancelar</button>
-                </div>
-            </div>
-        }
-    </div>
-</div>
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <button class="btn btn-secondary ms-2" @onclick="Cancelar">Cancelar</button>
+    </EditForm>
+}
 
 @code {
-    private ExamenDTO examen = new();
-    private List<PacienteDTO> pacientes = new();
-    private List<CitaDTO> citasFiltradas = new();
-    private string? mensaje;
-    private bool mensajeError;
-    private bool mostrarConfirmacion;
+    ExamenDTO examen = new();
+    List<PacienteDTO>? pacientes;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            pacientes = await pacienteService.GetPacientes();
-        }
-        catch (Exception ex)
-        {
-            mensaje = $"❌ Error al cargar los pacientes: {ex.Message}";
-            mensajeError = true;
-        }
+        pacientes = await pacienteService.GetPacientes();
+        examen.Fecha = DateTime.Now;
     }
 
-    private async Task OnPacienteChange()
+    private async Task Guardar()
     {
-        if (examen?.IdPaciente > 0)
-        {
-            var citas = await citaService.GetCitas();
-            citasFiltradas = citas
-                .Where(c => c.IdPaciente == examen.IdPaciente)
-                .OrderByDescending(c => c.FechaHora)
-                .Take(5)
-                .ToList();
-
-            examen.IdCita = 0;
-        }
+        await examenService.AddExamen(examen);
+        nav.NavigateTo("/examenes");
     }
 
-    private void ConfirmarGuardar()
+    private void Cancelar()
     {
-        if (examen == null ||
-            examen.IdPaciente == 0 ||
-            examen.IdCita == 0 ||
-            string.IsNullOrWhiteSpace(examen.TipoExamen) ||
-            examen.Fecha == default ||
-            string.IsNullOrWhiteSpace(examen.Descripcion))
-        {
-            mensaje = "⚠️ Debe completar todos los campos obligatorios antes de guardar.";
-            mensajeError = true;
-            return;
-        }
-
-        mostrarConfirmacion = true;
-    }
-
-    private async Task GuardarExamen()
-    {
-        mostrarConfirmacion = false;
-        try
-        {
-            await examenService.AddExamen(examen);
-            mensaje = "✅ Examen agregado correctamente.";
-            mensajeError = false;
-            await Task.Delay(2000);
-            navManager.NavigateTo("/examenes");
-        }
-        catch (Exception ex)
-        {
-            mensaje = $"❌ Error al guardar: {ex.Message}";
-            mensajeError = true;
-        }
+        nav.NavigateTo("/examenes");
     }
 }
