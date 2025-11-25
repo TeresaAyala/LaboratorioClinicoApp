@@ -47,7 +47,6 @@ namespace LaboratorioClinicoApp.Services
         {
             await AgregarTokenAsync();
 
-            // Regla: Si es examen, IdDoctor debe ir null
             if (cita.TipoCita == "EXAMEN")
                 cita.IdDoctor = null;
 
@@ -68,7 +67,6 @@ namespace LaboratorioClinicoApp.Services
         {
             await AgregarTokenAsync();
 
-            // Regla de API
             if (cita.TipoCita == "EXAMEN")
                 cita.IdDoctor = null;
 
@@ -96,12 +94,11 @@ namespace LaboratorioClinicoApp.Services
         public async Task<List<DateTime>> GetHorasDisponiblesAsync(int? idDoctor)
         {
             if (idDoctor == null)
-                return new List<DateTime>(); // No hay doctor = no hay horas
+                return new List<DateTime>();
 
             var response = await _httpClient.GetFromJsonAsync<List<DateTime>>(
                 $"/api/cita/horasDisponibles/{idDoctor.Value}"
             );
-
 
             return response ?? new List<DateTime>();
         }
@@ -117,6 +114,20 @@ namespace LaboratorioClinicoApp.Services
 
             var response = await _httpClient.GetFromJsonAsync<List<CitaDTO>>(
                 $"/api/cita/doctor/{idDoctor}/fecha/{fechaISO}"
+            );
+
+            return response ?? new List<CitaDTO>();
+        }
+
+        // ----------------------------------------------------
+        // 🚀 FALTA: Citas por paciente
+        // ----------------------------------------------------
+        public async Task<List<CitaDTO>> GetCitasPorPaciente(int idPaciente)
+        {
+            await AgregarTokenAsync();
+
+            var response = await _httpClient.GetFromJsonAsync<List<CitaDTO>>(
+                $"/api/cita/paciente/{idPaciente}"
             );
 
             return response ?? new List<CitaDTO>();

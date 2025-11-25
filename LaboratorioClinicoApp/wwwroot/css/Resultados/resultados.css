@@ -1,115 +1,50 @@
-﻿/* CONTENEDOR PRINCIPAL */
-.container {
-    max-width: 1150px !important;
-}
-
-/* CARD PRINCIPAL */
-.card {
-    border-radius: 14px;
-    padding: 5px;
+﻿.exam-card {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
-}
-
-.card-header {
-    background: #ffffff !important;
-    border-bottom: none;
-    padding: 25px 30px;
-    text-align: left !important;
-}
-
-    .card-header h3 {
-        font-size: 22px;
-        font-weight: 700;
-        color: #111827;
-    }
-
-/* BARRA DE BUSQUEDA Y BOTON */
-.d-flex input {
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    padding: 10px 15px;
-    font-size: 15px;
-}
-
-.d-flex button {
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-size: 15px;
-}
-
-/* TABLA */
-.table {
-    margin-top: 10px;
-    border-collapse: separate;
-    border-spacing: 0 10px;
-}
-
-    .table thead tr {
-        background: none !important;
-        border: none !important;
-    }
-
-    .table thead th {
-        border: none !important;
-        color: #6b7280;
-        font-size: 14px;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-
-    .table tbody tr {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    .table tbody td {
-        padding: 18px 15px !important;
-        vertical-align: middle;
-        border: none !important;
-        font-size: 15px;
-        color: #374151;
-    }
-
-/* BOTONES */
-.btn-primary {
-    background: #2563eb;
-    border: none;
-    border-radius: 9px;
-    padding: 7px 14px;
-}
-
-.btn-warning {
-    background: #f59e0b;
-    border: none;
-    border-radius: 9px;
-    padding: 7px 14px;
-    color: white;
-}
-
-/* COLORES DE ESTADOS */
-.badge {
-    padding: 6px 12px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.badge-pendiente {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-.badge-completado {
-    background: #d1fae5;
-    color: #059669;
-}
-
-/* EFECTO HOVER */
-.table tbody tr:hover {
-    transform: translateY(-2px);
+    border-radius: 12px;
+    padding: 16px;
     transition: 0.2s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
+.exam-click {
+    cursor: pointer;
+}
+
+.exam-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.exam-title {
+    font-size: 18px;
+    color: #1a237e;
+    margin-bottom: 8px;
+}
+
+.info-box {
+    background: #f1f4ff;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.estado {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+    .estado.activo {
+        background: #d4f8d4;
+        color: #1b5e20;
+    }
+
+    .estado.inactivo {
+        background: #ffd6d6;
+        color: #b71c1c;
+    }

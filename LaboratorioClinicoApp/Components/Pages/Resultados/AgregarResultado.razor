@@ -1,0 +1,176 @@
+﻿@page "/resultados/agregarResultado"
+@using LaboratorioClinicoApp.DTO
+@using LaboratorioClinicoApp.Services
+
+@inject ResultadoService resultadoService
+@inject PacienteService pacienteService
+@inject ExamenService examenService
+@inject DoctorService doctorService
+@inject NavigationManager navManager
+
+<div class="container my-4">
+
+    <h3 class="text-center mb-3">Agregar Resultado</h3>
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div>
+            @mensaje
+        </div>
+    }
+
+    <EditForm Model="@resultado" OnValidSubmit="ConfirmarGuardar">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- PACIENTE -->
+        <div class="mb-3">
+            <label>Paciente *</label>
+            <select class="form-select"
+                    @bind="resultado.IdPaciente"
+                    @bind:after="OnPacienteChange"
+                    required>
+                <option value="">Seleccione un paciente</option>
+                @foreach (var p in pacientes)
+                {
+                    <option value="@p.Id">@($"{p.Nombre} {p.Apellido}")</option>
+                }
+            </select>
+        </div>
+
+        <!-- EXAMEN -->
+        <div class="mb-3">
+            <label>Examen *</label>
+            <select class="form-select"
+                    @bind="resultado.IdExamen"
+                    required>
+                <option value="">Seleccione un examen</option>
+                @foreach (var ex in examenesFiltrados)
+                {
+                    <option value="@ex.Id">@ex.TipoExamen</option>
+                }
+            </select>
+        </div>
+
+        <!-- DOCTOR -->
+        <div class="mb-3">
+            <label>Doctor *</label>
+            <select class="form-select"
+                    @bind="resultado.IdDoctor"
+                    required>
+                <option value="">Seleccione un doctor</option>
+                @foreach (var d in doctores)
+                {
+                    <option value="@d.Id">@($"{d.Nombre} {d.Apellido}")</option>
+                }
+            </select>
+        </div>
+
+        <!-- FECHA EMISIÓN -->
+        <div class="mb-3">
+            <label>Fecha de Emisión *</label>
+            <InputDate class="form-control"
+                       @bind-Value="resultado.FechaEmision"
+                       required />
+        </div>
+
+        <!-- DETALLE -->
+        <div class="mb-3">
+            <label>Detalle *</label>
+            <InputTextArea class="form-control"
+                           rows="3"
+                           @bind-Value="resultado.Detalle"
+                           required />
+        </div>
+
+        <!-- ESTADO -->
+        <div class="mb-3">
+            <label>Estado *</label>
+            <InputSelect class="form-select" @bind-Value="resultado.Estado" required>
+                <option value="Validado">Validado</option>
+                <option value="Entregado">Entregado</option>
+                <option value="Anulado">Anulado</option>
+            </InputSelect>
+        </div>
+
+        <!-- BOTONES -->
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary"
+                    @onclick='()=> navManager.NavigateTo("/resultados")'>
+                Cancelar
+            </button>
+        </div>
+    </EditForm>
+
+    @if (mostrarConfirmacion)
+    {
+        <div>
+            <h5>Confirmar acción</h5>
+            <p>¿Desea guardar este resultado?</p>
+
+            <button @onclick="GuardarResultado" class="btn btn-primary">Aceptar</button>
+            <button @onclick="()=>mostrarConfirmacion=false" class="btn btn-danger">Cancelar</button>
+        </div>
+    }
+</div>
+
+@code {
+    private ResultadoDTO resultado = new();
+    private List<PacienteDTO> pacientes = new();
+    private List<ExamenDTO> examenesFiltrados = new();
+    private List<DoctorDTO> doctores = new();
+
+    private bool mostrarConfirmacion;
+    private string? mensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pacientes = await pacienteService.GetPacientes();
+        doctores = await doctorService.GetDoctors();
+    }
+
+    private async Task OnPacienteChange()
+    {
+        if (resultado.IdPaciente > 0)
+        {
+            var examenes = await examenService.GetExamenes();
+            examenesFiltrados = examenes
+                .Where(x => x.IdPaciente == resultado.IdPaciente)
+                .ToList();
+
+            resultado.IdExamen = 0;
+        }
+    }
+
+    private void ConfirmarGuardar()
+    {
+        if (resultado.IdPaciente == 0 ||
+            resultado.IdDoctor == 0 ||
+            resultado.IdExamen == 0 ||
+            string.IsNullOrWhiteSpace(resultado.Detalle))
+        {
+            mensaje = "Debe completar todos los campos obligatorios.";
+            return;
+        }
+
+        mostrarConfirmacion = true;
+    }
+
+    private async Task GuardarResultado()
+    {
+        mostrarConfirmacion = false;
+
+        try
+        {
+            await resultadoService.AddResultado(resultado);
+            mensaje = "Resultado agregado correctamente.";
+            await Task.Delay(1500);
+            navManager.NavigateTo("/resultados");
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+    }
+}

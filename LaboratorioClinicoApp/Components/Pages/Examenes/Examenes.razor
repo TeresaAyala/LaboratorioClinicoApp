@@ -1,19 +1,22 @@
-﻿@page "/examenes"
+﻿@page "/resultados"
+
 @using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
-@inject ExamenService examenService
-@inject PacienteService pacienteService
-@inject CitaService citaService
-@inject DoctorService doctorService
-@inject NavigationManager navManager
 
-<link rel="stylesheet" href="css/Examenes/examenes.css" />
+@inject ResultadoService resultadoService
+@inject ExamenService examenService
+@inject DoctorService doctorService
+@inject PacienteService pacienteService
+@inject NavigationManager nav
+
+<link rel="stylesheet" href="css/Resultados/resultados.css" />
 
 <div class="container my-5">
     <div class="card shadow-lg border-0">
+
         <div class="card-header bg-primary text-white text-center">
             <h3 class="mb-0">
-                <i class="bi bi-flask"></i> Lista de Exámenes
+                <i class="bi bi-clipboard2-pulse"></i> Resultados de Exámenes
             </h3>
         </div>
 
@@ -23,205 +26,169 @@
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
 
                 <button class="btn btn-success"
-                        @onclick='() => navManager.NavigateTo("/examenes/agregarExamen")'>
-                    <i class="bi bi-plus-circle me-1"></i> Agregar examen
+                        @onclick='() => nav.NavigateTo("/resultados/agregarResultado")'>
+                    <i class="bi bi-plus-circle me-1"></i> Nuevo Resultado
                 </button>
 
                 <div class="input-group" style="max-width: 300px;">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Buscar examen..."
-                           @bind="searchText" @bind:event="oninput" />
+                    <input type="text" class="form-control"
+                           placeholder="Buscar por paciente o examen..."
+                           @oninput="Filtrar" />
                 </div>
-
             </div>
 
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger text-center">@errorMessage</div>
-            }
-
-            <!-- TIPOS -->
+            <!-- 🔹 Filtros por ESTADO -->
             <div class="d-flex gap-2 flex-wrap mb-4">
-                <button class='btn @(tipoSeleccionado == "Todos" ? "btn-primary" : "btn-outline-primary")'
-                        @onclick='() => SeleccionarTipo("Todos")'>
+                <button class='btn @(estadoSeleccionado == "Todos" ? "btn-primary" : "btn-outline-primary")'
+                        @onclick='() => SeleccionarEstado("Todos")'>
                     Todos
                 </button>
 
-                @foreach (var tipo in TiposUnicos)
+                @foreach (var estado in EstadosUnicos)
                 {
-                    <button class='btn @(tipoSeleccionado == tipo ? "btn-primary" : "btn-outline-primary")'
-                            @onclick='() => SeleccionarTipo(tipo)'>
-                        @tipo
+                    <button class='btn @(estadoSeleccionado == estado ? "btn-primary" : "btn-outline-primary")'
+                            @onclick='() => SeleccionarEstado(estado)'>
+                        @estado
                     </button>
                 }
             </div>
 
-            <!-- LISTA -->
-            @if (examenes == null)
-            {
-                <div class="text-center my-4">
-                    <div class="spinner-border text-primary"></div>
-                    <p class="mt-3">Cargando exámenes...</p>
-                </div>
-            }
-            else if (!examenes.Any())
-            {
-                <div class="alert alert-warning text-center">
-                    <i class="bi bi-exclamation-circle"></i> No hay exámenes registrados.
-                </div>
-            }
-            else
-            {
-                <div class="row g-3">
-                    @foreach (var examen in FiltradosPorTipo)
-                    {
-                        var cita = citas.FirstOrDefault(c => c.Id == examen.IdCita);
-                        var doctorNombre = ObtenerNombreDoctor(cita?.IdDoctor ?? 0);
+            <!-- 🔹 LISTA DE RESULTADOS COMO CARDS -->
+            <div class="row g-3">
+                @foreach (var r in ResultadosFiltradosEstado)
+                {
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="exam-card exam-click shadow-sm"
+                             @onclick='() => nav.NavigateTo($"/resultados/detalle/{r.Id}")'>
 
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="exam-card exam-click shadow-sm"
-                                 @onclick='() => navManager.NavigateTo($"/examenes/detalle/{examen.Id}")'>
+                            <!-- Título -->
+                            <div class="exam-title">
+                                <i class="bi bi-clipboard2-check"></i>
+                                <strong>@r.Examen?.TipoExamen</strong>
+                            </div>
 
-                                <!-- Título -->
-                                <div class="exam-title">
-                                    <i class="bi bi-file-earmark-medical"></i>
-                                    <strong>@examen.TipoExamen</strong>
-                                </div>
+                            <p class="text-muted small">@r.Detalle</p>
 
-                                <!-- Descripción -->
-                                <p class="text-muted small">@examen.Descripcion</p>
+                            <!-- Info -->
+                            <div class="info-box">
+                                <span class="label">Paciente:</span>
+                                <span class="value">
+                                    @(r.Paciente == null
+                                        ? "Sin datos"
+                                        : $"{r.Paciente.Nombre} {r.Paciente.Apellido}")
+                                </span>
+                            </div>
 
-                                <!-- Información -->
-                                <div class="info-box">
-                                    <span class="label">Paciente:</span>
-                                    <span class="value">@ObtenerNombrePaciente(examen.IdPaciente)</span>
-                                </div>
+                            <div class="info-box">
+                                <span class="label">Doctor:</span>
+                                <span class="value">@($"{r.Doctor?.Nombre} {r.Doctor?.Apellido}")</span>
+                            </div>
 
-                                <div class="info-box">
-                                    <span class="label">Doctor:</span>
-                                    <span class="value">@doctorNombre</span>
-                                </div>
+                            <div class="info-box">
+                                <span class="label">Fecha emisión:</span>
+                                <span class="value">@r.FechaEmision.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
 
-                                <div class="info-box">
-                                    <span class="label">Fecha de examen:</span>
-                                    <span class="value">@examen.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
-                                </div>
+                            <!-- ESTADO + BOTÓN EDITAR -->
+                            <div class="d-flex justify-content-between align-items-center mt-3">
 
-                                <div class="info-box">
-                                    <span class="label">Fecha de cita:</span>
-                                    <span class="value">
-                                        @cita?.FechaHora.ToString("dd/MM/yyyy HH:mm")
-                                    </span>
-                                </div>
+                                <span class="badge px-3 py-2 text-white @ClaseEstado(r.Estado)">
+                                    @r.Estado
+                                </span>
 
-                                <!-- ESTADO + EDITAR -->
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-
-                                    <span class="badge px-3 py-2 text-white @ClaseEstado(examen.Estado)">
-                                        @examen.Estado
-                                    </span>
-
-                                    <button class="btn btn-outline-primary btn-sm"
-                                            @onclick:stopPropagation="true"
-                                            @onclick="() => EditarExamen(examen.Id)">
-                                        <i class="bi bi-pencil-square"></i> Editar
-                                    </button>
-
-                                </div>
+                                <button class="btn btn-outline-primary btn-sm"
+                                        @onclick:stopPropagation="true"
+                                        @onclick="() => EditarResultado(r.Id)">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </button>
 
                             </div>
+
                         </div>
-                    }
-                </div>
-            }
+                    </div>
+                }
+            </div>
+
         </div>
     </div>
 </div>
 
 @code {
-    private List<ExamenDTO>? examenes = null;
-    private List<PacienteDTO> pacientes = new();
-    private List<CitaDTO> citas = new();
-    private List<DoctorDTO> doctores = new();
 
-    private string searchText = "";
-    private string? errorMessage = null;
-    private string tipoSeleccionado = "Todos";
+    List<ResultadoDTO> resultados = new();
+    List<ResultadoDTO> resultadosFiltrados = new();
+
+    List<ExamenDTO> examenes = new();
+    List<DoctorDTO> doctores = new();
+    List<PacienteDTO> pacientes = new();
+
+    private string estadoSeleccionado = "Todos";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadExamen();
+        await Load();
     }
 
-    private async Task LoadExamen()
+    private async Task Load()
     {
-        try
+        resultados = await resultadoService.GetResultados();
+        examenes = await examenService.GetExamenes();
+        doctores = await doctorService.GetDoctors();
+        pacientes = await pacienteService.GetPacientes();
+
+        foreach (var r in resultados)
         {
-            examenes = await examenService.GetExamenes();
-            pacientes = await pacienteService.GetPacientes();
-            citas = await citaService.GetCitas();
-            doctores = await doctorService.GetDoctors();
+            r.Examen = examenes.FirstOrDefault(e => e.Id == r.IdExamen);
+            r.Doctor = doctores.FirstOrDefault(d => d.Id == r.IdDoctor);
+
+            if (r.Examen != null)
+                r.Paciente = pacientes.FirstOrDefault(p => p.Id == r.Examen.IdPaciente);
         }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error al cargar exámenes: {ex.Message}";
-        }
+
+        resultadosFiltrados = resultados.ToList();
     }
 
-    private IEnumerable<ExamenDTO> Filtrados =>
-        string.IsNullOrWhiteSpace(searchText)
-            ? examenes
-            : examenes.Where(e =>
-                ObtenerNombrePaciente(e.IdPaciente)
-                    .Contains(searchText, StringComparison.OrdinalIgnoreCase)
-            );
-
-    private string ObtenerNombrePaciente(int idPaciente)
+    private void Filtrar(ChangeEventArgs e)
     {
-        var p = pacientes.FirstOrDefault(p => p.Id == idPaciente);
-        return p == null ? "" : $"{p.Nombre} {p.Apellido}".Trim();
+        string texto = e.Value?.ToString()?.ToLower() ?? "";
+
+        resultadosFiltrados = resultados.Where(r =>
+            $"{r.Paciente?.Nombre} {r.Paciente?.Apellido}".ToLower().Contains(texto) ||
+            r.Examen?.TipoExamen?.ToLower().Contains(texto) == true
+        ).ToList();
     }
 
-    private string ObtenerNombreDoctor(int idDoctor)
+    private List<string> EstadosUnicos =>
+        resultados
+        .Select(r => r.Estado)
+        .Distinct()
+        .OrderBy(r => r)
+        .ToList();
+
+    private IEnumerable<ResultadoDTO> ResultadosFiltradosEstado =>
+        estadoSeleccionado == "Todos"
+            ? resultadosFiltrados
+            : resultadosFiltrados.Where(r => r.Estado == estadoSeleccionado);
+
+    private void SeleccionarEstado(string estado)
     {
-        var d = doctores.FirstOrDefault(d => d.Id == idDoctor);
-        return d == null ? "" : $"{d.Nombre} {d.Apellido}".Trim();
-    }
-
-    private List<String> TiposUnicos =>
-        examenes?
-            .Select(e => e.TipoExamen)
-            .Where(t => !string.IsNullOrWhiteSpace(t))
-            .Distinct()
-            .OrderBy(t => t)
-            .ToList()
-        ?? new List<string>();
-
-    private IEnumerable<ExamenDTO> FiltradosPorTipo =>
-        tipoSeleccionado == "Todos"
-            ? Filtrados
-            : Filtrados.Where(e => e.TipoExamen == tipoSeleccionado);
-
-    private void SeleccionarTipo(string tipo)
-    {
-        tipoSeleccionado = tipo;
-    }
-
-    private void EditarExamen(int id)
-    {
-        navManager.NavigateTo($"/examenes/editarExamen/{id}");
+        estadoSeleccionado = estado;
     }
 
     private string ClaseEstado(string estado)
     {
         return estado switch
         {
-            "Pendiente" => "bg-secondary",
-            "En proceso" => "bg-primary",
-            "Completado" => "bg-success",
+            "Validado" => "bg-success",
             "Entregado" => "bg-info",
-            "Cancelado" => "bg-danger",
-            _ => "bg-dark"
+            "Anulado" => "bg-danger",
+            _ => "bg-secondary"
         };
+    }
+
+    private void EditarResultado(int id)
+    {
+        nav.NavigateTo($"/resultados/editarResultado/{id}");
     }
 }
