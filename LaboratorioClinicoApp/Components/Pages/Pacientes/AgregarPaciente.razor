@@ -129,8 +129,21 @@
     {
         try
         {
+            // ✔ Obtener todos los pacientes
+            var pacientes = await pacienteService.GetPacientes();
+
+            // ✔ Verificar email duplicado
+            if (pacientes.Any(p => p.Email.ToLower() == nuevoPaciente.Email.ToLower()))
+            {
+                errorMessage = "El correo ingresado ya está en uso por otro paciente.";
+                successMessage = null;
+                return;
+            }
+
+            // ✔ Guardar paciente
             await pacienteService.AddPaciente(nuevoPaciente);
             successMessage = "Paciente agregado correctamente.";
+            errorMessage = null;
 
             await Task.Delay(1500);
             navManager.NavigateTo("/pacientes");
@@ -140,4 +153,5 @@
             errorMessage = "Error al guardar paciente: " + ex.Message;
         }
     }
+
 }
