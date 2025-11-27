@@ -1,138 +1,134 @@
-﻿/* Ajuste para que NO se oculte detrás de la navbar */
-:root {
-    --navbar-height: 90px;
+﻿:root {
+    --color-primary-blue: #007bff;
+    --color-tertiary-sky: #64b5f6;
+    --color-accent-purple: #9c27b0;
+    --color-turquoise-edit: #1FB6FF;
+    --color-turquoise-edit-hover: #009EEB;
+    --color-surface-card: #f8f9fa;
+    --color-base-background: #eef2f6;
+    --color-white: #ffffff;
+    --color-text-dark: #212529;
+    --color-icon-celeste: #2CC4FF;
 }
 
-/* Contenedor principal */
+/* Fondo general */
+body {
+    background: var(--color-base-background);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Contenedor */
 .roles-container {
+    max-width: 1100px;
+    margin: 50px auto;
     padding: 20px;
-    padding-top: var(--navbar-height);
-    max-width: 900px;
-    margin: auto;
-    font-family: sans-serif;
 }
-
-/* MODO CLARO AUTOMÁTICO */
-@media (prefers-color-scheme: light) {
-    body {
-        background: #ffffff;
-        color: #1f2937; /* texto oscuro */
-    }
-
-    .rol-card {
-        background: #f3f4f6; /* gris claro */
-        border: 1px solid #d1d5db;
-        color: #1f2937;
-    }
-
-    .btn-add {
-        background: #3b82f6;
-        color: white;
-    }
-}
-
-/* MODO OSCURO AUTOMÁTICO */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: #0f172a;
-        color: #ffffff;
-    }
-
-    .rol-card {
-        background: #1e293b; /* azul oscuro */
-        border: 1px solid #334155;
-        color: white;
-    }
-
-    .btn-add {
-        background: #3b82f6;
-        color: white;
-    }
-}
-
 
 /* Header */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
     .header h2 {
-        font-size: 26px;
+        font-size: 28px;
         font-weight: 700;
+        color: var(--color-text-dark);
     }
 
-/*filtrado de busqueda */
-.search-box {
-    width: 100%;
-    padding: 10px 14px;
-    margin-bottom: 15px;
-    font-size: 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-}
-
-.dark .search-box {
-    background: #1e293b;
-    color: white;
-    border: 1px solid #334155;
-}
-
-
-/* Botón agregar */
+/* Botón de agregar */
 .btn-add {
-    padding: 10px 18px;
+    padding: 10px 16px;
     border-radius: 8px;
     border: none;
-    cursor: pointer;
+    background: var(--color-primary-blue);
+    color: white;
     font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
     .btn-add:hover {
-        filter: brightness(0.85);
+        background: #005fcc;
     }
+
+/* Buscador */
+.search-box {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid #cfd4da;
+}
 
 /* Lista */
 .roles-list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 18px;
 }
 
-/* Tarjetas de roles */
+/* Card */
 .rol-card {
+    background: var(--color-surface-card);
+    padding: 20px;
+    border-radius: 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px;
-    border-radius: 10px;
-    transition: 0.1s ease-in-out;
+    box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.08);
+    transition: 0.2s ease-in-out;
 }
 
     .rol-card:hover {
-        transform: scale(1.01);
+        transform: translateY(-3px);
     }
 
-/* Texto */
-.rol-info h3 {
+/* Icono del rol */
+.icon-rol {
+    font-size: 32px;
+    margin-right: 15px;
+    color: var(--color-icon-celeste);
+}
+
+/* Información */
+.rol-info {
+    display: flex;
+    align-items: center;
+}
+
+.rol-info-text h3 {
     margin: 0;
     font-size: 20px;
+    font-weight: 700;
+    color: var(--color-text-dark);
 }
 
-.rol-info p {
-    margin: 4px 0;
-    opacity: 0.8;
+.rol-info-text p {
+    margin: 3px 0;
+    opacity: 0.7;
 }
 
-/* Estados */
+/* Acciones */
+.rol-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ESTADO — AHORA BOTÓN */
 .estado {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    min-width: 90px; /* MISMO TAMAÑO QUE BOTÓN EDITAR */
+    text-align: center;
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-top: 6px;
 }
 
     .estado.activo {
@@ -145,30 +141,33 @@
         color: white;
     }
 
-/* Botón editar */
+/* Botón editar — TURQUESA */
 .btn-edit {
-    background: #0284c7;
-    border: none;
-    padding: 10px 16px;
+    background: var(--color-turquoise-edit);
     color: white;
-    border-radius: 6px;
-    cursor: pointer;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
     font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    min-width: 90px; /* MISMO TAMAÑO */
 }
 
     .btn-edit:hover {
-        background: #0369a1;
+        background: var(--color-turquoise-edit-hover);
     }
 
 /* Responsivo */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
     .rol-card {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 12px;
     }
 
-    .btn-edit {
+    .rol-actions {
         width: 100%;
+        justify-content: space-between;
     }
 }

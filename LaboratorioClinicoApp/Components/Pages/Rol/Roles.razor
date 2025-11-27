@@ -18,67 +18,70 @@
         </button>
     </div>
 
-    <!-- 🔍 BUSCADOR -->
-    <input type="text"
-           class="search-box"
+    <!-- BUSCADOR -->
+    <input type="text" class="search-box"
            placeholder="Buscar rol..."
            @bind="searchText"
            @bind:event="oninput" />
 
     @if (errorMessage != null)
     {
-            <div class="error">@errorMessage</div>
+        <div class="error">@errorMessage</div>
     }
     else if (roles == null)
     {
-            <p class="loading">Cargando roles...</p>
+        <p class="loading">Cargando roles...</p>
     }
     else if (FilteredRoles.Count == 0)
     {
-            <p class="loading">No se encontraron roles que coincidan.</p>
+        <p class="loading">No se encontraron roles que coincidan.</p>
     }
     else
     {
-            <div class="roles-list">
+        <div class="roles-list">
             @foreach (var rol in FilteredRoles)
             {
-                        <div class="rol-card">
+                <div class="rol-card">
 
-                            <div class="rol-info">
-                                <h3>@rol.Nombre</h3>
-                                <p>@rol.Descripcion</p>
+                    <div class="rol-info">
 
-                                <!-- ✅ Estado ahora string -->
-                                <span class="estado @(rol.Estado == "Activo" ? "activo" : "inactivo")">
-                            @(rol.Estado == "Activo" ? "Activo" : "Inactivo")
-                                </span>
-                            </div>
+                        <!-- ÍCONO AUTOMÁTICO -->
+                        <i class="@GetIconForRole(rol.Nombre) icon-rol"></i>
 
-                            <button class="btn-edit"
-                                    @onclick="() => Editar(rol.Id)">
-                                Editar
-                            </button>
-
+                        <div class="rol-info-text">
+                            <h3>@rol.Nombre</h3>
+                            <p>@rol.Descripcion</p>
                         </div>
-            }
-            </div>
-    }
+                    </div>
 
+                    <div class="rol-actions">
+
+                        <span class="estado @(string.Equals(rol.Estado?.Trim(), "Activo", StringComparison.OrdinalIgnoreCase) ? "activo" : "inactivo")">
+                            @rol.Estado
+                        </span>
+
+                        <button class="btn-edit" @onclick="() => Editar(rol.Id)">Editar</button>
+
+                    </div>
+
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
+
     private List<RolDTO>? roles = null;
     private string? errorMessage;
-
     private string searchText = "";
 
-    // Lista filtrada
     private List<RolDTO> FilteredRoles =>
         string.IsNullOrWhiteSpace(searchText)
             ? roles!
             : roles!.Where(r =>
                 r.Nombre.Contains(searchText, StringComparison.OrdinalIgnoreCase)
-             ).ToList();
+            ).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -99,6 +102,31 @@
 
     void Editar(int id)
     {
-        navManager.NavigateTo($"/roles/editar/{id}", forceLoad: true);
+        navManager.NavigateTo($"/roles/editar/{id}", true);
+    }
+
+    /* ICONOS AUTOMÁTICOS SEGÚN NOMBRE DEL ROL */
+    string GetIconForRole(string? rol)
+    {
+        if (string.IsNullOrWhiteSpace(rol))
+            return "fas fa-users";
+
+        rol = rol.ToLower().Trim();
+
+        return rol switch
+        {
+            "doctor" => "fas fa-user-md",
+            "administrador" => "fas fa-cog",
+            "recepcionista" => "fas fa-bell",
+            "paciente" => "fas fa-user",
+            "enfermería" => "fas fa-briefcase-medical",
+            "químico clínico" => "fas fa-vial",
+            "tecnico de laboratorio" => "fas fa-microscope",
+
+            _ => "fas fa-users"
+        };
     }
 }
+
+
+

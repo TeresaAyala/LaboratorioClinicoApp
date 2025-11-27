@@ -6,75 +6,71 @@
 
 <link rel="stylesheet" href="/css/Rol/agregarRol.css" />
 
-<div class="agregar-container">
+<div class="page-container">
+    <div class="form-card">
 
-    <div class="header">
-        <button class="btn-back" @onclick="Volver">
-            ←
-        </button>
-        <h2>Editar Rol</h2>
-    </div>
+        <div class="card-header">
+            <button class="btn-back" @onclick="Volver">←</button>
+            <h2 class="card-title">Editar Rol</h2>
+        </div>
 
-    @if (!string.IsNullOrEmpty(mensajeError))
-    {
-            <div class="error">@mensajeError</div>
-    }
+        @if (!string.IsNullOrEmpty(mensajeError))
+        {
+            <div class="alert-error">@mensajeError</div>
+        }
 
-    @if (rol == null)
-    {
+        @if (rol == null)
+        {
             <p>Cargando datos...</p>
-    }
-    else
-    {
-            <div class="formulario">
+        }
+        else
+        {
+            <div class="card-body">
 
-                <!-- Nombre -->
-                <label class="label-text">Nombre del Rol</label>
-                <input class="@GetInputClass(rol.Nombre)"
-                       placeholder="Escribe el nombre del rol..."
-                       @bind="rol.Nombre" />
+                <div class="form-group">
+                    <label>Nombre del Rol</label>
+                    <input class="form-input @(string.IsNullOrWhiteSpace(rol.Nombre) ? "input-error" : "")"
+                           placeholder="Escribe el nombre del rol..."
+                           @bind="rol.Nombre" />
+                </div>
 
-                <!-- Descripción -->
-                <label class="label-text">Descripción</label>
-                <textarea class="@GetInputClass(rol.Descripcion)"
-                          placeholder="Escribe una descripción del rol..."
-                          @bind="rol.Descripcion">
-                    </textarea>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea class="form-input @(string.IsNullOrWhiteSpace(rol.Descripcion) ? "input-error" : "")"
+                              placeholder="Escribe una descripción..."
+                              @bind="rol.Descripcion"></textarea>
+                </div>
 
-                <!-- Estado Switch -->
-                <label class="label-text">Estado</label>
+                <div class="form-group">
+                    <label>Estado</label>
 
-                <div class="switch-container" @onclick="ToggleEstado">
-                    <div class="switch @(rol.Estado == "Activo" ? "on" : "off")">
-                    @(rol.Estado == "Activo" ? "Activo" : "Inactivo")
+                    <div class="switch-container" @onclick="ToggleEstado">
+                        <div class="switch @(rol.Estado == "Activo" ? "on" : "off")">
+                            @rol.Estado
+                        </div>
                     </div>
                 </div>
 
-                <button class="btn-guardar" @onclick="GuardarCambios">
-                    Guardar Cambios
-                </button>
+                <button class="btn-primary" @onclick="GuardarCambios">Guardar Cambios</button>
 
             </div>
-    }
+        }
+    </div>
 </div>
 
 @code {
+
+    [Parameter] public int id { get; set; }
     private RolDTO? rol;
     private string? mensajeError;
-
-    [Parameter]
-    public int id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             rol = await rolService.GetRolById(id);
-
             if (rol == null)
-            {
                 mensajeError = "El rol no existe.";
-            }
         }
         catch (Exception ex)
         {
@@ -82,17 +78,12 @@
         }
     }
 
-    // Cambiar estado con switch STRING
     void ToggleEstado()
     {
-        rol.Estado = (rol.Estado == "Activo") ? "Inactivo" : "Activo";
+        rol.Estado = rol.Estado == "Activo" ? "Inactivo" : "Activo";
     }
 
-    // Validación visual
-    string GetInputClass(string value) =>
-        string.IsNullOrWhiteSpace(value) ? "input error-border" : "input";
-
-    private async Task GuardarCambios()
+    async Task GuardarCambios()
     {
         if (string.IsNullOrWhiteSpace(rol!.Nombre) ||
             string.IsNullOrWhiteSpace(rol.Descripcion))
@@ -108,12 +99,10 @@
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al actualizar: {ex.Message}";
+            mensajeError = $"Error: {ex.Message}";
         }
     }
 
-    private void Volver()
-    {
-        navManager.NavigateTo("/roles");
-    }
+    void Volver() => navManager.NavigateTo("/roles");
 }
+

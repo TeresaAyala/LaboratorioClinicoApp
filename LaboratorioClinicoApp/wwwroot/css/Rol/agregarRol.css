@@ -1,194 +1,144 @@
-﻿.agregar-container {
-    padding: 20px;
-    max-width: 700px;
-    margin: auto;
-    padding-top: var(--navbar-height);
-    color: #111827;
+﻿/* SEPARACIÓN GENERAL DE LA PÁGINA */
+.page-container {
+    padding-top: 70px; /* Más espacio desde el menú */
+    display: flex;
+    justify-content: center;
+    padding-bottom: 40px;
 }
 
-/* Header */
-.header {
+/* CARD PRINCIPAL */
+.form-card {
+    width: 100%;
+    max-width: 750px;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 40px 45px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.08);
+    border: 1px solid #e4e4e4;
+    animation: fadeIn .5s ease;
+}
+
+/* Header del card */
+.card-header {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 25px;
 }
 
+.card-title {
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: #2e4a7a;
+}
+
+/* Botón regresar */
 .btn-back {
-    background: #374151;
+    background: #eef3ff;
     border: none;
-    color: white;
-    font-size: 20px;
-    padding: 8px 14px;
-    border-radius: 8px;
+    padding: 11px 15px;
+    border-radius: 10px;
     cursor: pointer;
+    transition: .2s;
+    color: #4e73df;
+    font-size: 19px;
 }
 
     .btn-back:hover {
-        background: #4b5563;
+        background: #d9e3ff;
     }
 
-/* FORMULARIO */
-.formulario {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+/* Body del formulario */
+.card-body {
+    margin-top: 30px;
 }
 
-.label-text {
+/* Labels */
+.form-group label {
+    font-size: 15px;
+    color: #2e4a7a;
     font-weight: 600;
-    color: #111827; /* negro */
+    margin-bottom: 6px;
 }
 
 /* Inputs */
-.input {
-    background: #ffffff; /* blanco */
-    border: 1px solid #9ca3af;
-    padding: 12px;
-    border-radius: 8px;
-    color: #111827;
+.form-group {
+    margin-bottom: 22px;
 }
 
-    .input::placeholder {
-        color: #6b7280;
-    }
-
-    .input:focus {
-        outline: none;
-        border-color: #3b82f6;
-    }
-
-/* Botón Guardar */
-.btn-guardar {
-    background: #3b82f6;
-    border: none;
-    padding: 12px;
-    font-size: 16px;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 10px;
+.form-input {
+    width: 100%;
+    padding: 13px 15px;
+    border-radius: 12px;
+    border: 2px solid #d3d3d3;
+    background: #fafafa;
+    font-size: 15px;
+    transition: 0.25s;
 }
 
-    .btn-guardar:hover {
-        background: #2563eb;
+    .form-input:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 8px rgba(78,115,223,0.25);
     }
 
 /* Error */
-.error {
-    background: #b91c1c;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: bold;
-    margin-bottom: 15px;
-    color: white;
+.input-error {
+    border-color: #ff6b6b !important;
+    background: #fff4f4;
 }
 
-/* NAVBAR HEIGHT */
-:root {
-    --navbar-height: 90px;
+/* Error message */
+.alert-error {
+    background: #ffe5e5;
+    padding: 13px 16px;
+    border-radius: 10px;
+    border: 1px solid #ff8b8b;
+    color: #b00000;
+    margin-bottom: 20px;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-    .agregar-container {
-        padding: 15px;
-    }
-
-    .btn-back {
-        font-size: 18px;
-    }
-
-    :root {
-        --navbar-height: 120px;
-    }
-}
-/* Estilos generales */
-.form-group {
-    margin-bottom: 1rem;
-}
-
-label {
-    font-weight: 600;
-    margin-bottom: 5px;
-    display: block;
-}
-
-/* Inputs */
-.form-control {
-    padding: 0.75rem;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+/* Botón principal */
+.btn-primary {
     width: 100%;
-}
-
-/* SOLO el input de Estado (disabled) */
-.input[disabled] {
-    width: 150px; /* tamaño que quieres */
-    text-align: center;
-    font-weight: 600;
-    background: #d1e7dd;
-    color: #0f5132;
-}
-
-
-/* Botón Guardar */
-.btn-guardar {
-    background-color: #0d6efd;
+    padding: 15px;
+    background: #4e73df;
     color: white;
-    padding: 0.75rem 1rem;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 12px;
     border: none;
-    border-radius: 6px;
-    width: 100%;
-    font-size: 1.1rem;
     cursor: pointer;
+    transition: .2s ease;
+    box-shadow: 0 4px 14px rgba(78,115,223,0.25);
 }
 
-    .btn-guardar:hover {
-        background-color: #0b5ed7;
+    .btn-primary:hover {
+        background: #355ac9;
     }
 
-/* Tabla estado Activo */
-.estado-activo {
-    background-color: #22c55e; /* 🌿 verde más vivo */
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 600;
-    width: fit-content;
-    display: inline-block;
-    text-align: center;
-    font-size: 14px;
-    margin-top: 4px;
-}
-
-
-/* ---- BORDE ROJO PARA CAMPOS VACÍOS ---- */
-.error-border {
-    border: 1px solid #dc2626 !important;
-}
-
-/* ---- SWITCH ESTADO (ACTIVO / INACTIVO) ---- */
+/* Switch */
 .switch-container {
-    width: 140px;
+    width: 150px;
+    background: #f3f3f3;
+    border-radius: 50px;
+    padding: 4px;
+    border: 2px solid #d0d0d0;
     cursor: pointer;
+    transition: .3s;
 }
 
 .switch {
-    padding: 12px;
+    padding: 7px 20px;
+    border-radius: 50px;
     text-align: center;
-    border-radius: 25px;
     color: white;
     font-weight: 600;
-    transition: 0.2s ease-in-out;
-    user-select: none;
+    transition: .3s;
 }
 
     .switch.on {
-        background-color: #22c55e; /* verde */
+        background: #2ecc71;
     }
 
     .switch.off {
-        background-color: #ef4444; /* rojo */
+        background: #e74c3c;
     }
