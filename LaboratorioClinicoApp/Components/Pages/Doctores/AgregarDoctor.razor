@@ -4,78 +4,135 @@
 @inject DoctorService doctorService
 @inject NavigationManager navManager
 
-<div class="container my-5">
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-success text-white text-center">
-            <h3 class="mb-0">
-                <i class="bi bi-person-plus"></i> Agregar Nuevo Doctor
+<div class="container my-5" style="max-width: 850px;">
+    <div class="card shadow-lg border-0 rounded-4">
+
+        <div class="card-header bg-gradient bg-success text-white text-center py-4 rounded-top-4">
+            <h3 class="mb-0 fw-bold">
+                <i class="bi bi-person-plus fs-3 me-2"></i>
+                Registro de Nuevo Doctor
             </h3>
+            <p class="mt-1 mb-0 opacity-75">Complete la información requerida</p>
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-4">
+
             @if (!string.IsNullOrEmpty(mensaje))
             {
-                <div class="alert alert-info text-center">@mensaje</div>
+                <div class="alert @mensajeClass text-center fw-semibold rounded-3">
+                    @mensaje
+                </div>
             }
 
             <EditForm Model="@nuevoDoctor" OnValidSubmit="GuardarDoctor">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
-                <div class="row g-3">
+                <div class="row g-4">
+
+                    <!-- Nombre -->
                     <div class="col-md-6">
-                        <label class="form-label">Nombre</label>
-                        <InputText class="form-control" @bind-Value="nuevoDoctor.Nombre" placeholder="Ej: Carlos" />
+                        <label class="form-label fw-semibold">Nombre</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <InputText class="form-control" @bind-Value="nuevoDoctor.Nombre" placeholder="Ej: Carlos" />
+                        </div>
                     </div>
 
+                    <!-- Apellido -->
                     <div class="col-md-6">
-                        <label class="form-label">Apellido</label>
-                        <InputText class="form-control" @bind-Value="nuevoDoctor.Apellido" placeholder="Ej: Pérez" />
+                        <label class="form-label fw-semibold">Apellido</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-person-vcard"></i>
+                            </span>
+                            <InputText class="form-control" @bind-Value="nuevoDoctor.Apellido" placeholder="Ej: Pérez" />
+                        </div>
                     </div>
 
+                    <!-- Especialidad -->
                     <div class="col-md-6">
-                        <label class="form-label">Especialidad</label>
-                        <InputText class="form-control" @bind-Value="nuevoDoctor.Especialidad" placeholder="Ej: Cardiología" />
+                        <label class="form-label fw-semibold">Especialidad</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-bookmark-heart"></i>
+                            </span>
+                            <InputText class="form-control" @bind-Value="nuevoDoctor.Especialidad" placeholder="Ej: Cardiología" />
+                        </div>
                     </div>
 
+                    <!-- Teléfono -->
                     <div class="col-md-6">
-                        <label class="form-label">Teléfono</label>
-                        <InputText class="form-control" @bind-Value="nuevoDoctor.Telefono" placeholder="Ej: +503 7000-0000" />
+                        <label class="form-label fw-semibold">Teléfono</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-telephone"></i>
+                            </span>
+                            <InputText class="form-control" @bind-Value="nuevoDoctor.Telefono" placeholder="Ej: +503 7000-0000" />
+                        </div>
                     </div>
 
+                    <!-- Email -->
                     <div class="col-md-6">
-                        <label class="form-label">Correo electrónico</label>
-                        <InputText class="form-control" @bind-Value="nuevoDoctor.Email" placeholder="Ej: doctor@mail.com" />
+                        <label class="form-label fw-semibold">Correo electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-envelope-at"></i>
+                            </span>
+                            <InputText class="form-control" @bind-Value="nuevoDoctor.Email" placeholder="Ej: doctor@mail.com" />
+                        </div>
                     </div>
 
+                    <!-- Licencia Médica -->
                     <div class="col-md-6">
-                        <label class="form-label">Licencia Médica</label>
-                        <InputText class="form-control" @bind-Value="nuevoDoctor.LicenciaMedica" placeholder="Ej: LM-12345" />
+                        <label class="form-label fw-semibold">Licencia Médica</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-file-earmark-medical"></i>
+                            </span>
+                            <InputText class="form-control" @bind-Value="nuevoDoctor.LicenciaMedica" placeholder="Ej: LM-12345" />
+                        </div>
                     </div>
 
+                    <!-- Usuario -->
                     <div class="col-md-6">
-                        <label class="form-label">ID de la Usuario</label>
-                        <InputNumber class="form-control" @bind-Value="nuevoDoctor.IdUsuario" />
+                        <label class="form-label fw-semibold">ID de Usuario</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-person-badge"></i>
+                            </span>
+                            <InputNumber class="form-control" @bind-Value="nuevoDoctor.IdUsuario" />
+                        </div>
                     </div>
 
-                    <!-- ✅ CAMBIO — Estado ahora es string -->
+                    <!-- Estado -->
                     <div class="col-md-6">
-                        <label class="form-label">Estado</label>
-                        <InputSelect class="form-control" @bind-Value="nuevoDoctor.Estado">
-                            <option value="Activo">Activo</option>
-                            <option value="Inactivo">Inactivo</option>
-                        </InputSelect>
+                        <label class="form-label fw-semibold">Estado</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-toggle-on"></i>
+                            </span>
+                            <InputSelect class="form-select" @bind-Value="nuevoDoctor.Estado">
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </InputSelect>
+                        </div>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end mt-4 gap-2">
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-save me-1"></i> Guardar
+                <!-- Botones -->
+                <div class="d-flex justify-content-end mt-5 gap-3">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2" @onclick='() => navManager.NavigateTo("/doctores")'>
+                        <i class="bi bi-arrow-left-circle me-1"></i> Volver
                     </button>
-                    <button type="button" class="btn btn-secondary" @onclick='() => navManager.NavigateTo("/doctores")'>
-                        <i class="bi bi-arrow-left me-1"></i> Volver
+
+                    <button type="submit" class="btn btn-success px-4 py-2 shadow-sm">
+                        <i class="bi bi-check-circle me-1"></i> Guardar Doctor
                     </button>
                 </div>
+
             </EditForm>
         </div>
     </div>
@@ -84,23 +141,50 @@
 @code {
     private DoctorDTO nuevoDoctor = new DoctorDTO
     {
-        Estado = "Activo" // ✅ AHORA STRING
+        Estado = "Activo"
     };
 
     private string? mensaje;
+    private string mensajeClass = "alert-info";
 
     private async Task GuardarDoctor()
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(nuevoDoctor.Email))
+            {
+                mensaje = "Por favor ingrese un correo electrónico.";
+                mensajeClass = "alert-danger";
+                return;
+            }
+
+            var emailTrim = nuevoDoctor.Email.Trim();
+            var doctores = await doctorService.GetDoctors();
+
+            bool existe = doctores?.Any(d =>
+                !string.IsNullOrWhiteSpace(d?.Email) &&
+                string.Equals(d.Email.Trim(), emailTrim, StringComparison.OrdinalIgnoreCase)
+            ) ?? false;
+
+            if (existe)
+            {
+                mensaje = "El correo ingresado ya está en uso por otro doctor.";
+                mensajeClass = "alert-warning";
+                return;
+            }
+
             await doctorService.AddDoctor(nuevoDoctor);
-            mensaje = "✅ Doctor agregado correctamente.";
-            await Task.Delay(1500);
+
+            mensaje = "Doctor agregado correctamente.";
+            mensajeClass = "alert-success";
+
+            await Task.Delay(1200);
             navManager.NavigateTo("/doctores");
         }
         catch (Exception ex)
         {
-            mensaje = $"❌ Error al guardar el doctor: {ex.Message}";
+            mensaje = $"Error al guardar el doctor: {ex.Message}";
+            mensajeClass = "alert-danger";
         }
     }
 }

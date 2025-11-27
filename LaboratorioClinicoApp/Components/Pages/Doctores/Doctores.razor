@@ -13,24 +13,26 @@
         </div>
 
         <div class="card-body">
-            <!-- 🔹 Barra de acciones superior -->
+
+            <!-- Barra superior -->
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <div>
                     <button class="btn btn-success" @onclick='() => navManager.NavigateTo("/doctores/agregarDoctor")'>
                         <i class="bi bi-plus-circle me-1"></i> Agregar doctor
                     </button>
-                    <button class="btn btn-outline-secondary">
-                        <i class="bi bi-funnel me-1"></i> Filtrar
-                    </button>
                 </div>
 
+                <!-- 🔍 INPUT DE BÚSQUEDA -->
                 <div class="input-group" style="max-width: 300px;">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Buscar doctor..." />
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Buscar doctor por nombre..."
+                           @bind="searchTerm"
+                           @bind:event="oninput" />
                 </div>
             </div>
 
-            <!-- 🔹 Fin barra superior -->
             @if (!string.IsNullOrEmpty(errorMessage))
             {
                 <div class="alert alert-danger text-center">@errorMessage</div>
@@ -67,7 +69,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var doctor in doctores)
+                            @foreach (var doctor in filteredDoctores)
                             {
                                 <tr>
                                     <td>@doctor.Nombre</td>
@@ -90,7 +92,7 @@
                                     <td class="text-center">
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-primary"
-                                                    @onclick='() => navManager.NavigateTo($"/doctores/editarDoctor")'>
+                                                    @onclick='() => navManager.NavigateTo($"/doctores/editarDoctor/{doctor.Id}")'>
                                                 <i class="bi bi-pencil-square"></i> Editar
                                             </button>
                                         </div>
@@ -108,6 +110,22 @@
 @code {
     private List<DoctorDTO>? doctores = null;
     private string? errorMessage = null;
+
+    // 🟢 VARIABLE DE BÚSQUEDA
+    private string searchTerm = string.Empty;
+
+    // 🟢 LISTA FILTRADA (como en pacientes)
+    private List<DoctorDTO> filteredDoctores =>
+    doctores == null || string.IsNullOrWhiteSpace(searchTerm)
+    ? doctores ?? new List<DoctorDTO>()
+    : doctores
+        .Where(d =>
+            (d.Nombre != null && d.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (d.Apellido != null && d.Apellido.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (d.Especialidad != null && d.Especialidad.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        )
+        .ToList();
+
 
     protected override async Task OnInitializedAsync()
     {
