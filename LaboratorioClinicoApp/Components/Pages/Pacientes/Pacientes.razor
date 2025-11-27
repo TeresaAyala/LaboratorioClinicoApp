@@ -5,130 +5,100 @@
 @inject DoctorService doctorService
 @inject NavigationManager navManager
 
-<div class="container my-5" style="max-width: 1200px;">
+<link rel="stylesheet" href="/css/Pacientes/pacientes.css" />
 
-    <!-- CARD PRINCIPAL -->
-    <div class="card shadow-lg border-0 rounded-4">
+<div class="container my-5" style="max-width: 1400px;">
 
-        <!-- ENCABEZADO PROFESIONAL -->
-        <div class="card-header text-white text-center"
-             style="background: linear-gradient(135deg, #0d47a1, #1976d2); border-radius: .8rem .8rem 0 0;">
-            <h2 class="mb-0 fw-bold">
-                <i class="bi bi-people-fill me-2"></i> Gestión de Pacientes
-            </h2>
-        </div>
+    <div class="card shadow-lg border-0 rounded-4 mb-4">
+    <div class="card-header text-white text-center"
+         style="background: linear-gradient(135deg, #0d47a1, #1976d2); border-radius: .8rem .8rem 0 0;">
+        <h2 class="mb-0 fw-bold">
+            <i class="bi bi-people-fill me-2"></i> Gestión de Pacientes
+        </h2>
+    </div>
+</div>
 
-        <div class="card-body p-4">
 
-            <!-- BARRA SUPERIOR -->
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div class="top-bar d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
-                <!-- Botón agregar -->
-                <button class="btn btn-success shadow-sm rounded-pill px-4 py-2 fw-semibold"
-                        @onclick='() => navManager.NavigateTo("/pacientes/agregarPaciente")'>
-                    <i class="bi bi-plus-circle me-2"></i> Nuevo Paciente
-                </button>
+        <button class="btn btn-success shadow-sm rounded-pill px-4 py-2 fw-semibold"
+                @onclick='() => navManager.NavigateTo("/pacientes/agregarPaciente")'>
+            <i class="bi bi-plus-circle me-2"></i> Nuevo Paciente
+        </button>
 
-                <!-- Buscador -->
-                <div class="input-group shadow-sm" style="max-width: 350px;">
-                    <span class="input-group-text bg-white">
-                        <i class="bi bi-search text-primary"></i>
-                    </span>
-                    <input type="text" class="form-control border-start-0"
-                           placeholder="Buscar por nombre o apellido..."
-                           @bind="searchTerm"
-                           @bind:event="oninput" />
-                </div>
-            </div>
-
-            <!-- ERRORES -->
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger text-center shadow-sm rounded-3">@errorMessage</div>
-            }
-
-            <!-- CARGANDO -->
-            @if (pacientes == null || doctores == null)
-            {
-                <div class="text-center my-5">
-                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-                    <p class="mt-3 fs-5 text-muted">Cargando pacientes...</p>
-                </div>
-            }
-            else
-            {
-                <!-- TABLA -->
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-
-                        <thead class="text-white"
-                               style="background: linear-gradient(135deg, #1565c0, #1e88e5);">
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Apellido</th>
-                                <th>Fecha Nacimiento</th>
-                                <th>Teléfono</th>
-                                <th>Email</th>
-                                <th>Dirección</th>
-                                <th>Usuario ID</th>
-                                <th>Doctor</th>   <!-- CAMBIADO -->
-                                <th>Estado</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="table-group-divider">
-                            @foreach (var paciente in filteredPacientes)
-                            {
-                                <tr>
-                                    <td>@paciente.Nombre</td>
-                                    <td>@paciente.Apellido</td>
-                                    <td>@paciente.FechaNacimiento.ToString("yyyy-MM-dd")</td>
-                                    <td>@paciente.Telefono</td>
-                                    <td>@paciente.Email</td>
-                                    <td>@paciente.Direccion</td>
-                                    <td>@paciente.IdUsuario</td>
-
-                                    <!-- MOSTRAR NOMBRE DEL DOCTOR -->
-                                    <td>
-                                        <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm">
-                                            @ObtenerNombreDoctor(paciente.IdDoctor)
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        @if (paciente.Estado == "Activo")
-                                        {
-                                            <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">Activo</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger px-3 py-2 rounded-pill shadow-sm">Inactivo</span>
-                                        }
-                                    </td>
-
-                                    <td class="text-center">
-                                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm"
-                                                @onclick='() => navManager.NavigateTo($"/pacientes/editarPaciente/{paciente.Id}")'>
-                                            <i class="bi bi-pencil-square me-1"></i> Editar
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-
-                    </table>
-                </div>
-            }
+        <div class="input-group shadow-sm" style="max-width: 350px;">
+            <span class="input-group-text bg-white">
+                <i class="bi bi-search text-primary"></i>
+            </span>
+            <input type="text" class="form-control border-start-0"
+                   placeholder="Buscar por nombre o apellido..."
+                   @bind="searchTerm"
+                   @bind:event="oninput" />
         </div>
     </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger text-center shadow-sm rounded-3">@errorMessage</div>
+    }
+
+    @if (pacientes == null || doctores == null)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+            <p class="mt-3 fs-5 text-muted">Cargando pacientes...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var p in filteredPacientes)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="paciente-card shadow-sm">
+
+                        <h4 class="text-primary fw-bold mb-3">@p.Nombre @p.Apellido</h4>
+
+                        <div class="info-box">
+                            <strong>Fecha Nacimiento:</strong> @p.FechaNacimiento.ToString("yyyy-MM-dd")
+                        </div>
+                        <div class="info-box">
+                            <strong>Teléfono:</strong> @p.Telefono
+                        </div>
+                        <div class="info-box">
+                            <strong>Email:</strong> @p.Email
+                        </div>
+                        <div class="info-box">
+                            <strong>Dirección:</strong> @p.Direccion
+                        </div>
+                        <div class="info-box">
+                            <strong>Doctor:</strong> @ObtenerNombreDoctor(p.IdDoctor)
+                        </div>
+
+                        <!-- BOTONES ABAJO SIEMPRE -->
+                        <div class="bottom-buttons mt-3">
+                            <span class="badge px-3 py-2 text-white @(p.Estado == "Activo" ? "bg-success" : "bg-danger")">
+                                @p.Estado
+                            </span>
+
+                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm"
+                                    @onclick='() => navManager.NavigateTo($"/pacientes/editarPaciente/{p.Id}")'>
+                                <i class="bi bi-pencil-square me-1"></i> Editar
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
     private List<PacienteDTO>? pacientes = null;
-    private List<DoctorDTO>? doctores = null;   // <--- AGREGADO
-    private string? errorMessage = null;
+    private List<DoctorDTO>? doctores = null;
 
+    private string? errorMessage = null;
     private string searchTerm = string.Empty;
 
     private List<PacienteDTO> filteredPacientes =>
@@ -143,7 +113,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadPacientes();
-        await LoadDoctores();   // <--- AGREGADO
+        await LoadDoctores();
     }
 
     private async Task LoadPacientes()

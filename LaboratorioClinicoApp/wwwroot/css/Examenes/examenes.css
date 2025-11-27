@@ -70,3 +70,23 @@
         background: #ffd6d6;
         color: #b71c1c;
     }
+
+/* Centrar todo el contenido del contenedor principal */
+.container {
+    display: flex;
+    justify-content: center;
+}
+
+/* Centrar el card */
+.card {
+    margin: 0 auto;
+}
+
+
+
+/* Centrar el grid  */
+.row {
+    justify-content: center;
+}
+
+

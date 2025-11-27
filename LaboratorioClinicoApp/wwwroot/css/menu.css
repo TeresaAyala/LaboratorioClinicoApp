@@ -143,3 +143,93 @@
         margin-left: 0;
     }
 }
+
+/* Contenedor del menú hamburguesa y logo */
+.hamburger-menu-container {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Logo */
+.menu-logo {
+    margin-left: 10px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Botón hamburguesa */
+.hamburger-btn {
+    width: 35px;
+    height: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    margin-right: 20px;
+}
+
+    .hamburger-btn .bar {
+        width: 100%;
+        height: 4px;
+        background-color: #333;
+        border-radius: 5px;
+    }
+
+/* MENU LATERAL */
+.side-menu {
+    width: 260px;
+    background: #1e293b;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: -260px;
+    transition: 0.3s;
+    padding-top: 80px;
+    z-index: 1000;
+}
+
+    .side-menu.open {
+        left: 0;
+    }
+
+    .side-menu ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .side-menu li {
+        margin-bottom: 12px;
+    }
+
+    .side-menu a {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: #f1f5f9;
+        text-decoration: none;
+        font-size: 1.1rem;
+        transition: 0.3s;
+    }
+
+        .side-menu a i {
+            margin-right: 12px;
+            font-size: 1.3rem;
+        }
+
+        .side-menu a:hover {
+            background: #334155;
+        }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .side-menu {
+        width: 220px;
+        left: -220px;
+    }
+}

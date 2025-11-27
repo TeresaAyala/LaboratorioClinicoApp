@@ -1,0 +1,155 @@
+﻿/* Para que todo el contenido del dashboard baje */
+.content {
+    margin-top: 100px; /* puedes subir a 120 o 140 si quieres más espacio */
+}
+
+
+/* ---------------- CONTENIDO ---------------- */
+.content {
+    width: 100%;
+    padding: 20px 40px;
+    background: #f5f7fa;
+}
+
+/* ---------------- TOPBAR ---------------- */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.search {
+    position: relative;
+}
+
+    .search input {
+        padding: 10px 35px 10px 15px;
+        width: 280px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+    }
+
+    .search i {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        color: #777;
+    }
+
+.user-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.user-photo {
+    width: 38px;
+    border-radius: 50%;
+}
+
+/* ---------------- CARDS ---------------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 35px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+    .stat-card span {
+        font-size: 32px;
+        font-weight: bold;
+        color: #3b82f6;
+    }
+
+/* ---------------- CITAS ---------------- */
+.block {
+    background: none;
+}
+
+.block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.appointments {
+    margin-top: 15px;
+}
+
+.appointment-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.time {
+    font-size: 18px;
+    font-weight: bold;
+    color: #3b82f6;
+}
+
+.status {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.confirmada {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.pendiente {
+    background: #fde68a;
+    color: #b45309;
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+.stats-card {
+    padding: 20px;
+    border-radius: 10px;
+    background: #f8f9fa;
+}
+
+    .stats-card h2 {
+        font-size: 40px;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+
+.list-card {
+    border-radius: 10px;
+}
+
+.list-group-item {
+    font-size: 14px;
+    padding: 10px 15px;
+}
+
+h5 {
+    margin: 0;
+}

@@ -1,0 +1,88 @@
+﻿@page "/dashboard"
+
+<!-- CSS del dashboard -->
+<link rel="stylesheet" href="/css/dashboard.css" />
+
+<!-- Iconos -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      crossorigin="anonymous" />
+
+<div class="content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <h2>Resumen de Actividad</h2>
+
+        <div class="search">
+            <input type="text" placeholder="Buscar paciente o cita..." />
+            <i class="fas fa-search"></i>
+        </div>
+
+        <div class="user-info">
+            <i class="far fa-bell"></i>
+            <img src="https://i.pravatar.cc/60" class="user-photo" />
+        </div>
+    </header>
+
+    <!-- SALUDO -->
+    <section class="greeting">
+        <h1>Buenos días, <b>Dr. Smith</b></h1>
+    </section>
+
+    <!-- CARDS -->
+    <section class="stats-grid">
+
+        <div class="stat-card">
+            <h3>Citas Pendientes</h3>
+            <span>4</span>
+        </div>
+
+        <div class="stat-card">
+            <h3>Citas para Hoy</h3>
+            <span>12</span>
+        </div>
+
+        <div class="stat-card">
+            <h3>Pacientes Nuevos</h3>
+            <span>8</span>
+        </div>
+
+        <div class="stat-card">
+            <h3>Exámenes por Revisar</h3>
+            <span>3</span>
+        </div>
+
+    </section>
+
+    <!-- PRÓXIMAS CITAS -->
+    <section class="block">
+        <div class="block-header">
+            <h3>Próximas Citas del Día</h3>
+            <a href="#">Ver Calendario</a>
+        </div>
+
+        <div class="appointments">
+
+            <div class="appointment-card">
+                <div class="time">10:00 AM</div>
+                <div class="details">
+                    <h4>Luisa Fernandez</h4>
+                    <span>Consulta General</span>
+                </div>
+                <div class="status confirmada">Confirmada</div>
+            </div>
+
+            <div class="appointment-card">
+                <div class="time">11:00 AM</div>
+                <div class="details">
+                    <h4>Carlos Vargas</h4>
+                    <span>Seguimiento</span>
+                </div>
+                <div class="status pendiente">Pendiente</div>
+            </div>
+
+        </div>
+    </section>
+
+</div>

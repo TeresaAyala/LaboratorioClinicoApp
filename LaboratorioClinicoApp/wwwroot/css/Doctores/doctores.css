@@ -1,0 +1,70 @@
+﻿/* Para que todo el contenido del dashboard baje */
+.content {
+    margin-top: 100px; /* puedes subir a 120 o 140 si quieres más espacio */
+}
+
+/* ===== TARJETAS ===== */
+.doctor-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 280px;
+    overflow: hidden;
+}
+
+.doctor-click {
+    cursor: pointer;
+}
+
+.doctor-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Título igual al de Exámenes */
+.doctor-title {
+    font-size: 18px;
+    color: #1a237e; /* Azul Exámenes */
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Info-box igual al de Exámenes */
+.info-box {
+    background: #f1f4ff; /* Azul suave */
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.label {
+    font-weight: bold;
+}
+
+/* Centrar todo el contenido del contenedor principal */
+.container {
+    display: flex;
+    justify-content: center;
+}
+
+/* Centrar el card */
+.card {
+    margin: 0 auto;
+}
+
+
+
+/* Centrar el grid de doctores */
+.row {
+    justify-content: center;
+}

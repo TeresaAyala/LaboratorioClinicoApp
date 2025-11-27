@@ -4,158 +4,132 @@
 @inject DoctorService doctorService
 @inject NavigationManager navManager
 
-<div class="container my-5" style="max-width: 1200px;">
+<link rel="stylesheet" href="css/Doctores/doctores.css" />
 
-    <!-- CARD PRINCIPAL -->
-    <div class="card shadow-lg border-0 rounded-4">
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
 
-        <!-- ENCABEZADO PROFESIONAL -->
-        <div class="card-header text-white text-center"
-             style="background: linear-gradient(135deg, #1b5e20, #43a047); border-radius: .8rem .8rem 0 0;">
-            <h2 class="mb-0 fw-bold">
-                <i class="bi bi-person-badge me-2"></i> Gestión de Doctores
-            </h2>
+        <!-- Encabezado igual que Exámenes -->
+        <div class="card-header bg-primary text-white text-center">
+            <h3 class="mb-0">
+                <i class="bi bi-person-badge"></i> Gestion de Doctores
+            </h3>
         </div>
 
-        <div class="card-body p-4">
+        <div class="card-body">
 
-            <!-- BARRA SUPERIOR -->
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <!-- Barra superior -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
 
-                <!-- Botón agregar doctor -->
-                <button class="btn btn-success shadow-sm rounded-pill px-4 py-2 fw-semibold"
+                <button class="btn btn-success"
                         @onclick='() => navManager.NavigateTo("/doctores/agregarDoctor")'>
-                    <i class="bi bi-plus-circle me-2"></i> Nuevo Doctor
+                    <i class="bi bi-plus-circle me-1"></i> Nuevo Doctor
                 </button>
 
-                <!-- Búsqueda -->
-                <div class="input-group shadow-sm" style="max-width: 350px;">
-                    <span class="input-group-text bg-white">
-                        <i class="bi bi-search text-success"></i>
-                    </span>
-                    <input type="text"
-                           class="form-control border-start-0"
-                           placeholder="Buscar por nombre, apellido o especialidad..."
-                           @bind="searchTerm"
-                           @bind:event="oninput" />
+                <div class="input-group" style="max-width: 300px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control"
+                           placeholder="Buscar nombre o especialidad..."
+                           @bind="searchTerm" @bind:event="oninput" />
                 </div>
+
             </div>
 
-            <!-- ERRORES -->
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger text-center shadow-sm rounded-3">@errorMessage</div>
-            }
+            <!-- Filtros -->
+            <div class="d-flex gap-2 flex-wrap mb-4">
+                <button class='btn @(estadoSeleccionado == "Todos" ? "btn-primary" : "btn-outline-primary")'
+                        @onclick='() => SeleccionarEstado("Todos")'>
+                    Todos
+                </button>
 
-            <!-- CARGANDO -->
-            @if (doctores == null)
-            {
-                <div class="text-center my-5">
-                    <div class="spinner-border text-success" style="width: 3rem; height: 3rem;"></div>
-                    <p class="mt-3 fs-5 text-muted">Cargando doctores...</p>
-                </div>
-            }
-            else if (doctores.Count == 0)
-            {
-                <div class="alert alert-warning text-center rounded-3 shadow-sm">
-                    <i class="bi bi-exclamation-triangle"></i> No hay doctores registrados.
-                </div>
-            }
-            else
-            {
-                <!-- TABLA -->
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="text-white"
-                               style="background: linear-gradient(135deg, #2e7d32, #4caf50);">
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Apellido</th>
-                                <th>Especialidad</th>
-                                <th>Teléfono</th>
-                                <th>Email</th>
-                                <th>Licencia Médica</th>
-                                <th>Usuario</th>
-                                <th>Estado</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
+                <button class='btn @(estadoSeleccionado == "Activo" ? "btn-primary" : "btn-outline-primary")'
+                        @onclick='() => SeleccionarEstado("Activo")'>
+                    Activos
+                </button>
 
-                        <tbody class="table-group-divider">
-                            @foreach (var doctor in filteredDoctores)
-                            {
-                                <tr class="align-middle">
-                                    <td>@doctor.Nombre</td>
-                                    <td>@doctor.Apellido</td>
-                                    <td>@doctor.Especialidad</td>
-                                    <td>@doctor.Telefono</td>
-                                    <td>@doctor.Email</td>
-                                    <td>@doctor.LicenciaMedica</td>
-                                    <td>@doctor.IdUsuario</td>
+                <button class='btn @(estadoSeleccionado == "Inactivo" ? "btn-primary" : "btn-outline-primary")'
+                        @onclick='() => SeleccionarEstado("Inactivo")'>
+                    Inactivos
+                </button>
+            </div>
 
-                                    <td>
-                                        @if (doctor.Estado == "Activo")
-                                        {
-                                            <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">
-                                                Activo
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger px-3 py-2 rounded-pill shadow-sm">
-                                                Inactivo
-                                            </span>
-                                        }
-                                    </td>
+            <!-- Grid de tarjetas -->
+            <div class="row g-3">
 
-                                    <td class="text-center">
-                                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm"
-                                                @onclick='() => navManager.NavigateTo($"/doctores/editarDoctor/{doctor.Id}")'>
-                                            <i class="bi bi-pencil-square me-1"></i> Editar
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
+                @foreach (var doc in DoctoresFinales)
+                {
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="doctor-card doctor-click shadow-sm"
+                             @onclick='() => navManager.NavigateTo($"/doctores/editarDoctor/{doc.Id}")'>
 
-                    </table>
-                </div>
-            }
+                            <div class="doctor-title">
+                                <i class="bi bi-person-vcard"></i>
+                                <strong>@doc.Nombre @doc.Apellido</strong>
+                            </div>
+
+                            <p class="text-muted small">@doc.Especialidad</p>
+
+                            <div class="info-box">
+                                <span class="label">Teléfono:</span>
+                                <span class="value">@doc.Telefono</span>
+                            </div>
+
+                            <div class="info-box">
+                                <span class="label">Email:</span>
+                                <span class="value">@doc.Email</span>
+                            </div>
+
+                            <div class="info-box">
+                                <span class="label">Licencia:</span>
+                                <span class="value">@doc.LicenciaMedica</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge px-3 py-2 text-white @(doc.Estado == "Activo" ? "bg-success" : "bg-danger")">
+                                    @doc.Estado
+                                </span>
+
+                                <button class="btn btn-outline-primary btn-sm"
+                                        @onclick:stopPropagation="true"
+                                        @onclick="() => EditarDoctor(doc.Id)">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+
         </div>
     </div>
 </div>
 
 @code {
-    private List<DoctorDTO>? doctores = null;
-    private string? errorMessage = null;
 
-    // Buscador
-    private string searchTerm = string.Empty;
-
-    // Lista filtrada
-    private List<DoctorDTO> filteredDoctores =>
-        doctores == null || string.IsNullOrWhiteSpace(searchTerm)
-        ? doctores ?? new List<DoctorDTO>()
-        : doctores.Where(d =>
-                (d.Nombre != null && d.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                (d.Apellido != null && d.Apellido.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                (d.Especialidad != null && d.Especialidad.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-           ).ToList();
+    private List<DoctorDTO> doctores = new();
+    private string searchTerm = "";
+    private string estadoSeleccionado = "Todos";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadDoctor();
+        doctores = await doctorService.GetDoctors();
     }
 
-    private async Task LoadDoctor()
-    {
-        try
-        {
-            doctores = await doctorService.GetDoctors();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error al cargar doctores: {ex.Message}";
-        }
-    }
+    private IEnumerable<DoctorDTO> DoctoresFiltrados =>
+        doctores.Where(d =>
+            $"{d.Nombre} {d.Apellido}".ToLower().Contains(searchTerm.ToLower()) ||
+            (d.Especialidad != null && d.Especialidad.ToLower().Contains(searchTerm.ToLower()))
+        );
+
+    private IEnumerable<DoctorDTO> DoctoresFinales =>
+        estadoSeleccionado == "Todos"
+        ? DoctoresFiltrados
+        : DoctoresFiltrados.Where(d => d.Estado == estadoSeleccionado);
+
+    private void SeleccionarEstado(string estado) => estadoSeleccionado = estado;
+
+    private void EditarDoctor(int id) =>
+        navManager.NavigateTo($"/doctores/editarDoctor/{id}");
 }
