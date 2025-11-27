@@ -7,47 +7,60 @@
 @inject PacienteService pacienteService
 @inject NavigationManager nav
 
-<h3 class="mb-4">Agregar Examen</h3>
+<link rel="stylesheet" href="/css/Examenes/formularioAgregarEditarExamen.css" />
 
-@if (pacientes == null)
-{
-    <p>Cargando...</p>
-}
-else
-{
-    <EditForm Model="@examen" OnValidSubmit="Guardar">
-        <DataAnnotationsValidator />
+<div class="container my-4">
 
-        <div class="mb-3">
-            <label class="form-label">Tipo de Examen</label>
-            <InputText class="form-control" @bind-Value="examen.TipoExamen" />
-        </div>
+    <h3 class="text-center mb-3">Agregar Examen</h3>
 
-        <div class="mb-3">
-            <label class="form-label">Fecha</label>
-            <InputDate class="form-control" @bind-Value="examen.Fecha" />
-        </div>
+    @if (pacientes == null)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+        <EditForm Model="@examen" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="mb-3">
-            <label class="form-label">Paciente</label>
-            <InputSelect class="form-select" @bind-Value="examen.IdPaciente">
-                <option value="0">Seleccione...</option>
-                @foreach (var p in pacientes)
-                {
-                    <option value="@p.Id">@p.Nombre @p.Apellido</option>
-                }
-            </InputSelect>
-        </div>
+            <!-- TIPO EXAMEN -->
+            <div class="mb-3">
+                <label class="form-label">Tipo de Examen *</label>
+                <InputText class="form-control" @bind-Value="examen.TipoExamen" required />
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <InputTextArea class="form-control" @bind-Value="examen.Descripcion" />
-        </div>
+            <!-- FECHA -->
+            <div class="mb-3">
+                <label class="form-label">Fecha *</label>
+                <InputDate class="form-control" @bind-Value="examen.Fecha" required />
+            </div>
 
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <button class="btn btn-secondary ms-2" @onclick="Cancelar">Cancelar</button>
-    </EditForm>
-}
+            <!-- PACIENTE -->
+            <div class="mb-3">
+                <label class="form-label">Paciente *</label>
+                <InputSelect class="form-select" @bind-Value="examen.IdPaciente" required>
+                    <option value="0">Seleccione...</option>
+                    @foreach (var p in pacientes)
+                    {
+                        <option value="@p.Id">@p.Nombre @p.Apellido</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <!-- DESCRIPCIÓN -->
+            <div class="mb-3">
+                <label class="form-label">Descripción *</label>
+                <InputTextArea class="form-control" @bind-Value="examen.Descripcion" required />
+            </div>
+
+            <!-- BOTONES -->
+            <div class="text-center mt-3">
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <button class="btn btn-secondary ms-2" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
     ExamenDTO examen = new();

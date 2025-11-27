@@ -6,7 +6,10 @@
 @inject PacienteService pacienteService
 @inject ExamenService examenService
 @inject DoctorService doctorService
+@inject CitaService citaService
 @inject NavigationManager navManager
+
+<link rel="stylesheet" href="css/Resultados/formularioAgregarEditarResultado.css" />
 
 <div class="container my-4">
 
@@ -14,9 +17,7 @@
 
     @if (!string.IsNullOrEmpty(mensaje))
     {
-        <div>
-            @mensaje
-        </div>
+        <div class="alert alert-warning">@mensaje</div>
     }
 
     <EditForm Model="@resultado" OnValidSubmit="ConfirmarGuardar">
@@ -38,19 +39,22 @@
             </select>
         </div>
 
-        <!-- EXAMEN -->
-        <div class="mb-3">
-            <label>Examen *</label>
-            <select class="form-select"
-                    @bind="resultado.IdExamen"
-                    required>
-                <option value="">Seleccione un examen</option>
-                @foreach (var ex in examenesFiltrados)
-                {
-                    <option value="@ex.Id">@ex.TipoExamen</option>
-                }
-            </select>
-        </div>
+        <!-- EXAMEN (solo si el paciente tiene consulta y examen activos) -->
+        @if (mostrarExamen)
+        {
+            <div class="mb-3">
+                <label>Examen *</label>
+                <select class="form-select"
+                        @bind="resultado.IdExamen"
+                        required>
+                    <option value="">Seleccione un examen</option>
+                    @foreach (var ex in examenesFiltrados)
+                    {
+                        <option value="@ex.Id">@ex.TipoExamen</option>
+                    }
+                </select>
+            </div>
+        }
 
         <!-- DOCTOR -->
         <div class="mb-3">
@@ -69,9 +73,13 @@
         <!-- FECHA EMISIÓN -->
         <div class="mb-3">
             <label>Fecha de Emisión *</label>
-            <InputDate class="form-control"
-                       @bind-Value="resultado.FechaEmision"
-                       required />
+
+            <!-- 🔥 Fecha local -->
+            <input type="datetime-local"
+                   class="form-control"
+                   value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                   @oninput="e => resultado.FechaEmision = DateTime.Parse(e.Value!.ToString())"
+                   required />
         </div>
 
         <!-- DETALLE -->
@@ -121,6 +129,7 @@
     private List<ExamenDTO> examenesFiltrados = new();
     private List<DoctorDTO> doctores = new();
 
+    private bool mostrarExamen = false;
     private bool mostrarConfirmacion;
     private string? mensaje;
 
@@ -132,15 +141,39 @@
 
     private async Task OnPacienteChange()
     {
-        if (resultado.IdPaciente > 0)
-        {
-            var examenes = await examenService.GetExamenes();
-            examenesFiltrados = examenes
-                .Where(x => x.IdPaciente == resultado.IdPaciente)
-                .ToList();
+        mensaje = "";
+        mostrarExamen = false;
+        examenesFiltrados.Clear();
+        resultado.IdExamen = 0;
 
-            resultado.IdExamen = 0;
+        if (resultado.IdPaciente <= 0)
+            return;
+
+        var citas = await citaService.GetCitasPorPaciente(resultado.IdPaciente);
+
+        bool tieneConsulta = citas.Any(c => c.TipoCita == "CONSULTA" && c.Estado == "Activo");
+        bool tieneExamen = citas.Any(c => c.TipoCita == "EXAMEN" && c.Estado == "Activo");
+
+        if (!tieneConsulta)
+        {
+            mensaje = "⚠ El paciente NO tiene cita de CONSULTA activa. No puede registrar un resultado.";
+            resultado.IdPaciente = 0;
+            return;
         }
+
+        if (!tieneExamen)
+        {
+            mensaje = "⚠ El paciente tiene consulta activa, pero NO tiene citas de EXAMEN activas.";
+            return;
+        }
+
+        var examenes = await examenService.GetExamenes();
+
+        examenesFiltrados = examenes
+            .Where(x => x.IdPaciente == resultado.IdPaciente)
+            .ToList();
+
+        mostrarExamen = true;
     }
 
     private void ConfirmarGuardar()

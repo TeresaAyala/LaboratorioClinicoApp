@@ -2,59 +2,89 @@
 
 @using LaboratorioClinicoApp.DTO
 @using LaboratorioClinicoApp.Services
-
 @inject ExamenService examenService
 @inject PacienteService pacienteService
 @inject NavigationManager nav
 
-<h3 class="mb-4">Editar Examen</h3>
+<link rel="stylesheet" href="/css/Examenes/formularioAgregarEditarExamen.css" />
 
-@if (examen == null || pacientes == null)
+<div class="container my-4">
+
+    <h3 class="text-center mb-3">Editar Examen</h3>
+
+    @if (examen == null || pacientes == null)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+        <EditForm Model="@examen" OnValidSubmit="()=> mostrarModal=true">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- TIPO DE EXAMEN -->
+            <div class="mb-3">
+                <label class="form-label">Tipo de Examen *</label>
+                <InputText class="form-control" @bind-Value="examen.TipoExamen" required />
+            </div>
+
+            <!-- FECHA -->
+            <div class="mb-3">
+                <label class="form-label">Fecha *</label>
+                <InputDate class="form-control" @bind-Value="examen.Fecha" required />
+            </div>
+
+            <!-- PACIENTE -->
+            <div class="mb-3">
+                <label class="form-label">Paciente *</label>
+                <InputSelect class="form-select" @bind-Value="examen.IdPaciente" required>
+                    @foreach (var p in pacientes)
+                    {
+                        <option value="@p.Id">@p.Nombre @p.Apellido</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <!-- ESTADO -->
+            <div class="mb-3">
+                <label class="form-label">Estado *</label>
+                <InputSelect class="form-select" @bind-Value="examen.Estado" required>
+                    <option>Pendiente</option>
+                    <option>Completado</option>
+                    <option>Cancelado</option>
+                </InputSelect>
+            </div>
+
+            <!-- DESCRIPCIÓN -->
+            <div class="mb-3">
+                <label class="form-label">Descripción *</label>
+                <InputTextArea class="form-control" @bind-Value="examen.Descripcion" required />
+            </div>
+
+            <!-- BOTONES -->
+            <div class="text-center mt-3">
+                <button type="button" class="btn btn-success" @onclick="()=> mostrarModal=true">
+                    Guardar
+                </button>
+                <button class="btn btn-secondary ms-2" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+@if (mostrarModal)
 {
-    <p>Cargando...</p>
-}
-else
-{
-    <EditForm Model="@examen" OnValidSubmit="Guardar">
-        <DataAnnotationsValidator />
-
-        <div class="mb-3">
-            <label class="form-label">Tipo de Examen</label>
-            <InputText class="form-control" @bind-Value="examen.TipoExamen" />
+    <div class="modal-backdrop">
+        <div class="modal-box">
+            <h5>Confirmar acción</h5>
+            <p>¿Está segura que desea guardar los cambios?</p>
+            <div class="text-center mt-3">
+                <button class="btn btn-success me-2" @onclick="GuardarDesdeModal">Sí, guardar</button>
+                <button class="btn btn-secondary" @onclick="()=> mostrarModal=false">Cancelar</button>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label class="form-label">Fecha</label>
-            <InputDate class="form-control" @bind-Value="examen.Fecha" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Paciente</label>
-            <InputSelect class="form-select" @bind-Value="examen.IdPaciente">
-                @foreach (var p in pacientes)
-                {
-                    <option value="@p.Id">@p.Nombre @p.Apellido</option>
-                }
-            </InputSelect>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Estado</label>
-            <InputSelect class="form-select" @bind-Value="examen.Estado">
-                <option>Pendiente</option>
-                <option>Completado</option>
-                <option>Cancelado</option>
-            </InputSelect>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <InputTextArea class="form-control" @bind-Value="examen.Descripcion" />
-        </div>
-
-        <button type="submit" class="btn btn-primary">Guardar</button>
-        <button class="btn btn-secondary ms-2" @onclick="Cancelar">Cancelar</button>
-    </EditForm>
+    </div>
 }
 
 @code {
@@ -63,14 +93,17 @@ else
     ExamenDTO? examen;
     List<PacienteDTO>? pacientes;
 
+    bool mostrarModal = false;
+
     protected override async Task OnInitializedAsync()
     {
         pacientes = await pacienteService.GetPacientes();
         examen = await examenService.GetExamenById(id);
     }
 
-    private async Task Guardar()
+    private async Task GuardarDesdeModal()
     {
+        mostrarModal = false;
         await examenService.UpdateExamen(id, examen);
         nav.NavigateTo("/examenes");
     }

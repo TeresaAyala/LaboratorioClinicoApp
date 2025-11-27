@@ -7,41 +7,61 @@
 @inject PacienteService pacienteService
 @inject NavigationManager nav
 
-<h3 class="mb-4">Detalle del Examen</h3>
+<link rel="stylesheet" href="/css/examenes/detalleExamenes.css" />
 
-@if (examen == null)
-{
-    <p>Cargando...</p>
-}
-else
-{
-    <div class="card shadow-lg p-4">
+<div class="detalle-container">
 
-        <h4>@examen.TipoExamen</h4>
+    <h3>Detalle del Examen</h3>
 
-        <p><strong>Descripción:</strong> @examen.Descripcion</p>
+    @if (examen == null)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+        <div class="detalle-card">
 
-        <p><strong>Fecha:</strong> 
-            @examen.Fecha.ToString("dd/MM/yyyy HH:mm")
-        </p>
+            <div class="info-box">
+                <label>Tipo de Examen:</label>
+                <p>@examen.TipoExamen</p>
+            </div>
 
-        <p><strong>Estado:</strong>
-            <span class="badge bg-primary">@examen.Estado</span>
-        </p>
+            <div class="info-box">
+                <label>Descripción:</label>
+                <p>@examen.Descripcion</p>
+            </div>
 
-        <p><strong>Paciente:</strong> @NombrePaciente()</p>
+            <div class="info-box">
+                <label>Fecha:</label>
+                <p>@examen.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
 
-        <button class="btn btn-primary"
-                @onclick='() => nav.NavigateTo($"/examenes/editarExamenes/{id}")'>
-            Editar
-        </button>
+            <div class="info-box">
+                <label>Estado:</label>
+                <span class="estado @EstadoClase(examen.Estado)">
+                    @examen.Estado
+                </span>
+            </div>
 
-        <button class="btn btn-secondary ms-2"
-                @onclick='() => nav.NavigateTo("/examenes")'>
-            Regresar
-        </button>
-    </div>
-}
+            <div class="info-box">
+                <label>Paciente:</label>
+                <p>@NombrePaciente()</p>
+            </div>
+
+            <div class="text-center mt-3">
+                <button class="btn btn-success"
+                        @onclick='() => nav.NavigateTo($"/examenes/editarExamenes/{id}")'>
+                    Editar
+                </button>
+                <button class="btn btn-secondary ms-2"
+                        @onclick='() => nav.NavigateTo("/examenes")'>
+                    Volver
+                </button>
+            </div>
+
+        </div>
+    }
+</div>
 
 @code {
     [Parameter] public int id { get; set; }
@@ -66,5 +86,16 @@ else
             return $"{paciente.Nombre} {paciente.Apellido}";
 
         return examen?.PacienteNombre ?? "Sin datos";
+    }
+
+    private string EstadoClase(string estado)
+    {
+        return estado.ToLower() switch
+        {
+            "pendiente" => "pendiente",
+            "completado" => "completado",
+            "cancelado" => "cancelado",
+            _ => ""
+        };
     }
 }

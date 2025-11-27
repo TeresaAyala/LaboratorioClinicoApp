@@ -1,50 +1,77 @@
-﻿.exam-card {
+﻿/* ===== TARJETAS DE RESULTADOS ===== */
+.result-card {
     background: #ffffff;
     border-radius: 12px;
     padding: 16px;
     transition: 0.2s;
+    /* Flex para distribuir contenido verticalmente */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Alto uniforme para todas las tarjetas */
+    height: 280px; /* Ajusta según lo que necesites */
+    /* Evita que el contenido se desborde */
+    overflow: hidden;
 }
 
-.exam-click {
+.result-click {
     cursor: pointer;
 }
 
-.exam-card:hover {
+.result-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-.exam-title {
+/* Título del resultado */
+.result-title {
     font-size: 18px;
     color: #1a237e;
     margin-bottom: 8px;
+    /* Evitar que se desborde y cortar con puntos suspensivos si es largo */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.info-box {
+/* Caja de información */
+.result-info-box {
     background: #f1f4ff;
     padding: 8px 10px;
     border-radius: 8px;
     margin-bottom: 6px;
     font-size: 14px;
+    /* Limitar altura si hay demasiado texto */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.label {
+/* Etiquetas dentro de info-box */
+.result-label {
     font-weight: bold;
 }
 
-.estado {
+/* Estado del resultado */
+.result-estado {
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: bold;
+    text-align: center;
 }
 
-    .estado.activo {
+    .result-estado.Validado {
         background: #d4f8d4;
         color: #1b5e20;
     }
 
-    .estado.inactivo {
+    .result-estado.Entregado {
+        background: #98B5ED;
+        color: #1A3966;
+    }
+
+    .result-estado.Anulado {
         background: #ffd6d6;
         color: #b71c1c;
     }

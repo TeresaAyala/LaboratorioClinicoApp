@@ -1,8 +1,17 @@
-﻿.exam-card {
+﻿/* ===== TARJETAS DE EXÁMENES ===== */
+.exam-card {
     background: #ffffff;
     border-radius: 12px;
     padding: 16px;
     transition: 0.2s;
+    /* Flex para distribuir contenido verticalmente */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Alto uniforme para todas las tarjetas */
+    height: 280px; /* Ajusta según lo que necesites */
+    /* Evita que el contenido se desborde */
+    overflow: hidden;
 }
 
 .exam-click {
@@ -14,29 +23,42 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+/* Título del examen */
 .exam-title {
     font-size: 18px;
     color: #1a237e;
     margin-bottom: 8px;
+    /* Evitar que se desborde y cortar con puntos suspensivos si es largo */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+/* Caja de información */
 .info-box {
     background: #f1f4ff;
     padding: 8px 10px;
     border-radius: 8px;
     margin-bottom: 6px;
     font-size: 14px;
+    /* Limitar altura si hay demasiado texto */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
+/* Etiquetas dentro de info-box */
 .label {
     font-weight: bold;
 }
 
+/* Estado del examen */
 .estado {
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: bold;
+    text-align: center;
 }
 
     .estado.activo {
