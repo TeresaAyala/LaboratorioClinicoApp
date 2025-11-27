@@ -2,141 +2,177 @@
 @using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
 @inject PacienteService pacienteService
+@inject DoctorService doctorService
 @inject NavigationManager navManager
 
+<div class="container my-5" style="max-width: 1200px;">
 
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white text-center">
-            <h3 class="mb-0">
-                <i class="bi bi-person-badge"></i> Lista de Pacientes
-            </h3>
+    <!-- CARD PRINCIPAL -->
+    <div class="card shadow-lg border-0 rounded-4">
+
+        <!-- ENCABEZADO PROFESIONAL -->
+        <div class="card-header text-white text-center"
+             style="background: linear-gradient(135deg, #0d47a1, #1976d2); border-radius: .8rem .8rem 0 0;">
+            <h2 class="mb-0 fw-bold">
+                <i class="bi bi-people-fill me-2"></i> Gestión de Pacientes
+            </h2>
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-4">
 
-            <!-- Barra superior -->
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <div>
-                    <button class="btn btn-success" @onclick='() => navManager.NavigateTo("/pacientes/agregarPaciente")'>
-                        <i class="bi bi-plus-circle me-1"></i> Agregar Paciente
-                    </button>
+            <!-- BARRA SUPERIOR -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+
+                <!-- Botón agregar -->
+                <button class="btn btn-success shadow-sm rounded-pill px-4 py-2 fw-semibold"
+                        @onclick='() => navManager.NavigateTo("/pacientes/agregarPaciente")'>
+                    <i class="bi bi-plus-circle me-2"></i> Nuevo Paciente
+                </button>
+
+                <!-- Buscador -->
+                <div class="input-group shadow-sm" style="max-width: 350px;">
+                    <span class="input-group-text bg-white">
+                        <i class="bi bi-search text-primary"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0"
+                           placeholder="Buscar por nombre o apellido..."
+                           @bind="searchTerm"
+                           @bind:event="oninput" />
+                </div>
             </div>
 
-            <!-- CAMBIO 1: Input de búsqueda vinculado a 'searchTerm' y con evento OnInput -->
-            <div class="input-group" style="max-width: 300px;">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control"
-                       placeholder="Buscar paciente por nombre..."
-                       @bind="searchTerm"
-                       @bind:event="oninput" />
-            </div>
-
+            <!-- ERRORES -->
             @if (!string.IsNullOrEmpty(errorMessage))
             {
-                <div class="alert alert-danger text-center">@errorMessage</div>
+                <div class="alert alert-danger text-center shadow-sm rounded-3">@errorMessage</div>
             }
 
-            @if (pacientes == null)
+            <!-- CARGANDO -->
+            @if (pacientes == null || doctores == null)
             {
-                <div class="text-center my-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-3">Cargando pacientes...</p>
+                <div class="text-center my-5">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+                    <p class="mt-3 fs-5 text-muted">Cargando pacientes...</p>
                 </div>
             }
-            
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-primary text-center">
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Apellido</th>
-                            <th>Fecha Nacimiento</th>
-                            <th>Teléfono</th>
-                            <th>Email</th>
-                            <th>Dirección</th>
-                            <th>Usuario ID</th>
-                            <th>Doctor ID</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- CAMBIO 3: Iteramos sobre la lista filtrada (filteredPacientes) -->
-                        @foreach (var paciente in filteredPacientes)
-                        {
+            else
+            {
+                <!-- TABLA -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+
+                        <thead class="text-white"
+                               style="background: linear-gradient(135deg, #1565c0, #1e88e5);">
                             <tr>
-                                <td>@paciente.Nombre</td>
-                                <td>@paciente.Apellido</td>
-                                <td>@paciente.FechaNacimiento.ToString("yyyy-MM-dd")</td>
-                                <td>@paciente.Telefono</td>
-                                <td>@paciente.Email</td>
-                                <td>@paciente.Direccion</td>
-                                <td>@paciente.IdUsuario</td>
-                                <td>@paciente.IdDoctor</td>
-                                <td>
-                                    @if (paciente.Estado == "Activo")
-                                    {
-                                        <span class="badge bg-success">Activo</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger">Inactivo</span>
-                                    }
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-primary"
-                                            @onclick='() => navManager.NavigateTo($"/pacientes/editarPaciente/{paciente.Id}")'>
-                                        <i class="bi bi-pencil-square"></i> Editar
-                                    </button>
-                                </td>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Fecha Nacimiento</th>
+                                <th>Teléfono</th>
+                                <th>Email</th>
+                                <th>Dirección</th>
+                                <th>Usuario ID</th>
+                                <th>Doctor</th>   <!-- CAMBIADO -->
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            
+                        </thead>
+
+                        <tbody class="table-group-divider">
+                            @foreach (var paciente in filteredPacientes)
+                            {
+                                <tr>
+                                    <td>@paciente.Nombre</td>
+                                    <td>@paciente.Apellido</td>
+                                    <td>@paciente.FechaNacimiento.ToString("yyyy-MM-dd")</td>
+                                    <td>@paciente.Telefono</td>
+                                    <td>@paciente.Email</td>
+                                    <td>@paciente.Direccion</td>
+                                    <td>@paciente.IdUsuario</td>
+
+                                    <!-- MOSTRAR NOMBRE DEL DOCTOR -->
+                                    <td>
+                                        <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm">
+                                            @ObtenerNombreDoctor(paciente.IdDoctor)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @if (paciente.Estado == "Activo")
+                                        {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger px-3 py-2 rounded-pill shadow-sm">Inactivo</span>
+                                        }
+                                    </td>
+
+                                    <td class="text-center">
+                                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm"
+                                                @onclick='() => navManager.NavigateTo($"/pacientes/editarPaciente/{paciente.Id}")'>
+                                            <i class="bi bi-pencil-square me-1"></i> Editar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
 
-
 @code {
-    // Lista original de pacientes cargada desde el servicio
     private List<PacienteDTO>? pacientes = null;
+    private List<DoctorDTO>? doctores = null;   // <--- AGREGADO
     private string? errorMessage = null;
 
-    // NUEVA PROPIEDAD: para almacenar el texto de búsqueda del usuario
     private string searchTerm = string.Empty;
 
-    // NUEVA PROPIEDAD COMPUTADA: devuelve la lista filtrada
-    // Se recalcula automáticamente cada vez que 'pacientes' o 'searchTerm' cambian
     private List<PacienteDTO> filteredPacientes =>
         pacientes == null || string.IsNullOrWhiteSpace(searchTerm)
-        ? pacientes ?? new List<PacienteDTO>() // Si no hay búsqueda o pacientes, devuelve la lista completa (o vacía si es null)
-        : pacientes
-            .Where(p =>
-                // Filtra por nombre O apellido, convirtiendo a minúsculas para búsqueda insensible a mayúsculas
-                (p.Nombre != null && p.Nombre.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (p.Apellido != null && p.Apellido.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
-            )
-            .ToList();
-
+        ? pacientes ?? new List<PacienteDTO>()
+        : pacientes.Where(p =>
+                (p.Nombre != null && p.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                (p.Apellido != null && p.Apellido.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+           )
+           .ToList();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPacientes();
+        await LoadDoctores();   // <--- AGREGADO
     }
 
     private async Task LoadPacientes()
     {
         try
         {
-            // Nota: Se asume que PacienteService.GetPacientes() carga TODOS los pacientes.
             pacientes = await pacienteService.GetPacientes();
         }
         catch (Exception ex)
         {
             errorMessage = $"Error al cargar pacientes: {ex.Message}";
         }
+    }
+
+    private async Task LoadDoctores()
+    {
+        try
+        {
+            doctores = await doctorService.GetDoctors();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar doctores: {ex.Message}";
+        }
+    }
+
+    private string ObtenerNombreDoctor(int idDoctor)
+    {
+        var doc = doctores?.FirstOrDefault(d => d.Id == idDoctor);
+        return doc != null ? doc.Nombre : "Sin asignar";
     }
 }

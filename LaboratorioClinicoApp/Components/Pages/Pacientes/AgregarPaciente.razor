@@ -5,109 +5,133 @@
 @inject DoctorService doctorService
 @inject NavigationManager navManager
 
-<h3 class="text-center mb-4">Agregar Paciente</h3>
+<div class="container my-5" style="max-width: 900px;">
+    <div class="card shadow-lg border-0 rounded-4">
 
-<div class="card p-4 shadow-sm">
-
-    @if (errorMessage != null)
-    {
-        <div class="alert alert-danger text-center">@errorMessage</div>
-    }
-
-    @if (successMessage != null)
-    {
-        <div class="alert alert-success text-center">@successMessage</div>
-    }
-
-    @if (doctores == null)
-    {
-        <div class="text-center my-4">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-3">Cargando datos...</p>
+        <!-- Encabezado -->
+        <div class="card-header bg-gradient bg-success text-white py-4 rounded-top-4">
+            <h3 class="text-center mb-0">
+                <i class="bi bi-person-plus-fill me-2"></i> Agregar Paciente
+            </h3>
         </div>
-    }
-    else
-    {
-        <EditForm Model="@nuevoPaciente" OnValidSubmit="GuardarPaciente">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
 
-            <div class="row g-3">
+        <div class="card-body p-4">
 
-                <div class="col-md-6">
-                    <label class="form-label">Nombre</label>
-                    <InputText class="form-control" @bind-Value="nuevoPaciente.Nombre" />
+            @if (errorMessage != null)
+            {
+                <div class="alert alert-danger text-center rounded-3">@errorMessage</div>
+            }
+
+            @if (successMessage != null)
+            {
+                <div class="alert alert-success text-center rounded-3">@successMessage</div>
+            }
+
+            @if (doctores == null)
+            {
+                <div class="text-center my-4">
+                    <div class="spinner-border text-success" role="status"></div>
+                    <p class="mt-3">Cargando datos...</p>
                 </div>
+            }
+            else
+            {
+                <EditForm Model="@nuevoPaciente" OnValidSubmit="GuardarPaciente">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
 
-                <div class="col-md-6">
-                    <label class="form-label">Apellido</label>
-                    <InputText class="form-control" @bind-Value="nuevoPaciente.Apellido" />
-                </div>
+                    <div class="row g-4">
 
-                <div class="col-md-6">
-                    <label class="form-label">Fecha Nacimiento</label>
-                    <InputDate class="form-control" @bind-Value="nuevoPaciente.FechaNacimiento" />
-                </div>
+                        <!-- Nombre -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre</label>
+                            <InputText class="form-control form-control-lg rounded-3" @bind-Value="nuevoPaciente.Nombre" />
+                        </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Teléfono</label>
-                    <InputText class="form-control" @bind-Value="nuevoPaciente.Telefono" />
-                </div>
+                        <!-- Apellido -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Apellido</label>
+                            <InputText class="form-control form-control-lg rounded-3" @bind-Value="nuevoPaciente.Apellido" />
+                        </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Email</label>
-                    <InputText class="form-control" @bind-Value="nuevoPaciente.Email" />
-                </div>
+                        <!-- Fecha nacimiento -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha Nacimiento</label>
+                            <InputDate class="form-control form-control-lg rounded-3" @bind-Value="nuevoPaciente.FechaNacimiento" />
+                        </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Dirección</label>
-                    <InputText class="form-control" @bind-Value="nuevoPaciente.Direccion" />
-                </div>
+                        <!-- Teléfono -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Teléfono</label>
+                            <InputText class="form-control form-control-lg rounded-3" @bind-Value="nuevoPaciente.Telefono" />
+                        </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Usuario ID</label>
-                    <InputNumber class="form-control" @bind-Value="nuevoPaciente.IdUsuario" />
-                </div>
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <InputText class="form-control form-control-lg rounded-3" @bind-Value="nuevoPaciente.Email" />
+                        </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Doctor Asignado</label>
-                    <InputSelect class="form-select" @bind-Value="nuevoPaciente.IdDoctor">
-                        <option value="">-- Seleccione un doctor --</option>
-                        @foreach (var doc in doctores)
-                        {
-                            <option value="@doc.Id">@doc.Nombre @doc.Apellido</option>
-                        }
-                    </InputSelect>
-                </div>
+                        <!-- Dirección -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Dirección</label>
+                            <InputText class="form-control form-control-lg rounded-3" @bind-Value="nuevoPaciente.Direccion" />
+                        </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Estado</label>
-                    <InputSelect class="form-select" @bind-Value="nuevoPaciente.Estado">
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                    </InputSelect>
-                </div>
+                        <!-- Usuario -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Usuario ID</label>
+                            <InputNumber class="form-control form-control-lg rounded-3" @bind-Value="nuevoPaciente.IdUsuario" />
+                        </div>
 
-            </div>
+                        <!-- Doctor asignado -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Doctor Asignado</label>
+                            <InputSelect class="form-select form-select-lg rounded-3" @bind-Value="nuevoPaciente.IdDoctor">
+                                <option value="">-- Seleccione un doctor --</option>
+                                @foreach (var doc in doctores)
+                                {
+                                    <option value="@doc.Id">@doc.Nombre @doc.Apellido</option>
+                                }
+                            </InputSelect>
+                        </div>
 
-            <div class="mt-4 text-center">
-                <button class="btn btn-success px-4 me-2" type="submit">
-                    <i class="bi bi-check-circle"></i> Guardar Paciente
-                </button>
+                        <!-- Estado -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Estado</label>
+                            <InputSelect class="form-select form-select-lg rounded-3" @bind-Value="nuevoPaciente.Estado">
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </InputSelect>
+                        </div>
 
-            </div>
+                    </div>
 
-        </EditForm>
-    }
+                    <!-- Botones -->
+                    <div class="mt-5 d-flex justify-content-center gap-3">
+                        <button class="btn btn-success px-4 py-2 rounded-3 fs-5" type="submit">
+                            <i class="bi bi-check-circle me-1"></i> Guardar Paciente
+                        </button>
+
+                        <button class="btn btn-secondary px-4 py-2 rounded-3 fs-5"
+                                @onclick='() => navManager.NavigateTo("/pacientes")'>
+                            <i class="bi bi-arrow-left me-1"></i> Cancelar
+                        </button>
+                    </div>
+
+                </EditForm>
+            }
+        </div>
+    </div>
 </div>
 
 @code {
     private PacienteDTO nuevoPaciente = new()
-        {
-            Estado = "Activo",
-            FechaNacimiento = DateTime.Now.AddYears(-20),
-            IdUsuario = 1
-        };
+    {
+        Estado = "Activo",
+        FechaNacimiento = DateTime.Now.AddYears(-20),
+        IdUsuario = 1
+    };
 
     private List<DoctorDTO>? doctores;
     private string? errorMessage = null;
@@ -129,23 +153,20 @@
     {
         try
         {
-            // ✔ Obtener todos los pacientes
             var pacientes = await pacienteService.GetPacientes();
 
-            // ✔ Verificar email duplicado
             if (pacientes.Any(p => p.Email.ToLower() == nuevoPaciente.Email.ToLower()))
             {
-                errorMessage = "El correo ingresado ya está en uso por otro paciente.";
+                errorMessage = "El correo ingresado ya está en uso.";
                 successMessage = null;
                 return;
             }
 
-            // ✔ Guardar paciente
             await pacienteService.AddPaciente(nuevoPaciente);
             successMessage = "Paciente agregado correctamente.";
             errorMessage = null;
 
-            await Task.Delay(1500);
+            await Task.Delay(1200);
             navManager.NavigateTo("/pacientes");
         }
         catch (Exception ex)
@@ -153,5 +174,4 @@
             errorMessage = "Error al guardar paciente: " + ex.Message;
         }
     }
-
 }
