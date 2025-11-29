@@ -1,83 +1,99 @@
-﻿@page "/menu"
-@inject NavigationManager Nav
-@inject LaboratorioClinicoApp.Services.AuthServices AuthService
+﻿@inject LaboratorioClinicoApp.Services.AuthServices AuthService
 
-<link rel="stylesheet" href="css/menu.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link rel="stylesheet" href="/css/menu.css" />
+
+@code {
+    private bool IsLoggedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoggedIn = await AuthService.IsAuthenticated();
+    }
+}
 
 <div class="hamburger-menu-container">
+
     @if (IsLoggedIn)
     {
-        <button class="hamburger-btn" id="menuToggle" @onclick="ToggleMenu">
+        <button class="hamburger-btn" id="menuToggle">
             <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>
         </button>
     }
 
+    <!-- Logo siempre visible -->
     <h4 class="menu-logo">Laboratorio Clinico</h4>
 </div>
 
 @if (IsLoggedIn)
 {
-    <nav class="side-menu @(IsMenuOpen ? "open" : "")" id="sideMenu">
+    <nav class="side-menu" id="sideMenu">
         <ul>
-            @foreach (var item in menuItems)
-            {
-                if (ShouldShow(item))
-                {
-                    <li>
-                        <a @onclick="() => NavigateTo(item.Url)">
-                            <i class="@item.Icon"></i>
-                            <span>@item.Label</span>
-                        </a>
-                    </li>
-                }
-            }
+            <li>
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/citas">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Citas</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/consulta">
+                    <i class="fas fa-stethoscope"></i>
+                    <span>Consultas</span>
+                </a>
+            </li>
+
+
+            <li>
+                <a href="/doctores">
+                    <i class="fas fa-user-md"></i>
+                    <span>Doctores</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/pacientes">
+                    <i class="fas fa-users"></i>
+                    <span>Pacientes</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/examenes">
+                    <i class="fas fa-microscope"></i>
+                    <span>Exámenes</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/resultados">
+                    <i class="fas fa-vials"></i>
+                    <span>Resultados</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/roles">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Roles</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar sesión</span>
+                </a>
+            </li>
         </ul>
     </nav>
 }
 
-@code {
-    private bool IsLoggedIn;
-    private bool IsMenuOpen = false;
-    private string currentPage = "";
-
-    private List<MenuItem> menuItems = new()
-    {
-        new("/dashboard", "fas fa-home", "Dashboard"),
-        new("/citas", "fas fa-calendar-check", "Citas"),
-        new("/consulta", "fas fa-stethoscope", "Consultas"),
-        new("/doctores", "fas fa-user-md", "Doctores"),
-        new("/pacientes", "fas fa-users", "Pacientes"),
-        new("/examenes", "fas fa-microscope", "Exámenes"),
-        new("/resultados", "fas fa-vials", "Resultados"),
-        new("/roles", "fas fa-user-shield", "Roles"),
-        new("/logout", "fas fa-sign-out-alt", "Cerrar sesión")
-    };
-
-    protected override async Task OnInitializedAsync()
-    {
-        IsLoggedIn = await AuthService.IsAuthenticated();
-        currentPage = Nav.Uri.Replace(Nav.BaseUri, "/").ToLower();
-    }
-
-    private void NavigateTo(string url)
-    {
-        currentPage = url.ToLower();
-        Nav.NavigateTo(url);
-        IsMenuOpen = false; // Cierra el menú al seleccionar
-    }
-
-    private bool ShouldShow(MenuItem item)
-    {
-        return !string.Equals(item.Url.ToLower(), currentPage, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private void ToggleMenu()
-    {
-        IsMenuOpen = !IsMenuOpen;
-    }
-
-    private record MenuItem(string Url, string Icon, string Label);
-}
