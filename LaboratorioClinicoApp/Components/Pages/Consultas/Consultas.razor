@@ -1,328 +1,257 @@
 ﻿@page "/consulta"
-@using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
-@inject CitaService citaService
+@using LaboratorioClinicoApp.Services
+@inject ConsultaService consultaService
 @inject PacienteService pacienteService
 @inject DoctorService doctorService
 @inject NavigationManager navManager
 
-<link href="./css/Cita/cita.css" rel="stylesheet" />
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
+<link rel="stylesheet" href="/css/Cita/cita.css" />
 
-<div class="main-layout">
-    <div class="layout-top">
-        <div class="agenda-header">
-            <button class="icon-btn" @onclick="IrHoy">📅 Hoy</button>
-            <div class="agenda-center">
-                <div class="agenda-tabs">
-                    <button class="@(vistaDia ? "active" : "")" @onclick="() => CambiarVista(VistaType.Dia)">Día</button>
-                    <button class="@(vistaSemana ? "active" : "")" @onclick="() => CambiarVista(VistaType.Semana)">Semana</button>
-                    <button class="@(vistaMes ? "active" : "")" @onclick="() => CambiarVista(VistaType.Mes)">Mes</button>
+<div class="citas-container">
+
+    <!-- ENCABEZADO STICKY -->
+    <header class="encabezado-sticky shadow-sm">
+
+        <!-- NAV SUPERIOR -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <button class="btn btn-outline-primary" @onclick="Hoy">
+                <i class="bi bi-calendar-event"></i> Hoy
+            </button>
+
+            <div class="text-center flex-grow-1">
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary @(vistaDia ? "active" : "")"
+                            @onclick="() => CambiarVista(VistaType.Dia)">
+                        Día
+                    </button>
+
+                    <button class="btn btn-outline-secondary @(vistaSemana ? "active" : "")"
+                            @onclick="() => CambiarVista(VistaType.Semana)">
+                        Semana
+                    </button>
+
+                    <button class="btn btn-outline-secondary @(vistaMes ? "active" : "")"
+                            @onclick="() => CambiarVista(VistaType.Mes)">
+                        Mes
+                    </button>
                 </div>
-                <div class="agenda-date">
-                    <button @onclick="DiaAnterior">◀</button>
-                    <span>@fechaSeleccionada.ToString("dddd, dd 'de' MMMM 'de' yyyy")</span>
-                    <button @onclick="DiaSiguiente">▶</button>
+
+                <div class="mt-2 fw-bold fs-5">
+                    @FechaActual.ToString("dddd, dd 'de' MMMM yyyy")
+                </div>
+
+                <div class="mt-1">
+                    <button class="btn btn-sm btn-light me-2" @onclick="DiaAnterior">◀</button>
+                    <button class="btn btn-sm btn-light" @onclick="DiaSiguiente">▶</button>
                 </div>
             </div>
-            <div>👤</div>
+
+            <button class="btn btn-outline-dark">
+                <i class="bi bi-person-circle"></i>
+            </button>
         </div>
 
-        <div class="top-tabs">
-            <button class="top-tab" @onclick='() => navManager.NavigateTo("/citas")'>Citas Exámenes</button>
-            <button class="top-tab active">Consulta Médica</button>
-        </div>
-
-        <div class="filtros">
-            <div class="filtro-item">
-                <label>Paciente</label>
-                <input list="listaPacientes"
-                       class="form-control"
-                       placeholder="Escribe el nombre..."
-                       @bind="textoBusquedaPaciente"
-                       @onblur="FiltrarCitas" />
-
-                <datalist id="listaPacientes">
-                    @foreach (var p in pacientes)
-                    {
-                        <option value="@($"{p.Nombre} {p.Apellido}")"></option>
-                    }
-                </datalist>
+        <!-- TABS -->
+        <div class="tab-menu">
+            <div class="tab-item @(EsConsultas ? "active" : "")"
+                 @onclick="@(() => navManager.NavigateTo("/citas"))">
+                Citas de Exámenes
             </div>
 
-            <div class="filtro-item">
-                <label>Doctor</label>
-                <input list="listaDoctores"
-                       class="form-control"
-                       placeholder="Escribe el nombre..."
-                       @bind="textoBusquedaDoctor"
-                       @onblur="FiltrarCitas" />
-
-                <datalist id="listaDoctores">
-                    @foreach (var d in doctores)
-                    {
-                        <option value="@($"{d.Nombre} {d.Apellido} ({d.Especialidad})")"></option>
-                    }
-                </datalist>
-            </div>
-
-            <div class="filtro-item">
-                <label>Mes</label>
-                <select class="form-select" @onchange="OnFilterMesChange">
-                    <option value="">Todos</option>
-                    @for (int m = 1; m <= 12; m++)
-                    {
-                        <option value="@m" selected="@(filtroMes == m)">@((new DateTime(2000, m, 1)).ToString("MMMM"))</option>
-                    }
-                </select>
-            </div>
-
-            <div class="filtro-item">
-                <label>Fecha</label>
-                <input type="date"
-                       class="form-control"
-                       value="@(fechaFiltro.HasValue? fechaFiltro.Value.ToString("yyyy-MM-dd") : "")"
-                       @onchange="OnFilterFechaChange" />
-            </div>
-
-            <div class="filtro-item">
-                <label>Estado</label>
-                <select class="form-select" @onchange="OnFilterEstadoChange">
-                    <option value="">Todos</option>
-                    <option value="Confirmada" selected="@("Confirmada" == filtroEstado)">Confirmada</option>
-                    <option value="Pendiente" selected="@("Pendiente" == filtroEstado)">Pendiente</option>
-                    <option value="Completada" selected="@("Completada" == filtroEstado)">Completada</option>
-                    <option value="Cancelada" selected="@("Cancelada" == filtroEstado)">Cancelada</option>
-                </select>
-            </div>
-
-            <div class="filtro-actions">
-                <button class="btn-primary" @onclick="NuevaCita">＋ Nueva</button>
+            <div class="tab-item @(EsExamenes ? "active" : "")"
+                 @onclick="@(() => navManager.NavigateTo("/consulta"))">
+                Consultas Médicas
             </div>
         </div>
-    </div>
 
-    <div class="page-content">
-        @if (isLoading)
+        <!-- FILTROS -->
+        <div class="card shadow-sm p-3 filtros-card">
+            <div class="row g-3 align-items-end">
+
+                <!-- PACIENTE -->
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Paciente</label>
+                    <input list="listaPacientes"
+                           class="form-control"
+                           placeholder="Buscar paciente..."
+                           @bind="FiltroPaciente"
+                           @bind:event="oninput" />
+
+                    <datalist id="listaPacientes">
+                        @foreach (var p in pacientes)
+                        {
+                            <option value="@($"{p.Nombre} {p.Apellido}")"></option>
+                        }
+                    </datalist>
+                </div>
+
+                <!-- DOCTOR -->
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Doctor</label>
+                    <input list="listaDoctores"
+                           class="form-control"
+                           placeholder="Buscar doctor..."
+                           @bind="FiltroDoctor"
+                           @bind:event="oninput" />
+
+                    <datalist id="listaDoctores">
+                        @foreach (var d in doctores)
+                        {
+                            <option value="@($"{d.Nombre} {d.Apellido}")"></option>
+                        }
+                    </datalist>
+                </div>
+
+                <!-- FECHA -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" class="form-control" @onchange="OnFechaChange" />
+                </div>
+
+                <!-- NUEVA -->
+                <div class="col-6 col-md-2 d-flex align-items-end">
+                    <button class="btn btn-success w-100" @onclick="NuevaConsulta">
+                        <i class="bi bi-plus-lg"></i> Nueva
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </header>
+
+    <!-- LISTA -->
+    <main class="contenido-scroll">
+
+        @if (consultasFiltradas.Count == 0)
         {
-            <p>Cargando datos...</p>
-        }
-        else if (citasFiltradas.Count == 0)
-        {
-            <p style="text-align:center; color:#888; margin-top:20px;">No hay consultas con estos filtros.</p>
+            <div class="alert alert-info text-center mt-4">No hay consultas con estos filtros.</div>
         }
         else
         {
-            @foreach (var cita in citasFiltradas)
+            @foreach (var item in consultasFiltradas)
             {
-                var paciente = pacientes.FirstOrDefault(x => x.Id == cita.IdPaciente);
-                var doctor = doctores.FirstOrDefault(x => x.Id == cita.IdDoctor);
-                var estadoClass = cita.Estado; // Usamos el estado del DTO
+                <div class="agenda-item shadow-sm" @onclick="() => EditarConsulta(item.Id)">
 
-                <div class="cita-card">
-                    <div class="cita-hora">
-                        @cita.FechaHora.ToString("hh:mm tt")
+                    <div class="agenda-hora text-primary fw-bold">
+                        @item.FechaConsulta.ToString("HH:mm")
+                        <div class="text-muted small">@item.FechaConsulta.ToString("dd/MM/yyyy")</div>
                     </div>
 
-                    <div class="cita-info">
-                        <span class="cita-header-line">Dr(a). @(doctor?.Nombre ?? "---") @(doctor?.Apellido)</span>
-                        <div class="cita-paciente-motivo">
-                            @(paciente?.Nombre ?? "Paciente Desconocido") @(paciente?.Apellido)
+                    <div class="agenda-info">
+                        <div class="fw-bold fs-6">@item.Motivo</div>
+
+                        <div class="text-muted small">
+                            <strong>Paciente:</strong> @GetPacienteNombre(item.IdPaciente)
                         </div>
-                        <div class="cita-meta-doctor">
-                            **Motivo:** @cita.Motivo
+
+                        <div class="text-muted small">
+                            <strong>Doctor:</strong> @GetDoctorNombre(item.IdDoctor)
                         </div>
                     </div>
 
-                    <div class="cita-actions">
-                        <span class="badge-estado @estadoClass">@cita.Estado</span>
-                        <button class="btn-edit"
-                                @onclick='() => navManager.NavigateTo($"/consulta/editar/{cita.Id}")'>
+                    <div class="estado-badge">
+                        <span class="badge bg-success bg-opacity-25 text-success px-3 py-2 rounded-pill">
+                            Activo
+                        </span>
+                    </div>
+
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm"
+                                @onclick="@(() => EditarConsulta(item.Id))">
                             Editar
                         </button>
                     </div>
+
                 </div>
             }
         }
-    </div>
+
+    </main>
 </div>
 
 @code {
-    // --- VARIABLES ---
-    List<CitaDTO> citas = new();
-    List<CitaDTO> citasFiltradas = new();
+
+    List<ConsultaDTO> consultas = new();
+    List<ConsultaDTO> consultasFiltradas = new();
     List<PacienteDTO> pacientes = new();
     List<DoctorDTO> doctores = new();
 
-    // Variables de Estado
-    bool isLoading = true;
-    DateTime fechaSeleccionada = DateTime.Today;
+    string FiltroPaciente = "";
+    string FiltroDoctor = "";
+    string FechaFiltroString = "";
+
+    DateTime FechaActual = DateTime.Today;
+
+    private bool EsConsultas => navManager.Uri.Contains("/citas");
+    private bool EsExamenes => navManager.Uri.Contains("/consulta") &&
+                               !navManager.Uri.Contains("/consulta/editar") &&
+                               !navManager.Uri.Contains("/consulta/agregar");
+
     bool vistaDia = true, vistaSemana = false, vistaMes = false;
+
     enum VistaType { Dia, Semana, Mes }
 
-    // Variables de Filtro
-    string textoBusquedaDoctor = "";
-    string textoBusquedaPaciente = "";
-    string? filtroEstado = null;
-    int? filtroMes = null;
-    DateTime? fechaFiltro = null;
-
-    private const string TipoCitaActual = "CONSULTA";
-
-    // --- AL INICIAR ---
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
-        var todasLasCitas = await citaService.GetCitas();
-
-        // 💥 FILTRAR POR TIPO DE CITA 💥 (solo CONSULTA para esta página)
-        citas = todasLasCitas
-            .Where(c => c.TipoCita.Equals(TipoCitaActual, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
         pacientes = await pacienteService.GetPacientes();
         doctores = await doctorService.GetDoctors();
+        consultas = await consultaService.GetConsultas();
 
-        FiltrarCitas();
-        isLoading = false;
+        AplicarFiltros();
     }
 
-    // --- LÓGICA DE FILTRADO ---
-    void FiltrarCitas()
+    string GetPacienteNombre(int id) =>
+        pacientes.FirstOrDefault(x => x.Id == id) is { } p
+            ? $"{p.Nombre} {p.Apellido}"
+            : "Desconocido";
+
+    string GetDoctorNombre(int id) =>
+        doctores.FirstOrDefault(x => x.Id == id) is { } d
+            ? $"{d.Nombre} {d.Apellido}"
+            : "Desconocido";
+
+    void AplicarFiltros()
     {
-        var query = citas.AsQueryable();
+        var q = consultas.Where(c => c.FechaConsulta.Date == FechaActual.Date);
 
-        // --- 1. Filtro de FECHA (Combinación: FechaFiltro tiene prioridad sobre Vista/FechaSeleccionada) ---
-        if (fechaFiltro.HasValue)
-        {
-            query = query.Where(c => c.FechaHora.Date == fechaFiltro.Value.Date);
-        }
-        else if (vistaDia)
-        {
-            query = query.Where(c => c.FechaHora.Date == fechaSeleccionada.Date);
-        }
-        else if (vistaSemana)
-        {
-            var day = (int)fechaSeleccionada.DayOfWeek;
-            var startOfWeek = fechaSeleccionada.Date.AddDays(-(day == 0 ? 6 : day - 1));
-            var endOfWeek = startOfWeek.AddDays(7);
-            query = query.Where(c => c.FechaHora >= startOfWeek && c.FechaHora < endOfWeek);
-        }
-        else if (vistaMes)
-        {
-            // Usa el mes del filtro si está seleccionado, si no, usa el mes de fechaSeleccionada
-            var mesAConsultar = filtroMes.HasValue ? filtroMes.Value : fechaSeleccionada.Month;
-            query = query.Where(c => c.FechaHora.Month == mesAConsultar && c.FechaHora.Year == fechaSeleccionada.Year);
-        }
+        if (!string.IsNullOrWhiteSpace(FiltroPaciente))
+            q = q.Where(c => GetPacienteNombre(c.IdPaciente)
+            .ToLower().Contains(FiltroPaciente.ToLower()));
 
-        // --- 2. FILTRO DE DOCTOR (Buscador por Nombre y Especialidad) ---
-        if (!string.IsNullOrWhiteSpace(textoBusquedaDoctor))
-        {
-            // Busca la coincidencia en el nombre completo Y especialidad
-            var doctorEncontrado = doctores.FirstOrDefault(d =>
-                $"{d.Nombre} {d.Apellido} ({d.Especialidad})".Contains(textoBusquedaDoctor, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(FiltroDoctor))
+            q = q.Where(c => GetDoctorNombre(c.IdDoctor)
+            .ToLower().Contains(FiltroDoctor.ToLower()));
 
-            if (doctorEncontrado != null)
-            {
-                query = query.Where(c => c.IdDoctor == doctorEncontrado.Id);
-            }
-            else
-            {
-                query = query.Where(c => false);
-            }
-        }
+        consultasFiltradas = q.ToList();
+    }
 
-        // --- 3. FILTRO DE PACIENTE (Buscador por Nombre) ---
-        if (!string.IsNullOrWhiteSpace(textoBusquedaPaciente))
-        {
-            var pacienteEncontrado = pacientes.FirstOrDefault(p =>
-                $"{p.Nombre} {p.Apellido}".Contains(textoBusquedaPaciente, StringComparison.OrdinalIgnoreCase));
+    void OnFechaChange(ChangeEventArgs e)
+    {
+        FechaFiltroString = e.Value?.ToString() ?? "";
+        if (DateTime.TryParse(FechaFiltroString, out var f))
+            FechaActual = f;
 
-            if (pacienteEncontrado != null)
-            {
-                query = query.Where(c => c.IdPaciente == pacienteEncontrado.Id);
-            }
-            else
-            {
-                query = query.Where(c => false);
-            }
-        }
+        AplicarFiltros();
+    }
 
-        // --- 4. Filtro de ESTADO ---
-        if (!string.IsNullOrEmpty(filtroEstado))
-        {
-            query = query.Where(c => c.Estado == filtroEstado);
-        }
+    void CambiarVista(VistaType vista)
+    {
+        vistaDia = vista == VistaType.Dia;
+        vistaSemana = vista == VistaType.Semana;
+        vistaMes = vista == VistaType.Mes;
 
-        citasFiltradas = query.OrderBy(c => c.FechaHora).ToList();
+        AplicarFiltros();
         StateHasChanged();
     }
 
-    // --- FUNCIONES DE EVENTO ---
+    void Hoy() { FechaActual = DateTime.Today; AplicarFiltros(); }
+    void DiaAnterior() { FechaActual = FechaActual.AddDays(-1); AplicarFiltros(); }
+    void DiaSiguiente() { FechaActual = FechaActual.AddDays(1); AplicarFiltros(); }
 
-    void OnFilterEstadoChange(ChangeEventArgs e)
-    {
-        var s = e?.Value?.ToString();
-        filtroEstado = string.IsNullOrEmpty(s) ? null : s;
-        FiltrarCitas();
-    }
-
-    void OnFilterMesChange(ChangeEventArgs e)
-    {
-        if (int.TryParse(e?.Value?.ToString(), out int mes))
-        {
-            filtroMes = mes;
-            fechaSeleccionada = new DateTime(fechaSeleccionada.Year, mes, 1);
-        }
-        else
-        {
-            filtroMes = null;
-        }
-
-        FiltrarCitas();
-    }
-
-    void OnFilterFechaChange(ChangeEventArgs e)
-    {
-        if (DateTime.TryParse(e?.Value?.ToString(), out DateTime fecha))
-        {
-            fechaFiltro = fecha;
-        }
-        else
-        {
-            fechaFiltro = null;
-        }
-
-        vistaDia = true; vistaSemana = vistaMes = false;
-        filtroMes = null;
-
-        FiltrarCitas();
-    }
-
-    void DiaAnterior() { fechaSeleccionada = fechaSeleccionada.AddDays(-1); fechaFiltro = null; FiltrarCitas(); }
-    void DiaSiguiente() { fechaSeleccionada = fechaSeleccionada.AddDays(1); fechaFiltro = null; FiltrarCitas(); }
-    void IrHoy()
-    {
-        fechaSeleccionada = DateTime.Today;
-        fechaFiltro = null;
-        filtroMes = null;
-        vistaDia = true; vistaSemana = vistaMes = false;
-        FiltrarCitas();
-    }
-
-    void NuevaCita() => navManager.NavigateTo("/consulta/agregar");
-
-    void CambiarVista(VistaType tipo)
-    {
-        vistaDia = tipo == VistaType.Dia;
-        vistaSemana = tipo == VistaType.Semana;
-        vistaMes = tipo == VistaType.Mes;
-        fechaFiltro = null;
-
-        if (vistaMes && !filtroMes.HasValue)
-        {
-            fechaSeleccionada = new DateTime(fechaSeleccionada.Year, fechaSeleccionada.Month, 1);
-        }
-
-        FiltrarCitas();
-    }
+    void NuevaConsulta() => navManager.NavigateTo("/consulta/agregar");
+    void EditarConsulta(int id) => navManager.NavigateTo($"/consulta/editar/{id}");
 }

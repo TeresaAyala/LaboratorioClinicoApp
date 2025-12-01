@@ -6,108 +6,127 @@
 @inject NavigationManager navManager
 @inject IJSRuntime JSRuntime
 
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
 <link rel="stylesheet" href="/css/Cita/agregarCita.css" />
 
-<EditForm EditContext="@editContext" OnValidSubmit="UpdateCita">
+<EditForm EditContext="@editContext" OnValidSubmit="ActualizarCita">
     <DataAnnotationsValidator />
 
     <div class="form-wrapper">
         <div class="form-contenedor">
 
-            <h3>🧪 Editar Cita de Examen</h3>
-            <p class="subtitle">Modifique los datos necesarios.</p>
+            <div class="main-container-form">
+                <h3>📝 Editar Cita de Examen</h3>
+                <p class="subtitle">Modifique los datos necesarios.</p>
 
-            <div class="form-container">
+                <div class="form-container">
 
-                <!-- Tipo -->
-                <div class="form-group-flex">
-                    <div class="input-group">
-                        <label>Tipo de Cita</label>
-                        <input type="text" class="form-control" value="EXAMEN" disabled />
-                    </div>
-                </div>
-
-                <!-- PACIENTE -->
-                <div class="section-title">Información del Paciente</div>
-
-                <div class="form-group-flex">
-                    <div class="input-group">
-                        <label>Paciente</label>
-
-                        <input list="listaPacientes"
-                               class="form-control"
-                               @bind="textoBusquedaPaciente"
-                               @onblur="BuscarPaciente"
-                               placeholder="Buscar por nombre..." />
-
-                        <datalist id="listaPacientes">
-                            @foreach (var p in pacientes)
-                            {
-                                <option value="@($"{p.Nombre} {p.Apellido}")"></option>
-                            }
-                        </datalist>
-
-                        <ValidationMessage For="@(() => cita.IdPaciente)" />
+                    <!-- Tipo -->
+                    <div class="form-group-flex">
+                        <div class="input-group">
+                            <label>Tipo de Cita</label>
+                            <input type="text" class="form-control" value="EXAMEN" disabled />
+                        </div>
                     </div>
 
-                    <div class="input-group">
-                        <label>Motivo</label>
-                        <input class="form-control" @bind="cita.Motivo" />
-                    </div>
-                </div>
+                    <!-- PACIENTE -->
+                    <div class="section-title">Información del Paciente</div>
 
-                <!-- FECHA Y HORA -->
-                <div class="section-title">Fecha y Hora</div>
+                    <div class="form-group-flex">
+                        <div class="input-group">
+                            <label>Paciente <span class="required">*</span></label>
 
-                <div class="form-group-flex">
-
-                    <!-- Fecha -->
-                    <div class="input-group">
-                        <label>Fecha</label>
-                        <InputDate @bind-Value="FechaCita"
+                            <input list="listaPacientes"
                                    class="form-control"
-                                   min="@FechaMinimaString" />
+                                   @bind="textoBusquedaPaciente"
+                                   @onblur="BuscarPaciente"
+                                   placeholder="Buscar por nombre..." />
+
+                            <datalist id="listaPacientes">
+                                @foreach (var p in pacientes)
+                                {
+                                    <option value="@($"{p.Nombre} {p.Apellido}")"></option>
+                                }
+                            </datalist>
+
+                            <ValidationMessage For="@(() => cita.IdPaciente)" />
+                        </div>
+
+                        <div class="input-group">
+                            <label>Motivo <span class="required">*</span></label>
+                            <input class="form-control" @bind="cita.Motivo" />
+                        </div>
                     </div>
 
-                    <!-- Hora -->
+                    <!-- FECHA Y HORA -->
+                    <div class="section-title">Fecha y Hora</div>
+
+                    <div class="calendar-hour-container">
+
+                        <!-- CALENDARIO BONITO -->
+                        <div class="calendar-box">
+                            <label class="calendar-title">Seleccione Fecha</label>
+
+                            <div class="pretty-date-wrapper">
+                                <span class="calendar-icon">📅</span>
+
+                                <InputDate @bind-Value="FechaCita"
+                                           class="calendar-control-beauty"
+                                           min="@FechaMinimaString" />
+                            </div>
+                        </div>
+
+                        <!-- HORAS -->
+                        <div class="hours-box">
+                            <label class="hours-title">
+                                Horas Disponibles – @FechaCita.ToString("dddd d 'de' MMMM")
+                            </label>
+
+                            <div class="hours-grid">
+                                @foreach (var h in HorasDisponibles)
+                                {
+                                    <button type="button"
+                                            class="hour-btn @(HoraCitaString == h ? "active" : "")"
+                                            @onclick="() => SeleccionarHora(h)">
+                                        @h
+                                    </button>
+                                }
+
+                                @if (HorasDisponibles.Count == 0)
+                                {
+                                    <p class="sin-horas">No hay horas disponibles.</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ESTADO -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Estado</label>
+                        <InputSelect @bind-Value="cita.Estado" class="form-select">
+                            <option value="Activo">Activo</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </InputSelect>
+                    </div>
+
+                    <!-- NOTAS -->
                     <div class="input-group">
-                        <label>Hora</label>
-                        <select class="form-control" @bind="HoraCitaString">
-                            <option value="">Seleccione una hora</option>
-                            @foreach (var h in HorasDisponibles)
-                            {
-                                <option value="@h">@h</option>
-                            }
-                        </select>
+                        <label>Notas (Opcional)</label>
+                        <textarea class="form-control" rows="3" @bind="cita.NotasConsulta"></textarea>
                     </div>
-                </div>
 
-                <!-- ESTADO -->
-                <div class="input-group">
-                    <label>Estado</label>
-                    <select class="form-control" @bind="cita.Estado">
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                        <option value="Cancelado">Cancelado</option>
-                    </select>
-                </div>
+                    <!-- BOTONES -->
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" type="button" @onclick="Volver">Cancelar</button>
+                        <button class="btn btn-primary" type="submit">Guardar Cambios</button>
+                    </div>
 
-                <!-- NOTAS -->
-                <div class="input-group">
-                    <label>Notas (Opcional)</label>
-                    <textarea class="form-control" rows="3" @bind="cita.NotasConsulta"></textarea>
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger">@errorMessage</div>
+                    }
                 </div>
-
-                <!-- BOTONES -->
-                <div class="form-actions">
-                    <button class="btn btn-secondary" type="button" @onclick="Volver">Cancelar</button>
-                    <button class="btn btn-primary" type="submit">Guardar Cambios</button>
-                </div>
-
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <div class="alert alert-danger">@errorMessage</div>
-                }
             </div>
         </div>
     </div>
@@ -131,7 +150,9 @@
 
     private List<PacienteDTO> pacientes = new();
     private List<CitaDTO> citasDelDia = new();
-    private List<string> HorasDisponibles = new();
+
+    private List<string> HorasTodas = new();
+    private HashSet<string> HorasOcupadas = new();
 
     private string textoBusquedaPaciente = "";
     private string errorMessage = "";
@@ -142,28 +163,18 @@
         pacientes = await pacienteService.GetPacientes();
         cita = await citaService.GetCitaById(id) ?? new CitaDTO();
 
-        // 🔍 DEBUG PARA SABER QUÉ PASA
-        await JSRuntime.InvokeVoidAsync("console.log", "➡️ ID recibido:", id);
-
-        if (cita == null || cita.Id == 0)
-        {
-            await JSRuntime.InvokeVoidAsync("console.log", "❌ La cita NO se cargó. GetCitaById devolvió null o Id=0");
-        }
-        else
-        {
-            await JSRuntime.InvokeVoidAsync("console.log", "✔️ Cita cargada correctamente:", cita);
-        }
+        editContext = new EditContext(cita);
 
         textoBusquedaPaciente = pacientes
             .Where(p => p.Id == cita.IdPaciente)
             .Select(p => $"{p.Nombre} {p.Apellido}")
             .FirstOrDefault();
 
-        editContext = new EditContext(cita);
+        HorasTodas = GenerarHoras();
+        await CargarHoras();
 
-        await CargarHorasDisponibles();
+        StateHasChanged();
     }
-
 
     private string FechaMinimaString => DateTime.Now.ToString("yyyy-MM-dd");
 
@@ -172,26 +183,22 @@
         get => cita.FechaHora.Date;
         set
         {
-            cita.FechaHora = new DateTime(value.Year, value.Month, value.Day,
+            cita.FechaHora = new DateTime(
+                value.Year, value.Month, value.Day,
                 cita.FechaHora.Hour, cita.FechaHora.Minute, 0);
 
-            _ = CargarHorasDisponibles();
+            _ = CargarHoras();
         }
     }
 
-    private async Task CargarHorasDisponibles()
+    private List<string> HorasDisponibles =>
+        HorasTodas.Where(h => !HorasOcupadas.Contains(h) || h == HoraCitaString).ToList();
+
+    private async Task CargarHoras()
     {
-        HorasDisponibles.Clear();
-
-        citasDelDia = (await citaService.GetCitas())
-            .Where(c => c.FechaHora.Date == cita.FechaHora.Date && c.Id != cita.Id)
-            .ToList();
-
-        var ocupadas = citasDelDia.Select(c => c.FechaHora.ToString("HH:mm")).ToList();
-
-        var todas = GenerarHoras();
-
-        HorasDisponibles = todas.Where(h => !ocupadas.Contains(h)).ToList();
+        var todas = await citaService.GetCitas();
+        citasDelDia = todas.Where(c => c.FechaHora.Date == cita.FechaHora.Date && c.Id != cita.Id).ToList();
+        HorasOcupadas = citasDelDia.Select(c => c.FechaHora.ToString("HH:mm")).ToHashSet();
     }
 
     private string HoraCitaString
@@ -204,12 +211,16 @@
         }
     }
 
+    private void SeleccionarHora(string h)
+    {
+        HoraCitaString = h;
+    }
+
     private List<string> GenerarHoras()
     {
         var lista = new List<string>();
-
         var inicio = new TimeSpan(7, 0, 0);
-        var fin = new TimeSpan(11, 0, 0);
+        var fin = new TimeSpan(11, 45, 0);
 
         for (var t = inicio; t <= fin; t = t.Add(TimeSpan.FromMinutes(15)))
             lista.Add(DateTime.Today.Add(t).ToString("HH:mm"));
@@ -219,18 +230,14 @@
 
     private void BuscarPaciente()
     {
-        cita.IdPaciente = 0;
-
-        var encontrado = pacientes.FirstOrDefault(p =>
-            $"{p.Nombre} {p.Apellido}".Equals(textoBusquedaPaciente.Trim(), StringComparison.OrdinalIgnoreCase));
-
-        if (encontrado != null)
-            cita.IdPaciente = encontrado.Id;
+        cita.IdPaciente = pacientes
+            .Where(p => $"{p.Nombre} {p.Apellido}".Equals(textoBusquedaPaciente.Trim(), StringComparison.OrdinalIgnoreCase))
+            .Select(p => p.Id)
+            .FirstOrDefault();
     }
 
-    private async Task UpdateCita()
+    private async Task ActualizarCita()
     {
-        errorMessage = "";
         BuscarPaciente();
 
         if (!editContext.Validate())
@@ -243,7 +250,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = "Error al actualizar la cita: " + ex.Message;
+            errorMessage = ex.Message;
         }
     }
 

@@ -6,6 +6,7 @@
 @inject NavigationManager navManager
 @inject IJSRuntime JSRuntime
 
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
 <link rel="stylesheet" href="/css/Cita/agregarCita.css" />
 
 <EditForm EditContext="@editContext" OnValidSubmit="GuardarCita">
@@ -62,38 +63,56 @@
                     <!-- FECHA Y HORA -->
                     <div class="section-title">Fecha y Hora</div>
 
-                    <div class="form-group-flex">
+                    <div class="calendar-hour-container">
 
-                        <!-- Fecha -->
-                        <div class="input-group">
-                            <label>Fecha</label>
-                            <InputDate @bind-Value="FechaCita"
-                                       class="form-control"
-                                       min="@FechaMinimaString" />
+                        <!-- CALENDARIO BONITO -->
+                        <div class="calendar-box">
+                            <label class="calendar-title">Seleccione Fecha</label>
+
+                            <div class="pretty-date-wrapper">
+                                <span class="calendar-icon">📅</span>
+
+                                <InputDate @bind-Value="FechaCita"
+                                           class="calendar-control-beauty"
+                                           min="@FechaMinimaString" />
+                            </div>
+
                             <ValidationMessage For="@(() => cita.FechaHora)" />
                         </div>
 
-                        <!-- Hora -->
-                        <div class="input-group">
-                            <label>Hora</label>
-                            <select class="form-control" @bind="HoraCitaString">
-                                <option value="">Seleccione una hora</option>
+                        <!-- HORAS -->
+                        <div class="hours-box">
+                            <label class="hours-title">
+                                Horas Disponibles – @FechaCita.ToString("dddd d 'de' MMMM")
+                            </label>
+
+                            <div class="hours-grid">
                                 @foreach (var h in HorasDisponibles)
                                 {
-                                    <option value="@h">@h</option>
+                                    <button type="button"
+                                            class="hour-btn @(HoraCitaString == h ? "active" : "")"
+                                            @onclick="() => SeleccionarHora(h)">
+                                        @h
+                                    </button>
                                 }
-                            </select>
+
+                                @if (HorasDisponibles.Count == 0)
+                                {
+                                    <p class="sin-horas">No hay horas disponibles.</p>
+                                }
+                            </div>
                         </div>
                     </div>
 
+
                     <!-- ESTADO -->
-                    <div class="input-group">
-                        <label>Estado</label>
-                        <select class="form-control" @bind="cita.Estado">
-                            <option value="Activo" selected>Activo</option>
-                            <option value="Inactivo">Inactivo</option>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Estado</label>
+                        <InputSelect @bind-Value="cita.Estado" class="form-select">
+                            <option value="Activo">Activo</option>
+                            <option value="Pendiente">Pendiente</option>
                             <option value="Cancelado">Cancelado</option>
-                        </select>
+                        </InputSelect>
                     </div>
 
                     <!-- NOTAS (opcional) -->
@@ -110,7 +129,7 @@
 
                     @if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        <div class="alert alert-danger">@errorMessage</div>
+                        <div class="alert alert-danger mt-2">@errorMessage</div>
                     }
                 </div>
             </div>
@@ -123,7 +142,7 @@
 {
     <div class="modal-exito">
         <div class="modal-content">
-            <h3>✔️ Cita registrada correctamente</h3>
+            <h3>✔️ Su cita fue guardada exitosamente</h3>
             <button class="btn btn-primary" @onclick="CerrarModalExito">Aceptar</button>
         </div>
     </div>
@@ -139,59 +158,92 @@
     };
 
     private EditContext editContext;
-
     private List<PacienteDTO> pacientes = new();
     private string textoBusquedaPaciente = string.Empty;
     private string errorMessage = string.Empty;
 
-    private List<CitaDTO> citasDelDia = new();
-    private List<string> HorasDisponibles = new();
+    // Horas disponibles
+    private List<string> HorasTodas = new();
+    private List<string> HorasDisponibles => HorasTodas
+        .Where(h => !HorasOcupadasSet.Contains(h))
+        .ToList();
 
+    private HashSet<string> HorasOcupadasSet = new();
+    private List<CitaDTO> citasDelDia = new();
     private bool mostrarExito = false;
 
     protected override async Task OnInitializedAsync()
     {
         editContext = new EditContext(cita);
 
-        cita.FechaHora = DateTime.Now.AddMinutes(15);
+        DateTime inicial = DateTime.Today;
+        if (inicial.DayOfWeek == DayOfWeek.Sunday)
+            inicial = inicial.AddDays(1);
 
+        var prox = AjustarAlSiguienteBloque(DateTime.Now);
+        cita.FechaHora = new DateTime(inicial.Year, inicial.Month, inicial.Day, prox.Hour, prox.Minute, 0);
+
+        HorasTodas = GenerarHoras15MinutosParaDia();
         pacientes = await pacienteService.GetPacientes();
+
+        await CargarHorasDisponibles();
+
+        cita = new CitaDTO();
+        cita.Estado = "Activo";   // ⬅⬅⬅ Por defecto siempre Activo
     }
 
-    private string FechaMinimaString => DateTime.Now.ToString("yyyy-MM-dd");
+    private string FechaMinimaString => DateTime.Today.ToString("yyyy-MM-dd");
 
     private DateTime FechaCita
     {
         get => cita.FechaHora.Date;
         set
         {
+            if (value.DayOfWeek == DayOfWeek.Sunday)
+            {
+                errorMessage = "No se permiten citas los domingos. Se seleccionó el lunes siguiente.";
+                value = value.AddDays(1);
+            }
+            else
+            {
+                errorMessage = "";
+            }
+
             cita.FechaHora = new DateTime(
                 value.Year, value.Month, value.Day,
-                cita.FechaHora.Hour, cita.FechaHora.Minute, 0
-            );
+                cita.FechaHora.Hour, cita.FechaHora.Minute, 0);
 
             _ = CargarHorasDisponibles();
         }
     }
 
+    private List<string> GenerarHoras15MinutosParaDia()
+    {
+        var lista = new List<string>();
+        var inicio = new TimeSpan(7, 0, 0);
+        var fin = new TimeSpan(12, 0, 0);
+
+        for (var t = inicio; t < fin; t = t.Add(TimeSpan.FromMinutes(15)))
+            lista.Add(DateTime.Today.Add(t).ToString("HH:mm"));
+
+        return lista;
+    }
+
     private async Task CargarHorasDisponibles()
     {
-        HorasDisponibles.Clear();
+        HorasOcupadasSet.Clear();
+        citasDelDia.Clear();
 
-        citasDelDia = await citaService.GetCitas();
-        citasDelDia = citasDelDia
-            .Where(c => c.FechaHora.Date == cita.FechaHora.Date)
-            .ToList();
+        var todas = await citaService.GetCitas();
+        var fecha = cita.FechaHora.Date;
 
-        var ocupadas = citasDelDia
+        citasDelDia = todas.Where(c => c.FechaHora.Date == fecha).ToList();
+
+        HorasOcupadasSet = citasDelDia
             .Select(c => c.FechaHora.ToString("HH:mm"))
-            .ToList();
+            .ToHashSet();
 
-        var todas = GenerarHoras();
-
-        HorasDisponibles = todas
-            .Where(h => !ocupadas.Contains(h))
-            .ToList();
+        StateHasChanged();
     }
 
     private string HoraCitaString
@@ -199,26 +251,42 @@
         get => cita.FechaHora.ToString("HH:mm");
         set
         {
-            if (TimeSpan.TryParse(value, out var t))
+            if (!TimeSpan.TryParse(value, out var t))
+                return;
+
+            var fecha = cita.FechaHora.Date;
+
+            var nueva = new DateTime(
+                fecha.Year, fecha.Month, fecha.Day,
+                t.Hours, t.Minutes, 0);
+
+            if (nueva.DayOfWeek == DayOfWeek.Sunday)
             {
-                cita.FechaHora = new DateTime(
-                    cita.FechaHora.Year, cita.FechaHora.Month, cita.FechaHora.Day,
-                    t.Hours, t.Minutes, 0
-                );
+                errorMessage = "No se permiten citas los domingos.";
+                return;
             }
+
+            if (HorasOcupadasSet.Contains(value))
+            {
+                errorMessage = "La hora seleccionada ya está ocupada.";
+                return;
+            }
+
+            errorMessage = "";
+            cita.FechaHora = nueva;
         }
     }
 
-    private List<string> GenerarHoras()
+    private void SeleccionarHora(string h)
     {
-        var lista = new List<string>();
-        var inicio = new TimeSpan(7, 0, 0);
-        var fin = new TimeSpan(11, 0, 0);
+        HoraCitaString = h;
+    }
 
-        for (var t = inicio; t <= fin; t = t.Add(TimeSpan.FromMinutes(15)))
-            lista.Add(DateTime.Today.Add(t).ToString("HH:mm"));
-
-        return lista;
+    private DateTime AjustarAlSiguienteBloque(DateTime now)
+    {
+        var add = (15 - (now.Minute % 15)) % 15;
+        var next = now.AddMinutes(add);
+        return new DateTime(next.Year, next.Month, next.Day, next.Hour, next.Minute - (next.Minute % 15), 0);
     }
 
     private void BuscarPaciente()
@@ -226,8 +294,7 @@
         cita.IdPaciente = 0;
 
         var encontrado = pacientes.FirstOrDefault(p =>
-            $"{p.Nombre} {p.Apellido}".Equals(textoBusquedaPaciente.Trim(),
-            StringComparison.OrdinalIgnoreCase));
+            $"{p.Nombre} {p.Apellido}".Equals(textoBusquedaPaciente.Trim(), StringComparison.OrdinalIgnoreCase));
 
         if (encontrado != null)
             cita.IdPaciente = encontrado.Id;
@@ -236,14 +303,36 @@
     private async Task GuardarCita()
     {
         errorMessage = "";
-
         BuscarPaciente();
 
         if (!editContext.Validate())
             return;
 
+        if (cita.FechaHora.DayOfWeek == DayOfWeek.Sunday)
+        {
+            errorMessage = "No se permiten citas los domingos.";
+            return;
+        }
+
+        var hora = cita.FechaHora.TimeOfDay;
+        if (hora < new TimeSpan(7, 0, 0) || hora >= new TimeSpan(12, 0, 0))
+        {
+            errorMessage = "La hora debe estar entre 07:00 y 11:45.";
+            return;
+        }
+
         try
         {
+            var todas = await citaService.GetCitas();
+            var existe = todas.Any(c => c.FechaHora == cita.FechaHora);
+
+            if (existe)
+            {
+                errorMessage = "La hora ya fue ocupada por otro usuario.";
+                await CargarHorasDisponibles();
+                return;
+            }
+
             await citaService.AddCita(cita);
             mostrarExito = true;
         }
