@@ -10,58 +10,65 @@
 @inject NavigationManager nav
 @inject IJSRuntime JS
 
-<link rel="stylesheet" href="css/Resultados/detalleresultado.css" />
+<link rel="stylesheet" href="/css/Resultados/detalleResultado.css" />
 
-<div class="container my-5">
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white text-center">
-            <h3 class="mb-0">Detalle del Resultado</h3>
+<div class="detalle-container">
+
+    <h3>Detalle del Resultado</h3>
+
+    @if (resultado == null)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+        <div class="detalle-card">
+
+            <div class="info-box">
+                <label>Paciente:</label>
+                <p>@nombrePaciente</p>
+            </div>
+
+            <div class="info-box">
+                <label>Doctor:</label>
+                <p>@nombreDoctor</p>
+            </div>
+
+            <div class="info-box">
+                <label>Tipo de Examen:</label>
+                <p>@tipoExamen</p>
+            </div>
+
+            <div class="info-box">
+                <label>Fecha de Emisión:</label>
+                <p>@resultado.FechaEmision.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+
+            <div class="info-box">
+                <label>Estado:</label>
+                <span class="estado @ClaseEstado(resultado.Estado)">
+                    @resultado.Estado
+                </span>
+            </div>
+
+            <div class="info-box">
+                <label>Detalle del Resultado:</label>
+                <p>@resultado.Detalle</p>
+            </div>
+
+            <div class="text-center mt-3">
+                <button class="btn btn-success" @onclick="GenerarPDF">
+                    Descargar PDF
+                </button>
+
+                <button class="btn btn-secondary ms-2"
+                        @onclick='() => nav.NavigateTo("/resultados")'>
+                    Volver
+                </button>
+            </div>
+
         </div>
-
-        <div class="card-body">
-
-            @if (resultado == null)
-            {
-                <p>Cargando...</p>
-            }
-            else
-            {
-                <div class="row mb-3">
-                    <div class="col-6"><strong>Paciente:</strong> @nombrePaciente</div>
-                    <div class="col-6"><strong>Doctor:</strong> @nombreDoctor</div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-6"><strong>Tipo de Examen:</strong> @tipoExamen</div>
-                    <div class="col-6"><strong>Fecha Emisión:</strong> @resultado.FechaEmision.ToString("yyyy-MM-dd HH:mm")</div>
-                </div>
-
-                <div class="mb-3">
-                    <strong>Estado:</strong>
-                    <span class="badge @(ClaseEstado(resultado.Estado))">
-                        @resultado.Estado
-                    </span>
-                </div>
-
-                <div class="mb-3">
-                    <strong>Detalle del Resultado:</strong>
-                    <p>@resultado.Detalle</p>
-                </div>
-
-                <!-- Botones alineados uno a cada lado -->
-                <div class="d-flex justify-content-between mt-4">
-                    <button class="btn btn-danger" @onclick="GenerarPDF">
-                        Descargar PDF Clínico
-                    </button>
-
-                    <button class="btn btn-secondary" @onclick='() => nav.NavigateTo("/resultados")'>
-                        Volver
-                    </button>
-                </div>
-            }
-
-        </div>
-    </div>
+    }
 </div>
 
 @code {
@@ -82,15 +89,12 @@
         if (resultado == null)
             return;
 
-        // Obtener EXAMEN
         var exam = await examenService.GetExamenById(resultado.IdExamen);
         tipoExamen = exam?.TipoExamen ?? "Desconocido";
 
-        // Obtener DOCTOR
         var doctor = await doctorService.GetDoctorById(resultado.IdDoctor);
         nombreDoctor = doctor != null ? $"{doctor.Nombre} {doctor.Apellido}" : "No registrado";
 
-        // Obtener PACIENTE correctamente
         if (resultado.Paciente != null)
         {
             nombrePaciente = $"{resultado.Paciente.Nombre} {resultado.Paciente.Apellido}";
@@ -101,10 +105,6 @@
             nombrePaciente = paciente != null
                 ? $"{paciente.Nombre} {paciente.Apellido}"
                 : "No registrado";
-        }
-        else
-        {
-            nombrePaciente = "No registrado";
         }
     }
 
@@ -125,15 +125,14 @@
         await JS.InvokeVoidAsync("GenerarPDFResultadoClinico", data);
     }
 
-    // ✅ FUNCIÓN PARA ASIGNAR COLORES SEGÚN ESTADO
     private string ClaseEstado(string estado)
     {
         return estado switch
         {
-            "Validado" => "bg-success",
-            "Entregado" => "bg-primary",
-            "Anulado" => "bg-danger",
-            _ => "bg-secondary"
+            "Validado" => "completado",
+            "Entregado" => "pendiente",
+            "Anulado" => "cancelado",
+            _ => ""
         };
     }
 }

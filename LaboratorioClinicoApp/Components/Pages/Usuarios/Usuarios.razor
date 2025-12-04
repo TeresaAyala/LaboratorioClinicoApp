@@ -1,0 +1,155 @@
+﻿@page "/usuarios"
+
+@using LaboratorioClinicoApp.DTO
+@inject HttpClient Http
+@inject NavigationManager nav
+
+<link rel="stylesheet" href="/css/Usuarios/usuarios.css">
+
+<div class="usuarios-container">
+
+    <!-- HEADER -->
+    <div class="top-bar">
+        <h2 class="titulo">Gestión de Usuarios</h2>
+
+        <button class="fab-crear" @onclick="CrearUsuario">
+            <i class="bi bi-person-plus"></i>
+        </button>
+    </div>
+
+    <!-- BUSCADOR -->
+    <div class="search-box">
+        <span class="icono"><i class="bi bi-search"></i></span>
+        <input type="text" @bind="search" @bind:event="oninput" placeholder="Buscar usuario..." />
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters">
+        <button class="filter-toggle" @onclick="()=>toggleFiltros()">
+            <i class="bi bi-sliders"></i> Filtros
+        </button>
+
+        @if (mostrarFiltros)
+        {
+            <div class="filters-panel">
+                <select @bind="filtroRol">
+                    <option value="">Rol: Todos</option>
+                    <option value="Doctor">Doctor</option>
+                    <option value="Asistente">Asistente</option>
+                    <option value="Admin">Admin</option>
+                </select>
+
+                <select @bind="filtroEstado">
+                    <option value="">Estado: Todos</option>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+        }
+    </div>
+
+    <!-- LISTA DE USUARIOS -->
+    <div class="usuarios-lista">
+
+        @if (usuariosFiltrados is null)
+        {
+            <p class="cargando">Cargando usuarios...</p>
+        }
+        else
+        {
+            @foreach (var u in usuariosFiltrados)
+            {
+                var foto = string.IsNullOrEmpty(u.FotoUrl) ? null : u.FotoUrl;
+                var color = Colores[u.Id % Colores.Count];
+                var estado = GetEstado(u.IdRol);
+
+                <div class="usuario-card shadow"
+                     style="border-left: 5px solid @color;"
+                     @onclick="@(()=>IrDetalle(u.Id))">
+
+                    <!-- AVATAR / FOTO -->
+                    <div class="avatar-container">
+                        @if (foto is not null)
+                        {
+                            <img src="@foto" class="avatar-img" />
+                        }
+                        else
+                        {
+                            <div class="avatar-fallback" style="background:@color">
+                                @u.Username.Substring(0, 1).ToUpper()
+                            </div>
+                        }
+
+                        <!-- Puntito estilo WhatsApp -->
+                        <span class="estado-dot @(estado == "Activo" ? "online" : "offline")"></span>
+                    </div>
+
+                    <!-- INFO -->
+                    <div class="info">
+                        <strong class="nombre">@u.Username</strong>
+                        <p class="email">@u.Username@("clinic.com")</p>
+
+                        <div class="tags">
+                            <span class="tag rol">@GetRol(u.IdRol)</span>
+                            <span class="tag estado @(estado == "Activo" ? "activo" : "inactivo")">
+                                @estado
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="arrow">➜</div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+
+    string search = "";
+    string filtroRol = "";
+    string filtroEstado = "";
+    bool mostrarFiltros = false;
+
+    List<Usuario> usuarios = new();
+    List<Usuario> usuariosFiltrados = new();
+
+    List<string> Colores = new()
+    {
+        "#3f51b5","#009688","#9c27b0","#2196f3",
+        "#ff9800","#e91e63","#4caf50","#795548"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuarios = await Http.GetFromJsonAsync<List<Usuario>>("api/usuario");
+        AplicarFiltros();
+    }
+
+    void toggleFiltros() => mostrarFiltros = !mostrarFiltros;
+
+    void CrearUsuario() => nav.NavigateTo("/usuarios/crear");
+
+    void IrDetalle(int id) => nav.NavigateTo($"/usuarios/detalle/{id}");
+
+    void AplicarFiltros()
+    {
+        usuariosFiltrados = usuarios
+            .Where(u =>
+                (string.IsNullOrEmpty(search) || u.Username.Contains(search, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrEmpty(filtroRol) || GetRol(u.IdRol) == filtroRol) &&
+                (string.IsNullOrEmpty(filtroEstado) || GetEstado(u.IdRol) == filtroEstado)
+            )
+            .ToList();
+    }
+
+    string GetRol(int idRol) => idRol switch
+    {
+        1 => "Admin",
+        2 => "Doctor",
+        3 => "Asistente",
+        _ => "Usuario"
+    };
+
+    string GetEstado(int idRol) => idRol % 2 == 0 ? "Activo" : "Inactivo";
+}

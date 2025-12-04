@@ -26,5 +26,6 @@ namespace LaboratorioClinicoApp.DTO
 
         [Required(ErrorMessage = "⚠️ El ID del usuario es requerido.")]
         public int IdUsuario { get; set; }
+        public string? FotoUrl { get; set; }
     }
 }

@@ -7,9 +7,12 @@
     <base href="/" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="app.css" />
-    <link rel="stylesheet" href="LaboratorioClinicoApp.styles.css" />
+    <link href="bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="app.css" rel="stylesheet" />
+    <link href="LaboratorioClinicoApp.styles.css" rel="stylesheet" />
+
+    <!-- AÑADIDO: CSS del dashboard (ruta relativa, NO con slash inicial) -->
+    <link href="css/dashboard.css" rel="stylesheet" />
 
     <!-- Ícono -->
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -30,6 +33,10 @@
 
     <!-- Script de Blazor -->
     <script src="_framework/blazor.web.js"></script>
+
+    <!-- Chart.js y script del dashboard (rutas relativas) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/dashboardCharts.js"></script>
 
 </body>
 

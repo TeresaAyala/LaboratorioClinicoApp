@@ -1,0 +1,126 @@
+﻿/* ================================
+   CONTENEDOR GENERAL
+=================================*/
+.detalle-container {
+    max-width: 650px;
+    margin: 30px auto;
+    background: #1c2331; /* Azul oscuro elegante */
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* ================================
+   TITULO
+=================================*/
+.detalle-header h2 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.detalle-header span {
+    font-size: 15px;
+    color: #9aa4b2;
+}
+
+/* ================================
+   INFORMACIÓN DEL USUARIO
+=================================*/
+.detalle-card {
+    margin-top: 20px;
+    background: #242c3b;
+    padding: 20px;
+    border-radius: 14px;
+}
+
+.detalle-item {
+    margin-bottom: 15px;
+}
+
+    .detalle-item label {
+        display: block;
+        font-size: 14px;
+        color: #9fb4d1;
+    }
+
+    .detalle-item p {
+        margin: 3px 0 0 0;
+        font-size: 17px;
+        font-weight: 500;
+    }
+
+/* ================================
+   TAGS DE ROL Y ESTADO
+=================================*/
+.tag {
+    padding: 4px 10px;
+    font-size: 13px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+    .tag.doctor {
+        background: #006bff;
+    }
+
+    .tag.admin {
+        background: #9247ff;
+    }
+
+    .tag.asistente {
+        background: #1dbf73;
+    }
+
+    .tag.activo {
+        background: #1dbf73;
+    }
+
+    .tag.inactivo {
+        background: #ff4757;
+    }
+
+/* ================================
+   BOTONES
+=================================*/
+.btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.btn-primary {
+    flex: 1;
+    background: #2d8cff;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .btn-primary:hover {
+        background: #1f6cd4;
+    }
+
+.btn-danger {
+    flex: 1;
+    background: #ff4757;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .btn-danger:hover {
+        background: #d93645;
+    }

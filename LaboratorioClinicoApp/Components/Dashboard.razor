@@ -1,56 +1,59 @@
 ﻿@page "/dashboard"
 
-<!-- CSS del dashboard -->
-<link rel="stylesheet" href="/css/dashboard.css" />
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
 
-<!-- Iconos -->
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-      crossorigin="anonymous" />
+@inject CitaService citaService
+@inject PacienteService pacienteService
+@inject ExamenService examenService
+@inject DoctorService doctorService
+@inject AuthServices authService
+@inject NavigationManager nav
+@inject IJSRuntime JS
 
-<div class="content">
+<link rel="stylesheet" href="/css/Dashboard.css" />
+
+<div class="dashboard-container">
 
     <!-- TOPBAR -->
-    <header class="topbar">
-        <h2>Resumen de Actividad</h2>
-
-        <div class="search">
-            <input type="text" placeholder="Buscar paciente o cita..." />
-            <i class="fas fa-search"></i>
+    <header class="dashboard-topbar">
+        <div class="user-avatar">
+            <img src="https://i.pravatar.cc/80" />
         </div>
-
-        <div class="user-info">
+        <h2>Panel Principal</h2>
+        <div class="topbar-icons">
             <i class="far fa-bell"></i>
-            <img src="https://i.pravatar.cc/60" class="user-photo" />
         </div>
     </header>
 
-    <!-- SALUDO -->
-    <section class="greeting">
-        <h1>Buenos días, <b>Dr. Smith</b></h1>
-    </section>
+    <!-- ESPACIO PARA QUE NO LO TAPE LA TOPBAR -->
+    <div style="height: 70px;"></div>
 
-    <!-- CARDS -->
-    <section class="stats-grid">
+    <!-- CARDS SUPERIORES -->
+    <section class="menu-grid">
 
-        <div class="stat-card">
-            <h3>Citas Pendientes</h3>
-            <span>4</span>
+        <div class="menu-card" @onclick='() => nav.NavigateTo("/pacientes")'>
+            <i class="fas fa-user icon"></i>
+            <h3>Pacientes</h3>
+            <p>Gestión</p>
         </div>
 
-        <div class="stat-card">
-            <h3>Citas para Hoy</h3>
-            <span>12</span>
+        <div class="menu-card" @onclick='() => nav.NavigateTo("/doctores")'>
+            <i class="fas fa-user-md icon"></i>
+            <h3>Doctores</h3>
+            <p>Listado</p>
         </div>
 
-        <div class="stat-card">
-            <h3>Pacientes Nuevos</h3>
-            <span>8</span>
+        <div class="menu-card" @onclick='() => nav.NavigateTo("/citas")'>
+            <i class="fas fa-calendar icon"></i>
+            <h3>Citas</h3>
+            <p>Agenda</p>
         </div>
 
-        <div class="stat-card">
-            <h3>Exámenes por Revisar</h3>
-            <span>3</span>
+        <div class="menu-card" @onclick='() => nav.NavigateTo("/examenes")'>
+            <i class="fas fa-vials icon"></i>
+            <h3>Exámenes</h3>
+            <p>Resultados</p>
         </div>
 
     </section>
@@ -58,31 +61,101 @@
     <!-- PRÓXIMAS CITAS -->
     <section class="block">
         <div class="block-header">
-            <h3>Próximas Citas del Día</h3>
-            <a href="#">Ver Calendario</a>
+            <h3>Próximas Citas</h3>
+            <a href="/citas">Ver todas</a>
         </div>
 
-        <div class="appointments">
-
-            <div class="appointment-card">
-                <div class="time">10:00 AM</div>
-                <div class="details">
-                    <h4>Luisa Fernandez</h4>
-                    <span>Consulta General</span>
-                </div>
-                <div class="status confirmada">Confirmada</div>
+        <div class="progress-group">
+            <p>Confirmadas <span>@CitasConfirmadas</span></p>
+            <div class="progress-bar">
+                <div class="progress confirmadas" style="width:@ConfirmadasPorcentaje%"></div>
             </div>
 
-            <div class="appointment-card">
-                <div class="time">11:00 AM</div>
-                <div class="details">
-                    <h4>Carlos Vargas</h4>
-                    <span>Seguimiento</span>
-                </div>
-                <div class="status pendiente">Pendiente</div>
+            <p>Pendientes <span>@CitasPendientes</span></p>
+            <div class="progress-bar">
+                <div class="progress pendientes" style="width:@PendientesPorcentaje%"></div>
             </div>
-
         </div>
     </section>
 
+    <!-- GRÁFICA EXÁMENES -->
+    <div class="charts-row">
+
+        <section class="block chart-box">
+            <div class="block-header">
+                <h3>Exámenes Recientes</h3>
+            </div>
+            <canvas id="examChart"></canvas>
+        </section>
+
+        <section class="block chart-box">
+            <div class="block-header">
+                <h3>Estado de Citas</h3>
+            </div>
+            <canvas id="citasChart"></canvas>
+        </section>
+
+    </div>
+
+
 </div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/dashboardCharts.js"></script>
+
+@code {
+
+    // Citas
+    int CitasPendientes = 0;
+    int CitasConfirmadas = 0;
+
+    int CitasPendientesCount = 0;
+    int CitasConfirmadasCount = 0;
+    int CitasCompletadasCount = 0;
+    int CitasCanceladasCount = 0;
+
+    double ConfirmadasPorcentaje = 0;
+    double PendientesPorcentaje = 0;
+
+    // Exámenes
+    int ExPendiente = 0;
+    int ExCompleto = 0;
+    int ExCancelado = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var citas = await citaService.GetCitas();
+        var examenes = await examenService.GetExamenes();
+
+        // --- CITAS ---
+        CitasPendientes = citas.Count(c => c.Estado == "Pendiente");
+        CitasConfirmadas = citas.Count(c => c.Estado == "Confirmada");
+
+        int total = CitasPendientes + CitasConfirmadas;
+        if (total > 0)
+        {
+            ConfirmadasPorcentaje = (CitasConfirmadas * 100) / total;
+            PendientesPorcentaje = (CitasPendientes * 100) / total;
+        }
+
+        CitasConfirmadasCount = citas.Count(c => c.Estado == "Confirmada");
+        CitasPendientesCount = citas.Count(c => c.Estado == "Pendiente");
+        CitasCompletadasCount = citas.Count(c => c.Estado == "Completada");
+        CitasCanceladasCount = citas.Count(c => c.Estado == "Cancelada");
+
+        // --- EXÁMENES ---
+        ExPendiente = examenes.Count(e => e.Estado == "Pendiente");
+        ExCompleto = examenes.Count(e => e.Estado == "Completado");
+        ExCancelado = examenes.Count(e => e.Estado == "Cancelado");
+
+        StateHasChanged();
+
+        // Dibujar gráficas (JS)
+        await JS.InvokeVoidAsync("drawExamChart", ExPendiente, ExCompleto, ExCancelado);
+        await JS.InvokeVoidAsync("drawCitasChart",
+            CitasConfirmadasCount, CitasPendientesCount, CitasCompletadasCount, CitasCanceladasCount);
+    }
+}

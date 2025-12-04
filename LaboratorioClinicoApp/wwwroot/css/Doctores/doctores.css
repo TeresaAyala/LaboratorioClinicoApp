@@ -1,70 +1,106 @@
-﻿/* Para que todo el contenido del dashboard baje */
-.content {
-    margin-top: 100px; /* puedes subir a 120 o 140 si quieres más espacio */
-}
-
-/* ===== TARJETAS ===== */
-.doctor-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 16px;
-    transition: 0.2s;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 280px;
-    overflow: hidden;
-}
-
-.doctor-click {
-    cursor: pointer;
-}
-
-.doctor-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* Título igual al de Exámenes */
-.doctor-title {
-    font-size: 18px;
-    color: #1a237e; /* Azul Exámenes */
-    margin-bottom: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Info-box igual al de Exámenes */
-.info-box {
-    background: #f1f4ff; /* Azul suave */
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin-bottom: 6px;
-    font-size: 14px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.label {
-    font-weight: bold;
-}
-
-/* Centrar todo el contenido del contenedor principal */
-.container {
-    display: flex;
-    justify-content: center;
-}
-
-/* Centrar el card */
-.card {
+﻿/* --- CONTENEDOR GENERAL --- */
+.doctores-container {
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 20px;
+
+    /* FIX para que no se tape con la barra azul */
+    padding-top: 100px !important;
 }
 
+/* --- TÍTULO PRINCIPAL --- */
+.titulo {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
 
+/* --- FILTROS Y BOTONES --- */
+.filtros {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
 
-/* Centrar el grid de doctores */
-.row {
-    justify-content: center;
+.filtros button {
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #e6e6e6;
+}
+
+.filtro-activo {
+    background: #007bff !important;
+    color: white !important;
+}
+
+/* --- TABLA DE DOCTORES --- */
+.tabla-doctores {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tabla-doctores th {
+    background: #007bff;
+    color: #fff;
+    padding: 12px;
+    text-align: left;
+}
+
+.tabla-doctores td {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tabla-doctores tr:hover {
+    background: #f5f5f5;
+}
+
+/* --- ESTADO --- */
+.estado {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.estado.activo {
+    background: #d4f8df;
+    color: #1e7e34;
+}
+
+.estado.inactivo {
+    background: #fde2e2;
+    color: #c72525;
+}
+
+/* --- BOTONES DE ACCIÓN --- */
+.btn-accion {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.btn-detalle {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-detalle:hover {
+    background: #138496;
+}
+
+.btn-editar {
+    background: #ffc107;
+    color: black;
+}
+
+.btn-editar:hover {
+    background: #e0a800;
 }

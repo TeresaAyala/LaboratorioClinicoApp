@@ -1,0 +1,94 @@
+﻿@page "/pacientes/detallePaciente/{Id:int}"
+@using LaboratorioClinicoApp.Services
+@using LaboratorioClinicoApp.DTO
+@inject PacienteService pacienteService
+@inject DoctorService doctorService
+@inject NavigationManager nav
+
+<link rel="stylesheet" href="/css/Pacientes/detallePaciente.css" />
+
+<div class="detalle-container">
+
+    @if (cargando)
+    {
+        <p>Cargando datos del paciente...</p>
+    }
+    else if (paciente == null)
+    {
+        <p class="no-data">Paciente no encontrado.</p>
+    }
+    else
+    {
+        <div class="card-detalle">
+
+            <!-- Foto -->
+            <img class="foto-detalle"
+                 src="@fotoMostrar" />
+
+            <!-- Información -->
+            <h2>@paciente.Nombre @paciente.Apellido</h2>
+
+            <div class="info-grid">
+                <p><strong>Teléfono:</strong> @paciente.Telefono</p>
+                <p><strong>Email:</strong> @paciente.Email</p>
+                <p><strong>Dirección:</strong> @paciente.Direccion</p>
+                <p><strong>Estado:</strong> @paciente.Estado</p>
+
+                <p>
+                    <strong>Fecha nacimiento:</strong>
+                    @paciente.FechaNacimiento.ToShortDateString()
+                </p>
+
+                <p><strong>Doctor asignado:</strong> @doctorNombre</p>
+            </div>
+
+            <button class="btn-editar" @onclick="EditarPaciente">
+                Editar Paciente
+            </button>
+
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter] public int Id { get; set; }
+
+    PacienteDTO? paciente;
+    string fotoMostrar = "/images/pacientes/default.png";
+    string doctorNombre = "Sin doctor asignado";
+
+    bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // ✔ Obtener paciente por ID
+            paciente = await pacienteService.GetPacienteById(Id);
+
+            if (paciente != null)
+            {
+                // ✔ Foto
+                if (!string.IsNullOrWhiteSpace(paciente.FotoUrl))
+                    fotoMostrar = paciente.FotoUrl;
+
+                // ✔ Obtener doctor asignado
+                var doctor = await doctorService.GetDoctorById(paciente.IdDoctor);
+                if (doctor != null)
+                    doctorNombre = $"{doctor.Nombre} {doctor.Apellido}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error cargando paciente: " + ex.Message);
+        }
+
+        cargando = false;
+    }
+
+    void EditarPaciente()
+    {
+        nav.NavigateTo($"/pacientes/editarPaciente/{Id}");
+    }
+}

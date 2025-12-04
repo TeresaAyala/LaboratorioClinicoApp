@@ -1,135 +1,119 @@
 ﻿@page "/doctores"
+
 @using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
 @inject DoctorService doctorService
-@inject NavigationManager navManager
+@inject NavigationManager nav
 
-<link rel="stylesheet" href="css/Doctores/doctores.css" />
+<link rel="stylesheet" href="/css/Pacientes/pacientes.css" />
 
-<div class="container my-5">
-    <div class="card shadow-lg border-0">
+<div class="pacientes-container">
 
-        <!-- Encabezado igual que Exámenes -->
-        <div class="card-header bg-primary text-white text-center">
-            <h3 class="mb-0">
-                <i class="bi bi-person-badge"></i> Gestion de Doctores
-            </h3>
-        </div>
+    <!-- HEADER -->
+    <div class="top-bar">
+        <h2>Doctores</h2>
+        <button class="btn-crear" @onclick='() => nav.NavigateTo("/doctores/agregarDoctor")'>
+            + Crear Doctor
+        </button>
+    </div>
 
-        <div class="card-body">
+    <!-- BUSCADOR -->
+    <div class="buscador-container">
+        <input placeholder="Buscar por nombre, especialidad o ID..."
+               @bind="searchTerm" @bind:event="oninput" />
+    </div>
 
-            <!-- Barra superior -->
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <!-- FILTROS -->
+    <div class="filtros-container">
+        @foreach (var f in Filtros)
+        {
+            <button class="filtro-btn @(FiltroActivo(f) ? "activo" : "")"
+                    @onclick="() => CambiarFiltro(f)">
+                @f
+            </button>
+        }
+    </div>
 
-                <button class="btn btn-success"
-                        @onclick='() => navManager.NavigateTo("/doctores/agregarDoctor")'>
-                    <i class="bi bi-plus-circle me-1"></i> Nuevo Doctor
-                </button>
+    <!-- LISTA -->
+    @if (cargando)
+    {
+        <p>Cargando doctores...</p>
+    }
+    else
+    {
+        @foreach (var d in DoctoresFiltrados)
+        {
+            var color = Colores[d.Id % Colores.Count];
 
-                <div class="input-group" style="max-width: 300px;">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control"
-                           placeholder="Buscar nombre o especialidad..."
-                           @bind="searchTerm" @bind:event="oninput" />
+            <div class="paciente-card" @onclick='() => AbrirDetalle(d.Id)'>
+
+                <!-- FOTO / AVATAR -->
+                <div class="avatar-container">
+                    @if (!string.IsNullOrEmpty(d.FotoUrl))
+                    {
+                        <img src="@d.FotoUrl" class="avatar-img" />
+                    }
+                    else
+                    {
+                        <div class="avatar-fallback" style="background:@color">
+                            @d.Nombre.Substring(0, 1).ToUpper()
+                        </div>
+                    }
                 </div>
 
+                <div class="paciente-info">
+                    <h4>@d.Nombre @d.Apellido</h4>
+                    <small>Especialidad: @d.Especialidad</small>
+                </div>
+
+                <span class="flecha">›</span>
             </div>
-
-            <!-- Filtros -->
-            <div class="d-flex gap-2 flex-wrap mb-4">
-                <button class='btn @(estadoSeleccionado == "Todos" ? "btn-primary" : "btn-outline-primary")'
-                        @onclick='() => SeleccionarEstado("Todos")'>
-                    Todos
-                </button>
-
-                <button class='btn @(estadoSeleccionado == "Activo" ? "btn-primary" : "btn-outline-primary")'
-                        @onclick='() => SeleccionarEstado("Activo")'>
-                    Activos
-                </button>
-
-                <button class='btn @(estadoSeleccionado == "Inactivo" ? "btn-primary" : "btn-outline-primary")'
-                        @onclick='() => SeleccionarEstado("Inactivo")'>
-                    Inactivos
-                </button>
-            </div>
-
-            <!-- Grid de tarjetas -->
-            <div class="row g-3">
-
-                @foreach (var doc in DoctoresFinales)
-                {
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="doctor-card doctor-click shadow-sm"
-                             @onclick='() => navManager.NavigateTo($"/doctores/editarDoctor/{doc.Id}")'>
-
-                            <div class="doctor-title">
-                                <i class="bi bi-person-vcard"></i>
-                                <strong>@doc.Nombre @doc.Apellido</strong>
-                            </div>
-
-                            <p class="text-muted small">@doc.Especialidad</p>
-
-                            <div class="info-box">
-                                <span class="label">Teléfono:</span>
-                                <span class="value">@doc.Telefono</span>
-                            </div>
-
-                            <div class="info-box">
-                                <span class="label">Email:</span>
-                                <span class="value">@doc.Email</span>
-                            </div>
-
-                            <div class="info-box">
-                                <span class="label">Licencia:</span>
-                                <span class="value">@doc.LicenciaMedica</span>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="badge px-3 py-2 text-white @(doc.Estado == "Activo" ? "bg-success" : "bg-danger")">
-                                    @doc.Estado
-                                </span>
-
-                                <button class="btn btn-outline-primary btn-sm"
-                                        @onclick:stopPropagation="true"
-                                        @onclick="() => EditarDoctor(doc.Id)">
-                                    <i class="bi bi-pencil-square"></i> Editar
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-                }
-
-            </div>
-
-        </div>
-    </div>
+        }
+    }
 </div>
 
 @code {
 
     private List<DoctorDTO> doctores = new();
     private string searchTerm = "";
-    private string estadoSeleccionado = "Todos";
+    private string filtro = "Todos";
+    private bool cargando = true;
+
+    private List<string> Filtros = new()
+    { "Todos", "Activo", "Inactivo" };
+
+    // Colores igual que usuarios/pacientes
+    List<string> Colores = new()
+    {
+        "#3f51b5","#009688","#9c27b0","#2196f3",
+        "#ff9800","#e91e63","#4caf50","#795548"
+    };
 
     protected override async Task OnInitializedAsync()
     {
-        doctores = await doctorService.GetDoctors();
+        doctores = await doctorService.GetDoctors() ?? new();
+        cargando = false;
+        StateHasChanged();
     }
 
-    private IEnumerable<DoctorDTO> DoctoresFiltrados =>
+    bool FiltroActivo(string f) => filtro == f;
+
+    void CambiarFiltro(string f)
+    {
+        filtro = f;
+    }
+
+    void AbrirDetalle(int id)
+    {
+        nav.NavigateTo($"/doctores/detalle/{id}");
+    }
+
+    IEnumerable<DoctorDTO> DoctoresFiltrados =>
         doctores.Where(d =>
-            $"{d.Nombre} {d.Apellido}".ToLower().Contains(searchTerm.ToLower()) ||
-            (d.Especialidad != null && d.Especialidad.ToLower().Contains(searchTerm.ToLower()))
+            (filtro == "Todos" || d.Estado == filtro) &&
+            (string.IsNullOrWhiteSpace(searchTerm)
+            || $"{d.Nombre} {d.Apellido}".Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            || d.Especialidad.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            || d.Id.ToString().Contains(searchTerm))
         );
-
-    private IEnumerable<DoctorDTO> DoctoresFinales =>
-        estadoSeleccionado == "Todos"
-        ? DoctoresFiltrados
-        : DoctoresFiltrados.Where(d => d.Estado == estadoSeleccionado);
-
-    private void SeleccionarEstado(string estado) => estadoSeleccionado = estado;
-
-    private void EditarDoctor(int id) =>
-        navManager.NavigateTo($"/doctores/editarDoctor/{id}");
 }

@@ -7,6 +7,8 @@
         public string PasswordHash { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public int IdRol { get; set; } = 1;
+
+        public string FotoUrl { get; set; } = string.Empty;
     }
    
 }

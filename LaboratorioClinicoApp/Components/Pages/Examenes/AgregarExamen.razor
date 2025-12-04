@@ -5,81 +5,86 @@
 
 @inject ExamenService examenService
 @inject PacienteService pacienteService
-@inject NavigationManager nav
+@inject NavigationManager navManager
 
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
 <link rel="stylesheet" href="/css/Examenes/formularioAgregarEditarExamen.css" />
 
-<div class="container my-4">
+<div class="offset-navbar">
+    <div class="container my-4">
+        <h3 class="text-center mb-3">Agregar Examen</h3>
 
-    <h3 class="text-center mb-3">Agregar Examen</h3>
+        @if (pacientes == null)
+        {
+            <p>Cargando...</p>
+        }
+        else
+        {
+            <EditForm Model="examen" OnValidSubmit="GuardarExamen">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-    @if (pacientes == null)
-    {
-        <p>Cargando...</p>
-    }
-    else
-    {
-        <EditForm Model="@examen" OnValidSubmit="Guardar">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+                <div class="card p-4 shadow-sm">
 
-            <!-- TIPO EXAMEN -->
-            <div class="mb-3">
-                <label class="form-label">Tipo de Examen *</label>
-                <InputText class="form-control" @bind-Value="examen.TipoExamen" required />
-            </div>
+                    <!-- 🔹 Seleccionar Paciente -->
+                    <div class="mb-3">
+                        <label class="form-label">Paciente</label>
+                        <select class="form-select" @bind="examen.IdPaciente">
+                            <option value="">-- Seleccionar Paciente --</option>
+                            @foreach (var paciente in pacientes)
+                            {
+                                <option value="@paciente.Id">@paciente.Nombre</option>
+                            }
+                        </select>
+                        <ValidationMessage For="@(() => examen.IdPaciente)" />
+                    </div>
 
-            <!-- FECHA -->
-            <div class="mb-3">
-                <label class="form-label">Fecha *</label>
-                <InputDate class="form-control" @bind-Value="examen.Fecha" required />
-            </div>
+                    <!-- 🔹 Tipo de Examen -->
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Examen</label>
+                        <InputText class="form-control" @bind-Value="examen.TipoExamen" />
+                        <ValidationMessage For="@(() => examen.TipoExamen)" />
+                    </div>
 
-            <!-- PACIENTE -->
-            <div class="mb-3">
-                <label class="form-label">Paciente *</label>
-                <InputSelect class="form-select" @bind-Value="examen.IdPaciente" required>
-                    <option value="0">Seleccione...</option>
-                    @foreach (var p in pacientes)
-                    {
-                        <option value="@p.Id">@p.Nombre @p.Apellido</option>
-                    }
-                </InputSelect>
-            </div>
+                    <!-- 🔹 Fecha -->
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <InputDate class="form-control" @bind-Value="examen.Fecha" />
+                        <ValidationMessage For="@(() => examen.Fecha)" />
+                    </div>
 
-            <!-- DESCRIPCIÓN -->
-            <div class="mb-3">
-                <label class="form-label">Descripción *</label>
-                <InputTextArea class="form-control" @bind-Value="examen.Descripcion" required />
-            </div>
+                    <!-- 🔹 Botón Guardar -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                        <button type="button" class="btn btn-secondary ms-2" @onclick="Volver">
+                            Cancelar
+                        </button>
+                    </div>
 
-            <!-- BOTONES -->
-            <div class="text-center mt-3">
-                <button type="submit" class="btn btn-success">Guardar</button>
-                <button class="btn btn-secondary ms-2" @onclick="Cancelar">Cancelar</button>
-            </div>
-        </EditForm>
-    }
+                </div>
+            </EditForm>
+        }
+    </div>
 </div>
 
 @code {
-    ExamenDTO examen = new();
-    List<PacienteDTO>? pacientes;
+    private ExamenDTO examen = new();
+    private List<PacienteDTO>? pacientes;
 
     protected override async Task OnInitializedAsync()
     {
         pacientes = await pacienteService.GetPacientes();
-        examen.Fecha = DateTime.Now;
     }
 
-    private async Task Guardar()
+    private async Task GuardarExamen()
     {
-        await examenService.AddExamen(examen);
-        nav.NavigateTo("/examenes");
+        var mensaje = await examenService.AddExamen(examen);
+        Console.WriteLine(mensaje);
+        navManager.NavigateTo("/examenes");
     }
 
-    private void Cancelar()
+    private void Volver()
     {
-        nav.NavigateTo("/examenes");
+        navManager.NavigateTo("/examenes");
     }
 }

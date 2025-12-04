@@ -1,0 +1,100 @@
+﻿@page "/usuarios/editar/{id:int}"
+
+@using LaboratorioClinicoApp.DTO
+@using LaboratorioClinicoApp.Services
+@inject HttpClient Http
+@inject NavigationManager nav
+@inject AuthServices authServices
+
+<link rel="stylesheet" href="/css/Usuarios/editarUsuario.css">
+
+<div class="edit-container">
+
+    <div class="edit-card">
+        <h2 class="title">✏️ Editar Usuario</h2>
+
+        @if (cargando)
+        {
+            <p class="loading">Cargando datos...</p>
+        }
+        else if (!string.IsNullOrEmpty(error))
+        {
+            <p class="error">@error</p>
+        }
+        else
+        {
+            <div class="form-group">
+
+                <label>Username *</label>
+                <input type="text" @bind="modelo.Username" class="input" />
+
+                <label>Contraseña (opcional)</label>
+                <input type="password" @bind="modelo.Password" class="input" />
+
+                <label>Rol *</label>
+                <select @bind="modelo.IdRol" class="input">
+                    @foreach (var r in roles)
+                    {
+                        <option value="@r.Id">@r.Nombre</option>
+                    }
+                </select>
+
+                <button class="btn-save" @onclick="Guardar">💾 Guardar Cambios</button>
+
+                @if (!string.IsNullOrEmpty(mensaje))
+                {
+                    <p class="msg">@mensaje</p>
+                }
+            </div>
+        }
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter] public int id { get; set; }
+
+    Usuario modelo = new();
+    List<RolDTO> roles = new();
+
+    bool cargando = true;
+    string mensaje = "";
+    string error = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            modelo = await Http.GetFromJsonAsync<Usuario>($"api/usuario/{id}");
+
+            if (modelo == null)
+            {
+                error = "No se encontró el usuario.";
+                cargando = false;
+                return;
+            }
+
+            roles = await authServices.GetRolesFromApiAsync() ?? new();
+        }
+        catch (Exception ex)
+        {
+            error = "Error cargando datos: " + ex.Message;
+        }
+
+        cargando = false;
+    }
+
+    async Task Guardar()
+    {
+        var response = await Http.PutAsJsonAsync($"api/usuario/{id}", modelo);
+
+        if (response.IsSuccessStatusCode)
+        {
+            nav.NavigateTo("/usuarios");
+            return;
+        }
+
+        mensaje = await response.Content.ReadAsStringAsync();
+    }
+}

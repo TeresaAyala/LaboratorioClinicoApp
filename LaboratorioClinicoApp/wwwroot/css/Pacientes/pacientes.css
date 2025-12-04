@@ -1,66 +1,203 @@
-﻿/* ===== Tarjeta general ===== */
-.paciente-card {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    height: 100%; /* ← Hace que todas las columnas emparejen */
-    display: flex;
-    flex-direction: column;
+﻿/* ============================== */
+/* ESPACIADO PARA NO TAPAR HEADER */
+/* ============================== */
+.page-header-spacer {
+    height: 80px;
 }
 
-    .paciente-card .bottom-buttons {
-        margin-top: auto; /* Empuja la sección de botones abajo */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+/* ============================== */
+/* VARIABLES DE COLOR */
+/* Cambian automáticamente según modo */
+/* ============================== */
+:root {
+    /* Light mode */
+    --bg: #f5f7fa;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-sec: #555;
+    --primary: #1976d2;
+    --primary-light: #e3f2fd;
+    --border: #dce3eb;
+    --shadow: rgba(0, 0, 0, 0.08);
+    --shadow-strong: rgba(0, 0, 0, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #121212;
+        --card-bg: #1e1e1e;
+        --text: #f1f1f1;
+        --text-sec: #bbbbbb;
+        --primary: #64b5f6;
+        --primary-light: #263f4f;
+        --border: #333;
+        --shadow: rgba(255, 255, 255, 0.05);
+        --shadow-strong: rgba(255, 255, 255, 0.12);
+    }
+}
+
+/* Suave transición cuando cambia el sistema */
+* {
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ============================== */
+/* CONTENEDOR GENERAL */
+/* ============================== */
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.pacientes-container {
+    padding: 15px;
+}
+
+/* ============================== */
+/* HEADER */
+/* ============================== */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0 20px 0;
+}
+
+    .top-bar h2 {
+        margin: 0;
+        font-weight: 700;
+        color: var(--text);
     }
 
-
-.paciente-click {
+.btn-crear {
+    padding: 8px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s ease;
 }
 
-.paciente-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
+    .btn-crear:hover {
+        filter: brightness(1.08);
+    }
 
-/* Título igual al estilo Exámenes (azul) */
-.paciente-title {
-    font-size: 18px;
-    color: #1a237e;
-    margin-bottom: 10px;
-}
-
-/* Info-box azul suave */
-.info-box {
-    background: #f1f4ff;
-    padding: 8px 10px;
+/* ============================== */
+/* BUSCADOR */
+/* ============================== */
+.buscador-container input {
+    width: 100%;
+    padding: 12px;
     border-radius: 10px;
-    margin-bottom: 6px;
-    font-size: 14px;
+    border: 1px solid var(--border);
+    margin-bottom: 15px;
+    background: var(--card-bg);
+    color: var(--text);
 }
 
-.label {
-    font-weight: bold;
-    margin-right: 3px;
-}
-
-/* Centrar todo el contenido del contenedor principal */
-.container {
+/* ============================== */
+/* FILTROS */
+/* ============================== */
+.filtros-container {
     display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px var(--shadow);
+    margin-bottom: 20px;
+}
+
+.filtro-btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    border: 1px solid var(--primary);
+    background: transparent;
+    cursor: pointer;
+    transition: 0.2s ease;
+    color: var(--primary);
+}
+
+    .filtro-btn:hover {
+        background: var(--primary-light);
+    }
+
+    .filtro-btn.activo {
+        background: var(--primary);
+        color: white;
+    }
+
+/* ============================== */
+/* TARJETAS PACIENTE */
+/* ============================== */
+.paciente-card {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px var(--shadow);
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border);
+}
+
+    .paciente-card:hover {
+        transform: scale(1.015);
+        box-shadow: 0 4px 12px var(--shadow-strong);
+    }
+
+.paciente-foto {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+}
+
+.paciente-info h4 {
+    margin: 0;
+    color: var(--text);
+}
+
+.paciente-info small {
+    color: var(--text-sec);
+}
+
+.flecha {
+    margin-left: auto;
+    font-size: 24px;
+    color: var(--text-sec);
+}
+
+.avatar-container {
+    position: relative;
+    width: 55px;
+    height: 55px;
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-fallback {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
     justify-content: center;
 }
-
-/* Centrar el card */
-.card {
-    margin: 0 auto;
-}
-
-
-
-/* Centrar el grid  */
-.row {
-    justify-content: center;
-}
-

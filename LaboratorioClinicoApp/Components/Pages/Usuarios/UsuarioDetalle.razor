@@ -1,0 +1,81 @@
+﻿@page "/usuarios/detalle/{id:int}"
+
+@inject HttpClient Http
+@inject NavigationManager nav
+@using LaboratorioClinicoApp.DTO
+
+<link rel="stylesheet" href="/css/Usuarios/usuariosDetalle.css">
+
+<div class="detalle-container">
+
+    <button class="back-btn" @onclick="Regresar">← Regresar</button>
+
+    @if (cargando)
+    {
+        <p>Cargando datos...</p>
+    }
+    else if (error != null)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    else
+    {
+        <div class="detalle-card">
+
+            <div class="perfil">
+                <div class="avatar-lg">
+                    @usuario.Username.Substring(0, 1).ToUpper()
+                </div>
+
+                <h2>@usuario.Username</h2>
+                <p class="email">@usuario.Username@("clinic.com")</p>
+
+                <div class="tags">
+                    <span class="tag rol">@rol?.Nombre</span>
+                </div>
+            </div>
+
+            <div class="acciones">
+                <button class="btn-primary" @onclick="Editar">Editar Usuario</button>
+            </div>
+
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    Usuario? usuario;
+    RolDTO? rol;
+
+    bool cargando = true;
+    string? error = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            usuario = await Http.GetFromJsonAsync<Usuario>($"api/usuario/{id}");
+
+            if (usuario == null)
+            {
+                error = "No se encontró el usuario.";
+                return;
+            }
+
+            rol = await Http.GetFromJsonAsync<RolDTO>($"api/rol/{usuario.IdRol}");
+        }
+        catch (Exception ex)
+        {
+            error = "Error al cargar datos: " + ex.Message;
+        }
+        finally
+        {
+            cargando = false; // 🔥 Esto evita que se quede en Cargando...
+        }
+    }
+
+    void Editar() => nav.NavigateTo($"/usuarios/editar/{id}");
+    void Regresar() => nav.NavigateTo("/usuarios");
+}

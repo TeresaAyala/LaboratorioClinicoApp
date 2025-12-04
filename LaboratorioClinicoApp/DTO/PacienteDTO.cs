@@ -28,5 +28,7 @@ namespace LaboratorioClinicoApp.DTO
 
         [Required(ErrorMessage = "⚠️ El ID del doctor es requerido.")]
         public int IdDoctor { get; set; }
+
+        public string? FotoUrl { get; set; }
     }
 }

@@ -1,115 +1,92 @@
-﻿@page "/examenes/editarExamenes/{id:int}"
+﻿@page "/examenes/editarExamen/{id:int}"
 
 @using LaboratorioClinicoApp.DTO
 @using LaboratorioClinicoApp.Services
+
 @inject ExamenService examenService
 @inject PacienteService pacienteService
-@inject NavigationManager nav
+@inject NavigationManager navManager
 
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
 <link rel="stylesheet" href="/css/Examenes/formularioAgregarEditarExamen.css" />
 
-<div class="container my-4">
+<div class="offset-navbar">
+    <div class="container">
+        <h3 class="mb-4 titulo-centrado">Editar Examen</h3>
 
-    <h3 class="text-center mb-3">Editar Examen</h3>
+        @if (examen == null || pacientes == null)
+        {
+            <p>Cargando...</p>
+        }
+        else
+        {
+            <EditForm Model="examen" OnValidSubmit="ActualizarExamen">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-    @if (examen == null || pacientes == null)
-    {
-        <p>Cargando...</p>
-    }
-    else
-    {
-        <EditForm Model="@examen" OnValidSubmit="()=> mostrarModal=true">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+                <div class="card p-4 shadow-sm">
 
-            <!-- TIPO DE EXAMEN -->
-            <div class="mb-3">
-                <label class="form-label">Tipo de Examen *</label>
-                <InputText class="form-control" @bind-Value="examen.TipoExamen" required />
-            </div>
+                    <!-- 🔹 Paciente -->
+                    <div class="mb-3">
+                        <label class="form-label">Paciente</label>
+                        <select class="form-select" @bind="examen.IdPaciente">
+                            @foreach (var paciente in pacientes)
+                            {
+                                <option value="@paciente.Id">@paciente.Nombre</option>
+                            }
+                        </select>
+                        <ValidationMessage For="@(() => examen.IdPaciente)" />
+                    </div>
 
-            <!-- FECHA -->
-            <div class="mb-3">
-                <label class="form-label">Fecha *</label>
-                <InputDate class="form-control" @bind-Value="examen.Fecha" required />
-            </div>
+                    <!-- 🔹 Tipo de Examen -->
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Examen</label>
+                        <InputText class="form-control" @bind-Value="examen.TipoExamen" />
+                        <ValidationMessage For="@(() => examen.TipoExamen)" />
+                    </div>
 
-            <!-- PACIENTE -->
-            <div class="mb-3">
-                <label class="form-label">Paciente *</label>
-                <InputSelect class="form-select" @bind-Value="examen.IdPaciente" required>
-                    @foreach (var p in pacientes)
-                    {
-                        <option value="@p.Id">@p.Nombre @p.Apellido</option>
-                    }
-                </InputSelect>
-            </div>
+                    <!-- 🔹 Fecha -->
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <InputDate class="form-control" @bind-Value="examen.Fecha" />
+                        <ValidationMessage For="@(() => examen.Fecha)" />
+                    </div>
 
-            <!-- ESTADO -->
-            <div class="mb-3">
-                <label class="form-label">Estado *</label>
-                <InputSelect class="form-select" @bind-Value="examen.Estado" required>
-                    <option>Pendiente</option>
-                    <option>Completado</option>
-                    <option>Cancelado</option>
-                </InputSelect>
-            </div>
+                    <!-- 🔹 Botones -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary px-4">Guardar cambios</button>
+                        <button type="button" class="btn btn-secondary ms-2" @onclick="Volver">
+                            Cancelar
+                        </button>
+                    </div>
 
-            <!-- DESCRIPCIÓN -->
-            <div class="mb-3">
-                <label class="form-label">Descripción *</label>
-                <InputTextArea class="form-control" @bind-Value="examen.Descripcion" required />
-            </div>
-
-            <!-- BOTONES -->
-            <div class="text-center mt-3">
-                <button type="button" class="btn btn-success" @onclick="()=> mostrarModal=true">
-                    Guardar
-                </button>
-                <button class="btn btn-secondary ms-2" @onclick="Cancelar">Cancelar</button>
-            </div>
-        </EditForm>
-    }
-</div>
-
-<!-- MODAL DE CONFIRMACIÓN -->
-@if (mostrarModal)
-{
-    <div class="modal-backdrop">
-        <div class="modal-box">
-            <h5>Confirmar acción</h5>
-            <p>¿Está segura que desea guardar los cambios?</p>
-            <div class="text-center mt-3">
-                <button class="btn btn-success me-2" @onclick="GuardarDesdeModal">Sí, guardar</button>
-                <button class="btn btn-secondary" @onclick="()=> mostrarModal=false">Cancelar</button>
-            </div>
-        </div>
+                </div>
+            </EditForm>
+        }
     </div>
-}
+</div>
 
 @code {
     [Parameter] public int id { get; set; }
 
-    ExamenDTO? examen;
-    List<PacienteDTO>? pacientes;
-
-    bool mostrarModal = false;
+    private ExamenDTO? examen;
+    private List<PacienteDTO>? pacientes;
 
     protected override async Task OnInitializedAsync()
     {
-        pacientes = await pacienteService.GetPacientes();
         examen = await examenService.GetExamenById(id);
+        pacientes = await pacienteService.GetPacientes();
     }
 
-    private async Task GuardarDesdeModal()
+    private async Task ActualizarExamen()
     {
-        mostrarModal = false;
-        await examenService.UpdateExamen(id, examen);
-        nav.NavigateTo("/examenes");
+        var mensaje = await examenService.UpdateExamen(id, examen);
+        Console.WriteLine(mensaje);
+        navManager.NavigateTo("/examenes");
     }
 
-    private void Cancelar()
+    private void Volver()
     {
-        nav.NavigateTo("/examenes");
+        navManager.NavigateTo("/examenes");
     }
 }
