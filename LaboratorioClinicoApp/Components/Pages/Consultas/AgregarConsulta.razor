@@ -1,4 +1,4 @@
-﻿@page "/consultas/agregarConsulta"
+﻿@page "/consulta/agregar"
 @using LaboratorioClinicoApp.DTO
 @using LaboratorioClinicoApp.Services
 @inject ConsultaService consultaService
@@ -7,183 +7,283 @@
 @inject CitaService citaService
 @inject NavigationManager navManager
 
-<div class="container my-5">
-    <div class="card shadow-lg border-0 p-4" style="background-color:#f9f9ff;">
-        <h3 class="text-center mb-4 text-primary">
-            <i class="bi bi-plus-circle"></i> Agregar Consulta
-        </h3>
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
+<link rel="stylesheet" href="/css/Consulta/agregarConsulta.css" />
+
+<div class="popup-wrapper">
+    <div class="popup-card shadow-lg">
+
+        <h2 class="form-title">🩺 Agregar Consulta</h2>
+        <p class="form-subtitle">Complete los campos para registrar la consulta médica</p>
 
         @if (!string.IsNullOrEmpty(mensaje))
         {
-            <div style="background-color:@(mensajeError ? "#ffdddd" : "#ddffdd");
-                        padding:10px;
-                        border-radius:8px;
-                        border:1px solid @(mensajeError ? "red" : "green");
-                        margin-bottom:15px;
-                        text-align:center;">
+            <div class="alert-box @(mensajeError ? "alert-error" : "alert-success")">
                 @mensaje
             </div>
         }
 
         <EditForm Model="@consulta" OnValidSubmit="ConfirmarGuardar">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger mb-3" />
+            <ValidationSummary />
 
-            <!-- 🧩 PACIENTE -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Paciente <span class="text-danger">*</span></label>
-                <select class="form-select border-primary shadow-sm"
-                        @bind="consulta.IdPaciente"
-                        @bind:after="OnPacienteChange"
-                        required>
-                    <option value="">Seleccione un paciente</option>
+            <div class="input-group-custom">
+                <label>Paciente <span class="req">*</span></label>
+
+                <input list="listaPacientes"
+                       class="form-control input-beauty"
+                       placeholder="Escriba o seleccione un paciente"
+                       @bind="pacienteNombre"
+                       @bind:after="ValidarPaciente" />
+
+                <datalist id="listaPacientes">
                     @foreach (var p in pacientes)
                     {
-                        <option value="@p.Id">@($"{p.Nombre} {p.Apellido}")</option>
+                        <option value="@($"{p.Nombre} {p.Apellido}")"></option>
                     }
-                </select>
-                <ValidationMessage For="@(() => consulta.IdPaciente)" class="text-danger" />
+                </datalist>
             </div>
 
-            <!-- 🧩 DOCTOR -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Doctor <span class="text-danger">*</span></label>
-                <select class="form-select border-primary shadow-sm"
-                        @bind="consulta.IdDoctor"
-                        required>
-                    <option value="">Seleccione un doctor</option>
+            <div class="input-group-custom">
+                <label>Doctor <span class="req">*</span></label>
+
+                <input list="listaDoctores"
+                       class="form-control input-beauty"
+                       placeholder="Escriba o seleccione un doctor"
+                       @bind="doctorNombre"
+                       @bind:after="ValidarDoctor" />
+
+                <datalist id="listaDoctores">
                     @foreach (var d in doctores)
                     {
-                        <option value="@d.Id">@($"{d.Nombre} {d.Apellido}")</option>
+                        <option value="@($"{d.Nombre} {d.Apellido}")"></option>
                     }
-                </select>
-                <ValidationMessage For="@(() => consulta.IdDoctor)" class="text-danger" />
+                </datalist>
             </div>
 
-            <!-- 🧩 CITA -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Cita vinculada <span class="text-danger">*</span></label>
-                <select class="form-select border-primary shadow-sm"
-                        @bind="consulta.IdCita"
-                        required>
-                    <option value="">Seleccione una cita</option>
-                    @foreach (var c in citasFiltradas)
-                    {
-                        var diaSemana = c.FechaHora.ToString("ddd", new System.Globalization.CultureInfo("es-ES"));
-                        <option value="@c.Id">@($"{char.ToUpper(diaSemana[0]) + diaSemana.Substring(1)}, {c.FechaHora:dd/MM/yyyy HH:mm}")</option>
-                    }
-                </select>
-                <ValidationMessage For="@(() => consulta.IdCita)" class="text-danger" />
+            <div class="input-group-custom mt-3">
+                <label>Motivo <span class="req">*</span></label>
+                <textarea class="form-control input-beauty" rows="3"
+                          @bind="consulta.Motivo" required></textarea>
             </div>
 
-            <!-- 🧩 MOTIVO -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Motivo de consulta <span class="text-danger">*</span></label>
-                <InputTextArea class="form-control border-primary shadow-sm" rows="3" @bind-Value="consulta.Motivo" required />
-                <ValidationMessage For="@(() => consulta.Motivo)" class="text-danger" />
+            <div class="fecha-horas-container">
+
+                <div>
+                    <label>Fecha de Consulta <span class="req">*</span></label>
+
+                    <input type="date"
+                           class="form-control input-beauty"
+                           value="@fechaSeleccionada.ToString("yyyy-MM-dd")"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                           @onchange="OnFechaChange" />
+                </div>
+
+                <div class="hora-container">
+                    <label>
+                        Horas disponibles –
+                        @fechaSeleccionada.ToString("dddd d 'de' MMMM", new System.Globalization.CultureInfo("es-ES"))
+                    </label>
+
+                    <div class="grid-horas">
+                        @foreach (var h in horasDisponibles)
+                        {
+                            bool ocupado = horasOcupadas.Contains(h);
+
+                            <button type="button"
+                                    class="hora-btn @(consultaHora == h ? "hora-activa" : "")"
+                                    disabled="@(ocupado)"
+                                    @onclick="@(() => SeleccionarHora(h))">
+                                @h
+                            </button>
+                        }
+                    </div>
+                </div>
             </div>
 
-            <!-- 🧩 DIAGNÓSTICO -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Diagnóstico</label>
-                <InputTextArea class="form-control border-primary shadow-sm" rows="3" @bind-Value="consulta.Diagnostico" />
-            </div>
-
-            <!-- 🧩 FECHA -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Fecha de consulta <span class="text-danger">*</span></label>
-                <InputDate class="form-control border-primary shadow-sm" @bind-Value="consulta.FechaConsulta" required />
-                <ValidationMessage For="@(() => consulta.FechaConsulta)" class="text-danger" />
-            </div>
-
-            <!-- 🧩 ESTADO -->
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Estado <span class="text-danger">*</span></label>
-                <InputSelect class="form-select border-primary shadow-sm" @bind-Value="consulta.Estado">
-                    <option value="Activa">Activa</option>
-                    <option value="Finalizada">Finalizada</option>
-                    <option value="Cancelada">Cancelada</option>
-                </InputSelect>
-                <ValidationMessage For="@(() => consulta.Estado)" class="text-danger" />
-            </div>
-
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-success px-4 me-2">
-                    <i class="bi bi-save"></i> Guardar Consulta
+            <div class="btn-container">
+                <button type="button" class="btn-secondary-custom"
+                        @onclick="@(() => navManager.NavigateTo("/consulta"))">
+                    Cancelar
                 </button>
-                <button type="button" class="btn btn-secondary px-4" @onclick='()=>navManager.NavigateTo("/consultas")'>
-                    <i class="bi bi-x-circle"></i> Volver
+
+                <button type="submit" class="btn-primary-custom">
+                    Guardar
                 </button>
             </div>
         </EditForm>
 
         @if (mostrarConfirmacion)
         {
-            <div style="position:fixed;
-                        top:0; left:0; right:0; bottom:0;
-                        background-color:rgba(0,0,0,0.4);
-                        display:flex;
-                        justify-content:center;
-                        align-items:center;">
-                <div style="background:white; padding:25px; border-radius:10px; width:320px; text-align:center; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-                    <h5 class="text-primary mb-3">Confirmar acción</h5>
+            <div class="modal-overlay">
+                <div class="modal-box">
+                    <h5>Confirmar acción</h5>
                     <p>¿Desea guardar esta consulta?</p>
-                    <button class="btn btn-primary me-2" @onclick="GuardarConsulta">Aceptar</button>
-                    <button class="btn btn-danger" @onclick="()=>mostrarConfirmacion=false">Cancelar</button>
+
+                    <button class="btn-primary-custom me-2" @onclick="GuardarConsulta">Aceptar</button>
+                    <button class="btn-secondary-custom" @onclick="() => mostrarConfirmacion = false">Cancelar</button>
                 </div>
             </div>
+        }
+
+        @if (mostrarAdvertencia)
+        {
+            <div class="mensaje-flotante">@advertenciaTexto</div>
         }
     </div>
 </div>
 
+
 @code {
-    private ConsultaDTO consulta = new();
+
+    private ConsultaDTO consulta = new() { Estado = "Activa" };
+
     private List<PacienteDTO> pacientes = new();
     private List<DoctorDTO> doctores = new();
     private List<CitaDTO> citasFiltradas = new();
+
+    private string pacienteNombre = "";
+    private string doctorNombre = "";
+
     private string? mensaje;
     private bool mensajeError;
     private bool mostrarConfirmacion;
 
+    private DateTime fechaSeleccionada = DateTime.Today;
+    private string consultaHora = "";
+
+    private List<string> horasDisponibles = new();
+    private List<string> horasOcupadas = new();
+
+    private readonly List<(int Mes, int Dia)> feriados = new()
+    {
+        (1,1),(5,1),(9,15),(12,25)
+    };
+
+    private bool mostrarAdvertencia;
+    private string advertenciaTexto = "";
+
     protected override async Task OnInitializedAsync()
     {
-        try
+        pacientes = await pacienteService.GetPacientes();
+        doctores = await doctorService.GetDoctors();
+
+        // Inicializar horas para el día de hoy
+        GenerarHoras();
+    }
+
+    private void ValidarPaciente()
+    {
+        var p = pacientes
+            .FirstOrDefault(x => $"{x.Nombre} {x.Apellido}".Equals(pacienteNombre, StringComparison.OrdinalIgnoreCase));
+
+        consulta.IdPaciente = p?.Id ?? 0;
+    }
+
+    private void ValidarDoctor()
+    {
+        var d = doctores
+            .FirstOrDefault(x => $"{x.Nombre} {x.Apellido}".Equals(doctorNombre, StringComparison.OrdinalIgnoreCase));
+
+        consulta.IdDoctor = d?.Id ?? 0;
+    }
+
+    private async Task OnFechaChange(ChangeEventArgs e)
+    {
+        consultaHora = ""; // Limpiar hora seleccionada al cambiar la fecha
+
+        // Intentar parsear el valor. Si es nulo o inválido, reestablecer.
+        if (e.Value == null || !DateTime.TryParse(e.Value.ToString(), out DateTime nuevaFecha))
         {
-            pacientes = await pacienteService.GetPacientes();
-            doctores = await doctorService.GetDoctors();
+            fechaSeleccionada = DateTime.Today;
+            GenerarHoras();
+            StateHasChanged(); // Forzar actualización visual
+            return;
         }
-        catch (Exception ex)
+
+        fechaSeleccionada = nuevaFecha;
+
+        // 1. Bloquear Domingos
+        if (fechaSeleccionada.DayOfWeek == DayOfWeek.Sunday)
         {
-            mensaje = $"❌ Error al cargar datos: {ex.Message}";
-            mensajeError = true;
+            MostrarAdvertencia("❌ Los domingos no se atiende.");
+
+            // Reestablecer a la fecha de hoy para limpiar el input visualmente
+            fechaSeleccionada = DateTime.Today;
+            GenerarHoras();
+            StateHasChanged(); // CRUCIAL para que el input refleje la fecha de hoy
+            return;
+        }
+
+        // 2. Bloquear Feriados
+        if (EsFeriado(fechaSeleccionada))
+        {
+            MostrarAdvertencia("🎌 Ese día es feriado. No se atiende.");
+
+            // Reestablecer a la fecha de hoy
+            fechaSeleccionada = DateTime.Today;
+            GenerarHoras();
+            StateHasChanged(); // CRUCIAL para que el input refleje la fecha de hoy
+            return;
+        }
+
+        // --- Cargar Horas Ocupadas (si la fecha es válida) ---
+        var todas = await consultaService.GetConsultas();
+        horasOcupadas = todas
+            .Where(c => c.FechaConsulta.Date == fechaSeleccionada.Date)
+            .Select(c => c.FechaConsulta.ToString("HH:mm"))
+            .ToList();
+
+        // Generar Horas Disponibles (aplica restricción del sábado)
+        GenerarHoras();
+    }
+
+    private bool EsFeriado(DateTime f)
+        => feriados.Any(x => x.Mes == f.Month && x.Dia == f.Day);
+
+    private void GenerarHoras()
+    {
+        horasDisponibles.Clear();
+
+        // LÓGICA CLAVE: Sábado vs. Otros días
+
+        // Horario normal (Lunes a Viernes)
+        if (fechaSeleccionada.DayOfWeek != DayOfWeek.Saturday)
+        {
+            horasDisponibles = new()
+            {
+                "07:00","07:30","08:00","08:30",
+                "09:00","09:30","10:00","10:30",
+                "11:00","11:30",
+                "13:00","13:30","14:00","14:30",
+                "15:00","15:30","16:00","16:30"
+            };
+        }
+        // Horario de Sábado (solo mañana, excluye horas de la tarde)
+        else
+        {
+            horasDisponibles = new()
+            {
+                "07:00","07:30","08:00","08:30",
+                "09:00","09:30","10:00","10:30",
+                "11:00","11:30"
+            };
         }
     }
 
-    private async Task OnPacienteChange()
+    private void SeleccionarHora(string h)
     {
-        if (consulta?.IdPaciente > 0)
-        {
-            var citas = await citaService.GetCitas();
-            citasFiltradas = citas
-                .Where(c => c.IdPaciente == consulta.IdPaciente)
-                .OrderByDescending(c => c.FechaHora)
-                .Take(5)
-                .ToList();
-
-            consulta.IdCita = 0;
-        }
+        consultaHora = h;
+        consulta.FechaConsulta = fechaSeleccionada.Add(TimeSpan.Parse(h));
     }
 
     private void ConfirmarGuardar()
     {
-        if (consulta == null ||
-            consulta.IdPaciente == 0 ||
+        if (consulta.IdPaciente == 0 ||
             consulta.IdDoctor == 0 ||
-            consulta.IdCita == 0 ||
-            string.IsNullOrWhiteSpace(consulta.Motivo) ||
-            consulta.FechaConsulta == default)
+            string.IsNullOrEmpty(consultaHora))
         {
-            mensaje = "⚠️ Debe completar todos los campos obligatorios antes de guardar.";
+            mensaje = "⚠ Debe completar todos los campos obligatorios.";
             mensajeError = true;
             return;
         }
@@ -194,18 +294,29 @@
     private async Task GuardarConsulta()
     {
         mostrarConfirmacion = false;
+
         try
         {
             await consultaService.AddConsulta(consulta);
-            mensaje = "✅ Consulta agregada correctamente.";
+
+            mensaje = "✅ Consulta guardada exitosamente.";
             mensajeError = false;
-            await Task.Delay(2000);
-            navManager.NavigateTo("/consultas");
+
+            await Task.Delay(1200);
+            navManager.NavigateTo("/consulta");
         }
         catch (Exception ex)
         {
             mensaje = $"❌ Error al guardar: {ex.Message}";
             mensajeError = true;
         }
+    }
+
+    private async void MostrarAdvertencia(string msg)
+    {
+        advertenciaTexto = msg;
+        mostrarAdvertencia = true;
+        await Task.Delay(1700);
+        mostrarAdvertencia = false;
     }
 }

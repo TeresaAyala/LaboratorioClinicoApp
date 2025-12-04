@@ -7,79 +7,61 @@
 @inject NavigationManager navManager
 
 <link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
-<link rel="stylesheet" href="/css/Cita/cita.css" />
+<link rel="stylesheet" href="/css/Consulta/consulta.css" /> 
 
 <div class="citas-container">
 
-    <!-- ENCABEZADO STICKY -->
     <header class="encabezado-sticky shadow-sm">
-
-        <!-- NAV SUPERIOR -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-
-            <button class="btn btn-outline-primary" @onclick="Hoy">
+            <button class="btn btn-outline-primary" @onclick="IrHoy">
                 <i class="bi bi-calendar-event"></i> Hoy
             </button>
-
             <div class="text-center flex-grow-1">
                 <div class="btn-group">
                     <button class="btn btn-outline-secondary @(vistaDia ? "active" : "")"
                             @onclick="() => CambiarVista(VistaType.Dia)">
                         Día
                     </button>
-
                     <button class="btn btn-outline-secondary @(vistaSemana ? "active" : "")"
                             @onclick="() => CambiarVista(VistaType.Semana)">
                         Semana
                     </button>
-
                     <button class="btn btn-outline-secondary @(vistaMes ? "active" : "")"
                             @onclick="() => CambiarVista(VistaType.Mes)">
                         Mes
                     </button>
                 </div>
-
                 <div class="mt-2 fw-bold fs-5">
-                    @FechaActual.ToString("dddd, dd 'de' MMMM yyyy")
+                    @fechaSeleccionada.ToString("dddd, dd 'de' MMMM yyyy")
                 </div>
-
                 <div class="mt-1">
                     <button class="btn btn-sm btn-light me-2" @onclick="DiaAnterior">◀</button>
                     <button class="btn btn-sm btn-light" @onclick="DiaSiguiente">▶</button>
                 </div>
             </div>
-
             <button class="btn btn-outline-dark">
                 <i class="bi bi-person-circle"></i>
             </button>
         </div>
 
-        <!-- TABS -->
         <div class="tab-menu">
-            <div class="tab-item @(EsConsultas ? "active" : "")"
+            <div class="tab-item @(navManager.Uri.Contains("/citas") ? "active" : "")"
                  @onclick="@(() => navManager.NavigateTo("/citas"))">
                 Citas de Exámenes
             </div>
 
-            <div class="tab-item @(EsExamenes ? "active" : "")"
+            <div class="tab-item @(navManager.Uri.Contains("/consulta") ? "active" : "")"
                  @onclick="@(() => navManager.NavigateTo("/consulta"))">
                 Consultas Médicas
             </div>
         </div>
 
-        <!-- FILTROS -->
         <div class="card shadow-sm p-3 filtros-card">
             <div class="row g-3 align-items-end">
-
-                <!-- PACIENTE -->
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Paciente</label>
-                    <input list="listaPacientes"
-                           class="form-control"
-                           placeholder="Buscar paciente..."
-                           @bind="FiltroPaciente"
-                           @bind:event="oninput" />
-
+                    <input list="listaPacientes" class="form-control" placeholder="Buscar paciente..."
+                           @bind="FiltroPaciente" @bind:event="oninput" />
                     <datalist id="listaPacientes">
                         @foreach (var p in pacientes)
                         {
@@ -87,171 +69,369 @@
                         }
                     </datalist>
                 </div>
-
-                <!-- DOCTOR -->
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Doctor</label>
-                    <input list="listaDoctores"
-                           class="form-control"
-                           placeholder="Buscar doctor..."
-                           @bind="FiltroDoctor"
-                           @bind:event="oninput" />
-
+                    <input list="listaDoctores" class="form-control" placeholder="Buscar doctor..."
+                           @bind="FiltroDoctor" @bind:event="oninput" />
                     <datalist id="listaDoctores">
-                        @foreach (var d in doctores)
+                        @foreach (var d in doctores.Values) // Usar los valores del diccionario
                         {
-                            <option value="@($"{d.Nombre} {d.Apellido}")"></option>
+                            <option value="@d"></option>
                         }
                     </datalist>
                 </div>
-
-                <!-- FECHA -->
                 <div class="col-6 col-md-2">
                     <label class="form-label">Fecha</label>
-                    <input type="date" class="form-control" @onchange="OnFechaChange" />
+                    <input type="date" class="form-control" @bind="FechaFiltro" />
                 </div>
-
-                <!-- NUEVA -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" @bind="FiltroEstado">
+                        <option value="">Todos</option>
+                        @foreach (var estado in estadosDisponibles)
+                        {
+                            <option value="@estado">@estado</option>
+                        }
+                    </select>
+                </div>
                 <div class="col-6 col-md-2 d-flex align-items-end">
                     <button class="btn btn-success w-100" @onclick="NuevaConsulta">
                         <i class="bi bi-plus-lg"></i> Nueva
                     </button>
                 </div>
-
             </div>
         </div>
-
     </header>
 
-    <!-- LISTA -->
     <main class="contenido-scroll">
-
-        @if (consultasFiltradas.Count == 0)
+        @if (isLoading)
         {
-            <div class="alert alert-info text-center mt-4">No hay consultas con estos filtros.</div>
+            <div class="text-center fs-5 py-5">Cargando consultas...</div>
+        }
+        else if (consultasFiltradas == null || consultasFiltradas.Count == 0)
+        {
+            <div class="alert alert-info text-center mt-3">No hay consultas con estos filtros.</div>
         }
         else
         {
-            @foreach (var item in consultasFiltradas)
-            {
-                <div class="agenda-item shadow-sm" @onclick="() => EditarConsulta(item.Id)">
+            <div class="row g-3 mt-2">
+                @foreach (var consulta in consultasFiltradas)
+                {
+                    <div class="cita-card shadow-sm p-3 rounded-3">
+                        <div class="row align-items-center">
 
-                    <div class="agenda-hora text-primary fw-bold">
-                        @item.FechaConsulta.ToString("HH:mm")
-                        <div class="text-muted small">@item.FechaConsulta.ToString("dd/MM/yyyy")</div>
-                    </div>
+                            <div class="col-3 text-center">
+                                <div class="hora fw-bold">@consulta.FechaConsulta.ToString("hh:mm tt")</div>
+                                <div class="fecha text-muted">@consulta.FechaConsulta.ToString("dd/MM/yyyy")</div>
+                            </div>
 
-                    <div class="agenda-info">
-                        <div class="fw-bold fs-6">@item.Motivo</div>
+                            <div class="col-6">
+                                <div class="titulo-examen fw-semibold">@consulta.Motivo</div>
+                                <div class="paciente text-muted">
+                                    <strong>Paciente:</strong> @GetPacienteNombre(consulta.IdPaciente)
+                                </div>
+                                <div class="detalle text-secondary small">
+                                    <strong>Doctor:</strong> @GetDoctorNombre(consulta.IdDoctor) @* USO DEL GETTER *@
+                                </div>
+                            </div>
 
-                        <div class="text-muted small">
-                            <strong>Paciente:</strong> @GetPacienteNombre(item.IdPaciente)
+                            <div class="col-2 text-center">
+                                <span class="estado-pill @GetEstadoClase(consulta.Estado)"
+                                      @onclick:stopPropagation
+                                      @onclick="@(() => AbrirSelectorEstado(consulta))">
+                                    @consulta.Estado
+                                </span>
+                            </div>
+
+                            <div class="col-1 text-center d-flex flex-row align-items-center justify-content-center">
+                                <button class="btn btn-primary btn-sm"
+                                        @onclick="@(() => EditarConsulta(consulta.Id))"
+                                        title="Editar Consulta">
+                                    Editar
+                                </button>
+                            </div>
+
                         </div>
-
-                        <div class="text-muted small">
-                            <strong>Doctor:</strong> @GetDoctorNombre(item.IdDoctor)
-                        </div>
                     </div>
-
-                    <div class="estado-badge">
-                        <span class="badge bg-success bg-opacity-25 text-success px-3 py-2 rounded-pill">
-                            Activo
-                        </span>
-                    </div>
-
-                    <div>
-                        <button class="btn btn-outline-primary btn-sm"
-                                @onclick="@(() => EditarConsulta(item.Id))">
-                            Editar
-                        </button>
-                    </div>
-
-                </div>
-            }
+                }
+            </div>
         }
-
     </main>
 </div>
 
+@if (mostrarSelectorEstado && consultaSeleccionadaParaEstado != null)
+{
+    <div class="modal-backdrop show"></div>
+    <div class="modal show d-block" tabindex="-1" role="dialog" style="padding-right: 17px;">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Actualizar Estado</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarSelectorEstado"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="mb-2">¿Desea cambiar el estado de la consulta?</p>
+                    <p class="fw-bold">Paciente: <span class="text-primary">@GetPacienteNombre(consultaSeleccionadaParaEstado.IdPaciente)</span></p>
+
+                    <div class="mb-3">
+                        <label for="selectEstado" class="form-label fw-bold">Nuevo Estado</label>
+
+                        <select id="selectEstado" class="form-select" @bind="nuevoEstadoSeleccionado">
+                            @foreach (var estado in estadosDisponibles)
+                            {
+                                <option value="@estado">@estado</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarSelectorEstado">No (Cancelar)</button>
+                    <button type="button" class="btn btn-primary" @onclick="GuardarNuevoEstado">Sí (Guardar)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+    // --- Variables y Servicios ---
+    private List<ConsultaDTO> consultas = new();
+    private List<ConsultaDTO> consultasFiltradas = new();
+    private List<PacienteDTO> pacientes = new();
 
-    List<ConsultaDTO> consultas = new();
-    List<ConsultaDTO> consultasFiltradas = new();
-    List<PacienteDTO> pacientes = new();
-    List<DoctorDTO> doctores = new();
+    // CAMBIO CLAVE: Usamos un diccionario para almacenar los nombres de los doctores, 
+    // mapeados por su ID, para evitar llamadas repetidas a la API.
+    private Dictionary<int, string> doctores = new(); 
 
-    string FiltroPaciente = "";
-    string FiltroDoctor = "";
-    string FechaFiltroString = "";
+    private bool isLoading = true;
+    private DateTime fechaSeleccionada = DateTime.Today;
 
-    DateTime FechaActual = DateTime.Today;
-
-    private bool EsConsultas => navManager.Uri.Contains("/citas");
-    private bool EsExamenes => navManager.Uri.Contains("/consulta") &&
-                               !navManager.Uri.Contains("/consulta/editar") &&
-                               !navManager.Uri.Contains("/consulta/agregar");
-
-    bool vistaDia = true, vistaSemana = false, vistaMes = false;
-
+    private bool vistaDia = true, vistaSemana = false, vistaMes = false;
     enum VistaType { Dia, Semana, Mes }
+
+    // --- Variables para el manejo del estado ---
+    private bool mostrarSelectorEstado = false;
+    private ConsultaDTO? consultaSeleccionadaParaEstado = null;
+    private string nuevoEstadoSeleccionado = "";
+    private readonly List<string> estadosDisponibles = new List<string> { "Activo", "Inactivo", "Cancelado", "Completado" };
+
+    // --- Variables de Filtro ---
+    private string _filtroPaciente = "";
+    private string FiltroPaciente
+    {
+        get => _filtroPaciente;
+        set { _filtroPaciente = value; FiltrarConsultas(); }
+    }
+    private string _filtroDoctor = "";
+    private string FiltroDoctor
+    {
+        get => _filtroDoctor;
+        set { _filtroDoctor = value; FiltrarConsultas(); }
+    }
+    private string? _filtroEstado;
+    private string? FiltroEstado
+    {
+        get => _filtroEstado;
+        set { _filtroEstado = value; FiltrarConsultas(); }
+    }
+    private DateTime? _fechaFiltro;
+    private DateTime? FechaFiltro
+    {
+        get => _fechaFiltro;
+        set { _fechaFiltro = value; FiltrarConsultas(); }
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        pacientes = await pacienteService.GetPacientes();
-        doctores = await doctorService.GetDoctors();
+        isLoading = true;
+
+        // Carga de Consultas y Pacientes
         consultas = await consultaService.GetConsultas();
+        pacientes = await pacienteService.GetPacientes();
 
-        AplicarFiltros();
+        // -----------------------------------------------------
+        // NUEVA LÓGICA PARA OBTENER DOCTORES SIN GetDoctores()
+        // -----------------------------------------------------
+
+        // 1. Obtener los IDs de doctores únicos
+        var idsDoctoresUnicos = consultas
+            .Select(c => c.IdDoctor)
+            .Distinct()
+            .ToList();
+
+        // 2. Cargar la información de cada doctor (una llamada por ID)
+        doctores.Clear();
+        foreach (var id in idsDoctoresUnicos)
+        {
+            if (id > 0 && !doctores.ContainsKey(id))
+            {
+                var doctor = await doctorService.GetDoctorById(id);
+                if (doctor != null)
+                {
+                    doctores.Add(id, $"{doctor.Nombre} {doctor.Apellido}");
+                }
+            }
+        }
+        // -----------------------------------------------------
+
+        FiltrarConsultas();
+        isLoading = false;
     }
 
-    string GetPacienteNombre(int id) =>
-        pacientes.FirstOrDefault(x => x.Id == id) is { } p
-            ? $"{p.Nombre} {p.Apellido}"
-            : "Desconocido";
 
-    string GetDoctorNombre(int id) =>
-        doctores.FirstOrDefault(x => x.Id == id) is { } d
-            ? $"{d.Nombre} {d.Apellido}"
-            : "Desconocido";
+    // --- Métodos de Ayuda ---
 
-    void AplicarFiltros()
+    string GetPacienteNombre(int id) => pacientes.FirstOrDefault(x => x.Id == id) is { } p ? $"{p.Nombre} {p.Apellido}" : "Desconocido";
+    
+    // Método para obtener el nombre del Doctor desde el diccionario
+    string GetDoctorNombre(int id)
     {
-        var q = consultas.Where(c => c.FechaConsulta.Date == FechaActual.Date);
+        if (doctores.TryGetValue(id, out var nombre))
+        {
+            return nombre;
+        }
+        return "Desconocido";
+    }
 
+    private string GetEstadoClase(string estado) =>
+        estado switch
+        {
+            "Activo" => "estado-activo",
+            "Cancelado" => "estado-cancelado",
+            "Completado" => "estado-completado",
+            _ => "estado-default"
+        };
+
+    // --- Lógica de Filtrado ---
+
+    private void FiltrarConsultas()
+    {
+        var query = consultas.AsQueryable();
+
+        // Lógica de Filtrado por vista de fecha
+        if (FechaFiltro.HasValue)
+        {
+            query = query.Where(c => c.FechaConsulta.Date == FechaFiltro.Value.Date);
+        }
+        else if (vistaDia)
+        {
+            query = query.Where(c => c.FechaConsulta.Date == fechaSeleccionada.Date);
+        }
+        else if (vistaSemana)
+        {
+            var day = (int)fechaSeleccionada.DayOfWeek;
+            var startOfWeek = fechaSeleccionada.Date.AddDays(-(day == 0 ? 6 : day - 1));
+            var endOfWeek = startOfWeek.AddDays(7);
+            query = query.Where(c => c.FechaConsulta >= startOfWeek && c.FechaConsulta < endOfWeek);
+        }
+        else if (vistaMes)
+        {
+            var mes = fechaSeleccionada.Month;
+            var year = fechaSeleccionada.Year;
+            query = query.Where(c => c.FechaConsulta.Month == mes && c.FechaConsulta.Year == year);
+        }
+
+        // Filtrado por paciente
         if (!string.IsNullOrWhiteSpace(FiltroPaciente))
-            q = q.Where(c => GetPacienteNombre(c.IdPaciente)
-            .ToLower().Contains(FiltroPaciente.ToLower()));
+        {
+            var buscar = FiltroPaciente.Trim().ToLowerInvariant();
+            var ids = pacientes
+                .Where(p => $"{p.Nombre} {p.Apellido}".ToLowerInvariant().Contains(buscar))
+                .Select(p => p.Id)
+                .ToList();
 
+            if (ids.Any()) query = query.Where(c => ids.Contains(c.IdPaciente));
+            else query = query.Where(c => false);
+        }
+
+        // Filtrado por doctor (Usa el diccionario de doctores)
         if (!string.IsNullOrWhiteSpace(FiltroDoctor))
-            q = q.Where(c => GetDoctorNombre(c.IdDoctor)
-            .ToLower().Contains(FiltroDoctor.ToLower()));
+        {
+            var buscar = FiltroDoctor.Trim().ToLowerInvariant();
+            
+            // Busca IDs cuyos nombres en el diccionario contengan el filtro
+            var ids = doctores
+                .Where(kvp => kvp.Value.ToLowerInvariant().Contains(buscar))
+                .Select(kvp => kvp.Key)
+                .ToList();
 
-        consultasFiltradas = q.ToList();
-    }
+            if (ids.Any()) query = query.Where(c => ids.Contains(c.IdDoctor));
+            else query = query.Where(c => false);
+        }
 
-    void OnFechaChange(ChangeEventArgs e)
-    {
-        FechaFiltroString = e.Value?.ToString() ?? "";
-        if (DateTime.TryParse(FechaFiltroString, out var f))
-            FechaActual = f;
+        // Filtrado por estado
+        if (!string.IsNullOrEmpty(FiltroEstado))
+            query = query.Where(c => c.Estado == FiltroEstado);
 
-        AplicarFiltros();
-    }
-
-    void CambiarVista(VistaType vista)
-    {
-        vistaDia = vista == VistaType.Dia;
-        vistaSemana = vista == VistaType.Semana;
-        vistaMes = vista == VistaType.Mes;
-
-        AplicarFiltros();
+        consultasFiltradas = query.OrderBy(c => c.FechaConsulta).ToList();
         StateHasChanged();
     }
 
-    void Hoy() { FechaActual = DateTime.Today; AplicarFiltros(); }
-    void DiaAnterior() { FechaActual = FechaActual.AddDays(-1); AplicarFiltros(); }
-    void DiaSiguiente() { FechaActual = FechaActual.AddDays(1); AplicarFiltros(); }
+    // --- Navegación y Vistas (SIN CAMBIOS) ---
+    private void DiaAnterior()
+    {
+        if (vistaDia || FechaFiltro.HasValue) fechaSeleccionada = fechaSeleccionada.AddDays(-1);
+        else if (vistaSemana) fechaSeleccionada = fechaSeleccionada.AddDays(-7);
+        else if (vistaMes) fechaSeleccionada = fechaSeleccionada.AddMonths(-1);
+        FiltrarConsultas();
+    }
 
-    void NuevaConsulta() => navManager.NavigateTo("/consulta/agregar");
+    private void DiaSiguiente()
+    {
+        if (vistaDia || FechaFiltro.HasValue) fechaSeleccionada = fechaSeleccionada.AddDays(1);
+        else if (vistaSemana) fechaSeleccionada = fechaSeleccionada.AddDays(7);
+        else if (vistaMes) fechaSeleccionada = fechaSeleccionada.AddMonths(1);
+        FiltrarConsultas();
+    }
+
+    private void IrHoy()
+    {
+        fechaSeleccionada = DateTime.Today;
+        FechaFiltro = null;
+        FiltrarConsultas();
+    }
+
+    private void CambiarVista(VistaType tipo)
+    {
+        vistaDia = tipo == VistaType.Dia;
+        vistaSemana = tipo == VistaType.Semana;
+        vistaMes = tipo == VistaType.Mes;
+        FechaFiltro = null;
+
+        FiltrarConsultas();
+    }
+
+    private void NuevaConsulta() => navManager.NavigateTo("/consulta/agregar");
     void EditarConsulta(int id) => navManager.NavigateTo($"/consulta/editar/{id}");
+
+
+    // --- Funcionalidad de Cambio de Estado (SIN CAMBIOS) ---
+
+    private async Task AbrirSelectorEstado(ConsultaDTO consulta)
+    {
+        consultaSeleccionadaParaEstado = consulta;
+        nuevoEstadoSeleccionado = consulta.Estado;
+        mostrarSelectorEstado = true;
+    }
+
+    private void CerrarSelectorEstado()
+    {
+        mostrarSelectorEstado = false;
+        consultaSeleccionadaParaEstado = null;
+        nuevoEstadoSeleccionado = "";
+    }
+
+    private async Task GuardarNuevoEstado()
+    {
+        if (consultaSeleccionadaParaEstado != null && !string.IsNullOrWhiteSpace(nuevoEstadoSeleccionado))
+        {
+            consultaSeleccionadaParaEstado.Estado = nuevoEstadoSeleccionado;
+            await consultaService.UpdateConsulta(consultaSeleccionadaParaEstado.Id, consultaSeleccionadaParaEstado);
+            await OnInitializedAsync();
+            CerrarSelectorEstado();
+        }
+    }
 }

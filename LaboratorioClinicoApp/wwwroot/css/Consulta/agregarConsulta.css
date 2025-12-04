@@ -1,0 +1,247 @@
+﻿/* ===========================
+   CONTENEDOR PRINCIPAL
+   =========================== */
+.popup-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 30px;
+}
+
+.popup-card {
+    background: #ffffff;
+    padding: 30px;
+    width: 100%;
+    max-width: 850px;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+/* ===========================
+   TITULOS PRINCIPALES
+   =========================== */
+.form-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #1e3a8a;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.form-subtitle {
+    font-size: 15px;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* ===========================
+   INPUTS Y CONTENEDORES
+   =========================== */
+.input-group-custom {
+    margin-bottom: 18px;
+}
+
+    .input-group-custom label {
+        font-weight: 600;
+        color: #374151;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+.req {
+    color: #dc2626;
+}
+
+/* INPUT estilizado */
+.input-beauty,
+.form-control,
+.form-select,
+textarea {
+    background: #f8fafc;
+    border: 2px solid #e5e7eb;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+    .input-beauty:focus,
+    .form-control:focus,
+    textarea:focus {
+        border-color: #2563eb;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+    }
+
+/* ===========================
+   FECHA Y HORAS
+   =========================== */
+.fecha-horas-container {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.hora-container label {
+    font-weight: 600;
+}
+
+/* GRID HORARIOS */
+.grid-horas {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+}
+
+/* Botones de hora */
+.hora-btn {
+    padding: 10px 0;
+    border: 2px solid #e5e7eb;
+    background: #f3f4f6;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+    .hora-btn:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+    }
+
+    .hora-btn:disabled {
+        background: #e5e7eb !important;
+        color: #9ca3af !important;
+        border-color: #d1d5db;
+    }
+
+/* Hora seleccionada */
+.hora-activa {
+    background: #2563eb !important;
+    color: white !important;
+    border-color: #1d4ed8 !important;
+}
+
+/* ===========================
+   BOTONES
+   =========================== */
+.btn-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.btn-primary-custom {
+    background: #2563eb;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: 0.2s ease;
+}
+
+    .btn-primary-custom:hover {
+        background: #1d4ed8;
+    }
+
+.btn-secondary-custom {
+    background: #6b7280;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+    .btn-secondary-custom:hover {
+        background: #4b5563;
+    }
+
+/* ===========================
+   ALERTAS
+   =========================== */
+.alert-box {
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* ===========================
+   MODAL CONFIRMACIÓN
+   =========================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-box {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 14px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+/* ===========================
+   MENSAJE FLOTANTE
+   =========================== */
+
+.mensaje-flotante {
+    position: fixed; /* O 'absolute' si prefieres dentro del popup */
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    background-color: #ffcc00; /* Color amarillo/naranja de advertencia */
+    color: #333; /* Texto oscuro */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    font-size: 1.1em;
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+    border-left: 5px solid #ff9900; /* Barra lateral para énfasis */
+}
+
+    /* Animación de desvanecimiento*/
+    .mensaje-flotante.fade-out {
+        opacity: 0;
+    }
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+@media (max-width: 768px) {
+    .fecha-horas-container {
+        grid-template-columns: 1fr;
+    }
+
+    .popup-card {
+        padding: 20px;
+    }
+}

@@ -1,112 +1,384 @@
-﻿@page "/consulta/editar/{Id:int}"
-@using LaboratorioClinicoApp.Services
+﻿@page "/consulta/editar/{id:int}"
 @using LaboratorioClinicoApp.DTO
-
+@using LaboratorioClinicoApp.Services
 @inject ConsultaService consultaService
 @inject PacienteService pacienteService
 @inject DoctorService doctorService
 @inject CitaService citaService
 @inject NavigationManager navManager
 
-<h3 class="text-primary fw-bold mb-3">✏️ Editar Consulta</h3>
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
+<link rel="stylesheet" href="/css/Consulta/agregarConsulta.css" />
 
-@if (isLoading)
+@if (consulta == null)
 {
-    <p>Cargando datos...</p>
+    <div class="text-center p-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando datos de la consulta...</p>
+    </div>
 }
 else
 {
-    <EditForm Model="@consulta" OnValidSubmit="GuardarCambios">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <div class="popup-wrapper">
+        <div class="popup-card shadow-lg">
 
-        <div class="card p-4 shadow-sm">
+            <h2 class="form-title">📝 Editar Consulta (ID: @Id)</h2>
+            <p class="form-subtitle">Modifique los campos necesarios y guarde los cambios.</p>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Motivo</label>
-                <InputText class="form-control" @bind-Value="consulta.Motivo" />
-                <ValidationMessage For="@(() => consulta.Motivo)" />
-            </div>
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="alert-box @(mensajeError ? "alert-error" : "alert-success")">
+                    @mensaje
+                </div>
+            }
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Diagnóstico</label>
-                <InputTextArea class="form-control" @bind-Value="consulta.Diagnostico" />
-                <ValidationMessage For="@(() => consulta.Diagnostico)" />
-            </div>
+            <EditForm Model="@consulta" OnValidSubmit="ConfirmarGuardar">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Fecha</label>
-                <InputDate class="form-control" @bind-Value="consulta.FechaConsulta" />
-                <ValidationMessage For="@(() => consulta.FechaConsulta)" />
-            </div>
+                <div class="input-group-custom">
+                    <label>Paciente <span class="req">*</span></label>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Doctor</label>
-                <InputSelect class="form-select" @bind-Value="consulta.IdDoctor">
-                    <option value="">Seleccione un doctor</option>
-                    @foreach (var doctor in listaDoctores)
-                    {
-                        <option value="@doctor.Id">@doctor.Nombre</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => consulta.IdDoctor)" />
-            </div>
+                    <input list="listaPacientes"
+                           class="form-control input-beauty"
+                           placeholder="Escriba o seleccione un paciente"
+                           @bind="pacienteNombre"
+                           @bind:after="ValidarPaciente" />
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Estado de Consulta</label>
-                <InputSelect class="form-select" @bind-Value="consulta.Estado">
-                    <option value="Programada">Programada</option>
-                    <option value="En proceso">En proceso</option>
-                    <option value="Finalizada">Finalizada</option>
-                    <option value="Cancelada">Cancelada</option>
-                </InputSelect>
-                <ValidationMessage For="@(() => consulta.Estado)" />
-            </div>
+                    <datalist id="listaPacientes">
+                        @foreach (var p in pacientes)
+                        {
+                            <option value="@($"{p.Nombre} {p.Apellido}")"></option>
+                        }
+                    </datalist>
+                </div>
 
-            <div class="d-flex justify-content-between mt-4">
-                <button type="submit" class="btn btn-success">
-                    💾 Guardar Cambios
-                </button>
+                <div class="input-group-custom">
+                    <label>Doctor <span class="req">*</span></label>
 
-                <button class="btn btn-secondary" @onclick="Cancelar">
-                    ↩️ Volver
-                </button>
-            </div>
+                    <input list="listaDoctores"
+                           class="form-control input-beauty"
+                           placeholder="Escriba o seleccione un doctor"
+                           @bind="doctorNombre"
+                           @bind:after="ValidarDoctor" />
+
+                    <datalist id="listaDoctores">
+                        @foreach (var d in doctores)
+                        {
+                            <option value="@($"{d.Nombre} {d.Apellido}")"></option>
+                        }
+                    </datalist>
+                </div>
+
+                <div class="input-group-custom mt-3">
+                    <label>Motivo <span class="req">*</span></label>
+                    <textarea class="form-control input-beauty" rows="3"
+                              @bind="consulta.Motivo" required></textarea>
+                </div>
+
+                <div class="fecha-horas-container">
+
+                    <div>
+                        <label>Fecha de Consulta <span class="req">*</span></label>
+
+                        <input type="date"
+                               class="form-control input-beauty"
+                               value="@fechaSeleccionada.ToString("yyyy-MM-dd")"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                               @onchange="OnFechaChange" />
+                    </div>
+
+                    <div class="hora-container">
+                        <label>
+                            Horas disponibles –
+                            @fechaSeleccionada.ToString("dddd d 'de' MMMM", new System.Globalization.CultureInfo("es-ES"))
+                        </label>
+
+                        <div class="grid-horas">
+                            @foreach (var h in horasDisponibles)
+                            {
+                                // La hora actual de la consulta también se puede seleccionar
+                                bool esHoraActual = h == horaOriginal;
+                                bool ocupado = horasOcupadas.Contains(h) && !esHoraActual;
+
+                                <button type="button"
+                                        class="hora-btn @(consultaHora == h ? "hora-activa" : "")"
+                                        disabled="@(ocupado)"
+                                        @onclick="@(() => SeleccionarHora(h))">
+                                    @h
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" class="btn-secondary-custom"
+                            @onclick="@(() => navManager.NavigateTo("/consulta"))">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn-primary-custom">
+                        Actualizar Consulta
+                    </button>
+                </div>
+            </EditForm>
+
+            @if (mostrarConfirmacion)
+            {
+                <div class="modal-overlay">
+                    <div class="modal-box">
+                        <h5>Confirmar Actualización</h5>
+                        <p>¿Desea guardar los cambios de esta consulta?</p>
+
+                        <button class="btn-primary-custom me-2" @onclick="GuardarConsulta">Aceptar</button>
+                        <button class="btn-secondary-custom" @onclick="() => mostrarConfirmacion = false">Cancelar</button>
+                    </div>
+                </div>
+            }
+
+            @if (mostrarAdvertencia)
+            {
+                <div class="mensaje-flotante">@advertenciaTexto</div>
+            }
         </div>
-    </EditForm>
-}
-
-@if (!string.IsNullOrEmpty(mensaje))
-{
-    <div class="alert alert-info mt-3">@mensaje</div>
+    </div>
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+    // 1. Parámetro de Ruta
+    [Parameter]
+    public int Id { get; set; }
 
-    private ConsultaDTO consulta = new();
-    private List<DoctorDTO> listaDoctores = new();
-    private bool isLoading = true;
-    private string mensaje = string.Empty;
+    private ConsultaDTO? consulta; // Ya no se inicializa, se carga
+    private string horaOriginal = string.Empty; // Hora original para excluirla de las ocupadas
+    private int pacienteIdOriginal; // Id original del paciente para precargar el nombre
+
+    private List<PacienteDTO> pacientes = new();
+    private List<DoctorDTO> doctores = new();
+
+    private string pacienteNombre = "";
+    private string doctorNombre = "";
+
+    private string? mensaje;
+    private bool mensajeError;
+    private bool mostrarConfirmacion;
+
+    private DateTime fechaSeleccionada = DateTime.Today;
+    private string consultaHora = "";
+
+    private List<string> horasDisponibles = new();
+    private HashSet<string> horasOcupadas = new(); // Usamos HashSet para mejor rendimiento de búsqueda
+
+    private readonly List<(int Mes, int Dia)> feriados = new()
+    {
+        (1,1),(5,1),(9,15),(12,25)
+    };
+
+    private bool mostrarAdvertencia;
+    private string advertenciaTexto = "";
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
+        pacientes = await pacienteService.GetPacientes();
+        doctores = await doctorService.GetDoctors();
 
-        consulta = await consultaService.GetConsultaById(Id) ?? new ConsultaDTO();
-        listaDoctores = await doctorService.GetDoctors();
-
-        isLoading = false;
+        // Inicializar horas para el día de hoy, aunque se sobreescribirá en OnParametersSetAsync
+        GenerarHoras();
     }
 
-    private async Task GuardarCambios()
+    // 2. Cargar datos cuando el parámetro Id se establece
+    protected override async Task OnParametersSetAsync()
     {
-        await consultaService.UpdateConsulta(Id, consulta);
-        mensaje = "✅ Consulta actualizada correctamente.";
+        // 2a. Cargar la consulta por ID
+        consulta = await consultaService.GetConsultaById(Id);
+
+        if (consulta != null)
+        {
+            // 2b. Cargar nombres y horas iniciales
+            pacienteIdOriginal = consulta.IdPaciente;
+            var paciente = pacientes.FirstOrDefault(p => p.Id == consulta.IdPaciente);
+            pacienteNombre = $"{paciente?.Nombre} {paciente?.Apellido}";
+
+            var doctor = doctores.FirstOrDefault(d => d.Id == consulta.IdDoctor);
+            doctorNombre = $"{doctor?.Nombre} {doctor?.Apellido}";
+
+            fechaSeleccionada = consulta.FechaConsulta.Date;
+            consultaHora = consulta.FechaConsulta.ToString("HH:mm");
+            horaOriginal = consultaHora; // Guardamos la hora original
+
+            // 2c. Cargar horas ocupadas para la fecha
+            await CargarHorasOcupadas();
+        }
+        else
+        {
+            // Manejar caso de consulta no encontrada
+            mensaje = "❌ Consulta no encontrada. Volviendo al listado...";
+            mensajeError = true;
+            await Task.Delay(1500);
+            navManager.NavigateTo("/consulta");
+        }
     }
 
-    private void Cancelar()
+    private void ValidarPaciente()
     {
-        navManager.NavigateTo("/consulta");
+        var p = pacientes
+            .FirstOrDefault(x => $"{x.Nombre} {x.Apellido}".Equals(pacienteNombre, StringComparison.OrdinalIgnoreCase));
+
+        consulta!.IdPaciente = p?.Id ?? 0;
+    }
+
+    private void ValidarDoctor()
+    {
+        var d = doctores
+            .FirstOrDefault(x => $"{x.Nombre} {x.Apellido}".Equals(doctorNombre, StringComparison.OrdinalIgnoreCase));
+
+        consulta!.IdDoctor = d?.Id ?? 0;
+    }
+
+    private async Task OnFechaChange(ChangeEventArgs e)
+    {
+        consultaHora = ""; // Limpiar hora seleccionada al cambiar la fecha
+
+        if (e.Value == null || !DateTime.TryParse(e.Value.ToString(), out DateTime nuevaFecha))
+        {
+            fechaSeleccionada = DateTime.Today;
+            GenerarHoras();
+            await CargarHorasOcupadas(); // Recargar horas
+            StateHasChanged();
+            return;
+        }
+
+        fechaSeleccionada = nuevaFecha;
+
+        // 1. Bloquear Domingos y Feriados
+        if (fechaSeleccionada.DayOfWeek == DayOfWeek.Sunday || EsFeriado(fechaSeleccionada))
+        {
+            MostrarAdvertencia(fechaSeleccionada.DayOfWeek == DayOfWeek.Sunday ? "❌ Los domingos no se atiende." : "🎌 Ese día es feriado. No se atiende.");
+            // Reestablecer a la fecha original
+            fechaSeleccionada = consulta!.FechaConsulta.Date;
+            GenerarHoras();
+            await CargarHorasOcupadas();
+            StateHasChanged();
+            return;
+        }
+
+        // --- Cargar Horas Ocupadas (si la fecha es válida) ---
+        GenerarHoras(); // Generar horas para el día seleccionado (incluye restricción del sábado)
+        await CargarHorasOcupadas();
+    }
+
+    private async Task CargarHorasOcupadas()
+    {
+        horasOcupadas.Clear();
+
+        var todas = await consultaService.GetConsultas();
+        var fecha = fechaSeleccionada.Date;
+
+        horasOcupadas = todas
+            .Where(c => c.FechaConsulta.Date == fecha && c.Id != Id) // EXCLUIR la consulta actual (Id)
+            .Select(c => c.FechaConsulta.ToString("HH:mm"))
+            .ToHashSet();
+
+        // Si la hora original de la consulta es para este día, se permitirá su selección
+        // ya que no estará en horasOcupadas.
+        if (fechaSeleccionada.Date != consulta!.FechaConsulta.Date)
+        {
+            // Si la fecha seleccionada es diferente a la original, limpiamos la hora seleccionada
+            // para que el usuario elija una nueva hora en el nuevo día.
+            consultaHora = "";
+        }
+        else
+        {
+            // Si la fecha es la misma, reestablecemos la hora original
+            consultaHora = horaOriginal;
+        }
+
+        StateHasChanged();
+    }
+
+    private bool EsFeriado(DateTime f)
+        => feriados.Any(x => x.Mes == f.Month && x.Dia == f.Day);
+
+    private void GenerarHoras()
+    {
+        horasDisponibles.Clear();
+
+        // Horario normal (Lunes a Viernes)
+        if (fechaSeleccionada.DayOfWeek != DayOfWeek.Saturday)
+        {
+            horasDisponibles = new()
+            {
+                "07:00","07:30","08:00","08:30",
+                "09:00","09:30","10:00","10:30",
+                "11:00","11:30",
+                "13:00","13:30","14:00","14:30",
+                "15:00","15:30","16:00","16:30"
+            };
+        }
+        // Horario de Sábado (solo mañana)
+        else
+        {
+            horasDisponibles = new()
+            {
+                "07:00","07:30","08:00","08:30",
+                "09:00","09:30","10:00","10:30",
+                "11:00","11:30"
+            };
+        }
+    }
+
+    private void SeleccionarHora(string h)
+    {
+        consultaHora = h;
+        consulta!.FechaConsulta = fechaSeleccionada.Add(TimeSpan.Parse(h));
+    }
+
+    private void ConfirmarGuardar()
+    {
+        if (consulta == null || consulta.IdPaciente == 0 ||
+            consulta.IdDoctor == 0 ||
+            string.IsNullOrEmpty(consultaHora))
+        {
+            mensaje = "⚠ Debe completar todos los campos obligatorios.";
+            mensajeError = true;
+            return;
+        }
+
+        mostrarConfirmacion = true;
+    }
+
+    private async Task GuardarConsulta()
+    {
+        mostrarConfirmacion = false;
+
+        if (consulta == null) return;
+
+        try
+        {
+            // 4. USAR UpdateConsulta
+            await consultaService.UpdateConsulta(consulta.Id, consulta);
+
+            mensaje = "✅ Consulta actualizada exitosamente.";
+            mensajeError = false;
+
+            await Task.Delay(1200);
+            navManager.NavigateTo("/consulta");
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"❌ Error al actualizar: {ex.Message}";
+            mensajeError = true;
+        }
+    }
+
+    private async void MostrarAdvertencia(string msg)
+    {
+        advertenciaTexto = msg;
+        mostrarAdvertencia = true;
+        await Task.Delay(1700);
+        mostrarAdvertencia = false;
     }
 }

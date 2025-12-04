@@ -1,4 +1,4 @@
-﻿@page "/citas/editar/{id:int}"
+﻿@page "/citas/editar/{CitaId:int}"
 @using LaboratorioClinicoApp.Services
 @using LaboratorioClinicoApp.DTO
 @inject CitaService citaService
@@ -9,205 +9,325 @@
 <link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
 <link rel="stylesheet" href="/css/Cita/agregarCita.css" />
 
-<EditForm EditContext="@editContext" OnValidSubmit="ActualizarCita">
-    <DataAnnotationsValidator />
+@if (isLoading)
+{
+    <div class="text-center p-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando datos de la cita ...</p>
+    </div>
+}
+else if (cita == null)
+{
+    <div class="alert alert-danger p-4 m-4">
+        <h4>Cita No Encontrada</h4>
+        <p>No se pudo cargar la cita . Por favor, verifique la URL.</p>
+        <button class="btn btn-secondary mt-2" @onclick="Volver">
+            &larr; Volver al Listado
+        </button>
+    </div>
+}
+else
+{
+    <EditForm EditContext="@editContext" OnValidSubmit="ActualizarCita">
+        <DataAnnotationsValidator />
 
-    <div class="form-wrapper">
-        <div class="form-contenedor">
+        <div class="form-wrapper">
+            <div class="form-contenedor">
 
-            <div class="main-container-form">
-                <h3>📝 Editar Cita de Examen</h3>
-                <p class="subtitle">Modifique los datos necesarios.</p>
+                <div class="main-container-form">
+                    <h3>📝 Editar Cita de Examen</h3>
+                    <p class="subtitle">Modifique los campos necesarios y guarde los cambios.</p>
 
-                <div class="form-container">
+                    <div class="form-container">
 
-                    <!-- Tipo -->
-                    <div class="form-group-flex">
-                        <div class="input-group">
-                            <label>Tipo de Cita</label>
-                            <input type="text" class="form-control" value="EXAMEN" disabled />
-                        </div>
-                    </div>
+                        <div class="section-title">Información del Paciente</div>
 
-                    <!-- PACIENTE -->
-                    <div class="section-title">Información del Paciente</div>
+                        <div class="form-group-flex">
+                            <div class="input-group">
+                                <label>Paciente <span class="required">*</span></label>
 
-                    <div class="form-group-flex">
-                        <div class="input-group">
-                            <label>Paciente <span class="required">*</span></label>
+                                <input list="listaPacientes"
+                                       class="form-control"
+                                       @bind="textoBusquedaPaciente"
+                                       @onblur="BuscarPaciente"
+                                       placeholder="Buscar por nombre..." />
 
-                            <input list="listaPacientes"
-                                   class="form-control"
-                                   @bind="textoBusquedaPaciente"
-                                   @onblur="BuscarPaciente"
-                                   placeholder="Buscar por nombre..." />
+                                <datalist id="listaPacientes">
+                                    @foreach (var p in pacientes)
+                                    {
+                                        <option value="@($"{p.Nombre} {p.Apellido}")"></option>
+                                    }
+                                </datalist>
 
-                            <datalist id="listaPacientes">
-                                @foreach (var p in pacientes)
-                                {
-                                    <option value="@($"{p.Nombre} {p.Apellido}")"></option>
-                                }
-                            </datalist>
+                                <ValidationMessage For="@(() => cita.IdPaciente)" />
+                            </div>
 
-                            <ValidationMessage For="@(() => cita.IdPaciente)" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Motivo <span class="required">*</span></label>
-                            <input class="form-control" @bind="cita.Motivo" />
-                        </div>
-                    </div>
-
-                    <!-- FECHA Y HORA -->
-                    <div class="section-title">Fecha y Hora</div>
-
-                    <div class="calendar-hour-container">
-
-                        <!-- CALENDARIO BONITO -->
-                        <div class="calendar-box">
-                            <label class="calendar-title">Seleccione Fecha</label>
-
-                            <div class="pretty-date-wrapper">
-                                <span class="calendar-icon">📅</span>
-
-                                <InputDate @bind-Value="FechaCita"
-                                           class="calendar-control-beauty"
-                                           min="@FechaMinimaString" />
+                            <div class="input-group">
+                                <label>Motivo <span class="required">*</span></label>
+                                <input class="form-control" @bind="cita.Motivo" />
+                                <ValidationMessage For="@(() => cita.Motivo)" />
                             </div>
                         </div>
 
-                        <!-- HORAS -->
-                        <div class="hours-box">
-                            <label class="hours-title">
-                                Horas Disponibles – @FechaCita.ToString("dddd d 'de' MMMM")
-                            </label>
+                        <div class="input-group mb-4">
+                            <label>Notas (Opcional)</label>
+                            <textarea class="form-control" rows="3" @bind="cita.NotasConsulta"></textarea>
+                        </div>
 
-                            <div class="hours-grid">
-                                @foreach (var h in HorasDisponibles)
-                                {
-                                    <button type="button"
-                                            class="hour-btn @(HoraCitaString == h ? "active" : "")"
-                                            @onclick="() => SeleccionarHora(h)">
-                                        @h
-                                    </button>
-                                }
 
-                                @if (HorasDisponibles.Count == 0)
-                                {
-                                    <p class="sin-horas">No hay horas disponibles.</p>
-                                }
+                        <div class="section-title">Fecha y Hora</div>
+
+                        <div class="calendar-hour-container">
+
+                            <div class="calendar-box">
+                                <label class="calendar-title">Seleccione Fecha</label>
+
+                                <div class="pretty-date-wrapper">
+                                    <span class="calendar-icon">📅</span>
+
+                                    <InputDate @bind-Value="FechaCita"
+                                               class="calendar-control-beauty"
+                                               min="@FechaMinimaString" />
+                                </div>
+
+                                <ValidationMessage For="@(() => cita.FechaHora)" />
+                            </div>
+
+                            <div class="hours-box">
+                                <label class="hours-title">
+                                    Horas Disponibles – @FechaCita.ToString("dddd d 'de' MMMM", new System.Globalization.CultureInfo("es-ES"))
+                                </label>
+
+                                <div class="hours-grid">
+                                    @foreach (var h in HorasTodas)
+                                    {
+                                        // Verificar si la hora está ocupada y NO es la hora original de la cita que estamos editando
+                                        bool ocupada = HorasOcupadasSet.Contains(h) && h != HoraOriginalString;
+
+                                        <button type="button"
+                                                class="hour-btn @(HoraCitaString == h ? "active" : "")"
+                                                disabled="@ocupada"
+                                                @onclick="() => SeleccionarHora(h)">
+                                            @h
+                                        </button>
+                                    }
+
+                                    @if (HorasTodas.Count == 0)
+                                    {
+                                        <p class="sin-horas">No hay horas disponibles.</p>
+                                    }
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- ESTADO -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Estado</label>
-                        <InputSelect @bind-Value="cita.Estado" class="form-select">
-                            <option value="Activo">Activo</option>
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="Cancelado">Cancelado</option>
-                        </InputSelect>
-                    </div>
+                        <div class="form-actions">
+                            <button class="btn btn-secondary" type="button" @onclick="Volver">Cancelar</button>
+                            <button class="btn btn-primary" type="submit">Actualizar Cita de Examen</button>
+                        </div>
 
-                    <!-- NOTAS -->
-                    <div class="input-group">
-                        <label>Notas (Opcional)</label>
-                        <textarea class="form-control" rows="3" @bind="cita.NotasConsulta"></textarea>
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger mt-2">@errorMessage</div>
+                        }
                     </div>
-
-                    <!-- BOTONES -->
-                    <div class="form-actions">
-                        <button class="btn btn-secondary" type="button" @onclick="Volver">Cancelar</button>
-                        <button class="btn btn-primary" type="submit">Guardar Cambios</button>
-                    </div>
-
-                    @if (!string.IsNullOrEmpty(errorMessage))
-                    {
-                        <div class="alert alert-danger">@errorMessage</div>
-                    }
                 </div>
             </div>
         </div>
-    </div>
-</EditForm>
+    </EditForm>
+}
 
 @if (mostrarExito)
 {
     <div class="modal-exito">
         <div class="modal-content">
-            <h3>✔️ Cita actualizada correctamente</h3>
+            <h3>✔️ Su cita fue actualizada exitosamente</h3>
             <button class="btn btn-primary" @onclick="CerrarModalExito">Aceptar</button>
         </div>
     </div>
 }
 
 @code {
-    [Parameter] public int id { get; set; }
+    [Parameter]
+    public int CitaId { get; set; }
 
-    private CitaDTO cita = new();
-    private EditContext editContext;
+    private CitaDTO? cita; // Objeto a editar, nullable al inicio
+    private EditContext? editContext;
+    private bool isLoading = true; // Nuevo estado para indicar carga
+    private string HoraOriginalString = string.Empty; // Para excluir la hora de la cita actual de las ocupadas.
 
     private List<PacienteDTO> pacientes = new();
-    private List<CitaDTO> citasDelDia = new();
+    private string textoBusquedaPaciente = string.Empty;
+    private string errorMessage = string.Empty;
 
+    // AÑADIDO: Lista de feriados (Mes, Día)
+    private readonly List<(int Mes, int Dia)> feriados = new()
+    {
+        (1, 1),
+        (5, 1),
+        (9, 15),
+        (12, 25)
+    };
+
+    // Horas disponibles
     private List<string> HorasTodas = new();
-    private HashSet<string> HorasOcupadas = new();
-
-    private string textoBusquedaPaciente = "";
-    private string errorMessage = "";
+    private HashSet<string> HorasOcupadasSet = new();
     private bool mostrarExito = false;
 
     protected override async Task OnInitializedAsync()
     {
         pacientes = await pacienteService.GetPacientes();
-        cita = await citaService.GetCitaById(id) ?? new CitaDTO();
+        HorasTodas = GenerarHoras15MinutosParaDia();
 
-        editContext = new EditContext(cita);
+        // No cargar la cita aquí, sino en OnParametersSetAsync
+    }
 
-        textoBusquedaPaciente = pacientes
-            .Where(p => p.Id == cita.IdPaciente)
-            .Select(p => $"{p.Nombre} {p.Apellido}")
-            .FirstOrDefault();
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
 
-        HorasTodas = GenerarHoras();
-        await CargarHoras();
+        try
+        {
+            // 1. Cargar la cita por ID
+            cita = await citaService.GetCitaById(CitaId);
+
+            if (cita != null)
+            {
+                // 2. Inicializar EditContext
+                editContext = new EditContext(cita);
+
+                // 3. Cargar datos iniciales
+                var paciente = pacientes.FirstOrDefault(p => p.Id == cita.IdPaciente);
+                textoBusquedaPaciente = $"{paciente?.Nombre} {paciente?.Apellido}";
+
+                // 4. Guardar la hora original
+                HoraOriginalString = cita.FechaHora.ToString("HH:mm");
+
+                // 5. Cargar horas ocupadas para la fecha
+                await CargarHorasOcupadas();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar la cita: {ex.Message}";
+            cita = null; // Marcar como no encontrada
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string FechaMinimaString => DateTime.Today.ToString("yyyy-MM-dd");
+
+    private bool EsFeriado(DateTime f)
+        => feriados.Any(x => x.Mes == f.Month && x.Dia == f.Day);
+
+    private DateTime FechaCita
+    {
+        get => cita!.FechaHora.Date;
+        set
+        {
+            // 1. Mantener la hora actual del objeto cita
+            var horaActual = cita!.FechaHora.TimeOfDay;
+            var nuevaFechaConHora = new DateTime(value.Year, value.Month, value.Day, horaActual.Hours, horaActual.Minutes, 0);
+
+            // 2. Validar la nueva fecha
+            if (value.DayOfWeek == DayOfWeek.Sunday || EsFeriado(value))
+            {
+                // Manejar domingos/feriados: no permitimos la selección, reestablecemos la fecha original
+                errorMessage = value.DayOfWeek == DayOfWeek.Sunday ?
+                    "❌ Los domingos no se atiende." :
+                    "🎌 Ese día es feriado. No se atiende.";
+
+                // Forzamos a no cambiar la fecha en la UI para mantener la consistencia
+                StateHasChanged(); // Forzar render
+                return;
+            }
+
+            if (value < DateTime.Today)
+            {
+                errorMessage = "No se puede agendar citas en días pasados.";
+                StateHasChanged();
+                return;
+            }
+
+            errorMessage = "";
+            cita.FechaHora = nuevaFechaConHora;
+
+            // Recargamos las horas para la nueva fecha y limpiamos la selección si cambiamos de día
+            if (value.Date != cita.FechaHora.Date)
+            {
+                cita.FechaHora = value.Date.Add(TimeSpan.Parse(HoraOriginalString)); // Temporalmente mantemos la hora original
+                HoraCitaString = string.Empty; // Forzamos a seleccionar una nueva hora si el día es diferente.
+            }
+
+            _ = CargarHorasOcupadas();
+            StateHasChanged();
+        }
+    }
+
+    private List<string> GenerarHoras15MinutosParaDia()
+    {
+        var lista = new List<string>();
+        // Horario de 07:00 a 11:45
+        var inicio = new TimeSpan(7, 0, 0);
+        var fin = new TimeSpan(12, 0, 0);
+
+        for (var t = inicio; t < fin; t = t.Add(TimeSpan.FromMinutes(15)))
+            lista.Add(DateTime.Today.Add(t).ToString("HH:mm"));
+
+        return lista;
+    }
+
+    private async Task CargarHorasOcupadas()
+    {
+        if (cita == null) return;
+
+        HorasOcupadasSet.Clear();
+        var todas = await citaService.GetCitas(); // Obtener todas las citas para el filtro
+        var fecha = cita.FechaHora.Date;
+
+        // Filtrar citas que coinciden con la fecha seleccionada y EXCLUIR la cita que estamos editando (CitaId)
+        var citasDelDia = todas
+            .Where(c => c.FechaHora.Date == fecha && c.Id != CitaId) // <-- CLAVE: Excluir la cita actual
+            .ToList();
+
+        // Llenar el HashSet con las horas ocupadas (ej: "07:00")
+        HorasOcupadasSet = citasDelDia
+            .Select(c => c.FechaHora.ToString("HH:mm"))
+            .ToHashSet();
 
         StateHasChanged();
     }
 
-    private string FechaMinimaString => DateTime.Now.ToString("yyyy-MM-dd");
-
-    private DateTime FechaCita
-    {
-        get => cita.FechaHora.Date;
-        set
-        {
-            cita.FechaHora = new DateTime(
-                value.Year, value.Month, value.Day,
-                cita.FechaHora.Hour, cita.FechaHora.Minute, 0);
-
-            _ = CargarHoras();
-        }
-    }
-
-    private List<string> HorasDisponibles =>
-        HorasTodas.Where(h => !HorasOcupadas.Contains(h) || h == HoraCitaString).ToList();
-
-    private async Task CargarHoras()
-    {
-        var todas = await citaService.GetCitas();
-        citasDelDia = todas.Where(c => c.FechaHora.Date == cita.FechaHora.Date && c.Id != cita.Id).ToList();
-        HorasOcupadas = citasDelDia.Select(c => c.FechaHora.ToString("HH:mm")).ToHashSet();
-    }
-
     private string HoraCitaString
     {
-        get => cita.FechaHora.ToString("HH:mm");
+        get => cita!.FechaHora.ToString("HH:mm");
         set
         {
-            if (TimeSpan.TryParse(value, out var t))
-                cita.FechaHora = cita.FechaHora.Date + t;
+            if (!TimeSpan.TryParse(value, out var t))
+                return;
+
+            var fecha = cita.FechaHora.Date;
+
+            var nueva = new DateTime(
+                fecha.Year, fecha.Month, fecha.Day,
+                t.Hours, t.Minutes, 0);
+
+            // Validación: si la hora está ocupada Y NO es la hora original, no permitir
+            if (HorasOcupadasSet.Contains(value) && value != HoraOriginalString)
+            {
+                errorMessage = "La hora seleccionada ya está ocupada por otra cita. Por favor, selecciona otra hora.";
+                return;
+            }
+
+            errorMessage = "";
+            cita.FechaHora = nueva;
+
+            // Actualizar HoraOriginalString solo si se ha seleccionado una nueva hora de manera explícita
+            // (Esto se usará solo si el usuario vuelve a la fecha original con la misma hora)
         }
     }
 
@@ -216,41 +336,68 @@
         HoraCitaString = h;
     }
 
-    private List<string> GenerarHoras()
-    {
-        var lista = new List<string>();
-        var inicio = new TimeSpan(7, 0, 0);
-        var fin = new TimeSpan(11, 45, 0);
-
-        for (var t = inicio; t <= fin; t = t.Add(TimeSpan.FromMinutes(15)))
-            lista.Add(DateTime.Today.Add(t).ToString("HH:mm"));
-
-        return lista;
-    }
-
     private void BuscarPaciente()
     {
-        cita.IdPaciente = pacientes
-            .Where(p => $"{p.Nombre} {p.Apellido}".Equals(textoBusquedaPaciente.Trim(), StringComparison.OrdinalIgnoreCase))
-            .Select(p => p.Id)
-            .FirstOrDefault();
+        if (cita == null) return;
+
+        cita.IdPaciente = 0;
+
+        var encontrado = pacientes.FirstOrDefault(p =>
+            $"{p.Nombre} {p.Apellido}".Equals(textoBusquedaPaciente.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (encontrado != null)
+            cita.IdPaciente = encontrado.Id;
     }
 
     private async Task ActualizarCita()
     {
-        BuscarPaciente();
+        if (cita == null) return;
 
-        if (!editContext.Validate())
+        errorMessage = "";
+        BuscarPaciente(); // Asegura que el IdPaciente se actualice
+
+        if (!editContext!.Validate())
             return;
+
+        // Validaciones de día y hora...
+        if (cita.FechaHora.DayOfWeek == DayOfWeek.Sunday || EsFeriado(cita.FechaHora))
+        {
+            errorMessage = "No se permiten citas en este día (domingo/feriado).";
+            return;
+        }
+
+        var hora = cita.FechaHora.TimeOfDay;
+        if (hora < new TimeSpan(7, 0, 0) || hora >= new TimeSpan(12, 0, 0))
+        {
+            errorMessage = "La hora debe estar entre 07:00 y 11:45.";
+            return;
+        }
+        // ... fin de validaciones
 
         try
         {
-            await citaService.UpdateCita(cita.Id, cita);
+            // 1. Validar la disponibilidad final antes de guardar
+            await CargarHorasOcupadas(); // Recargamos para tener el estado más reciente
+
+            // Si la hora seleccionada está ocupada Y NO es la hora original de esta cita
+            if (HorasOcupadasSet.Contains(HoraCitaString))
+            {
+                errorMessage = "La hora seleccionada ya fue ocupada por otro usuario. Por favor, selecciona otra hora.";
+                await CargarHorasOcupadas();
+                return;
+            }
+
+            // 2. Actualizar la cita
+            await citaService.UpdateCita(CitaId, cita);
+
+            // 3. Recargar horas ocupadas para reflejar el cambio (si hubo)
+            await CargarHorasOcupadas();
+
             mostrarExito = true;
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            errorMessage = "Error al actualizar la cita: " + ex.Message;
         }
     }
 

@@ -21,15 +21,6 @@
 
                 <div class="form-container">
 
-                    <!-- Tipo -->
-                    <div class="form-group-flex">
-                        <div class="input-group">
-                            <label>Tipo de Cita</label>
-                            <input type="text" class="form-control" value="EXAMEN" disabled />
-                        </div>
-                    </div>
-
-                    <!-- PACIENTE -->
                     <div class="section-title">Información del Paciente</div>
 
                     <div class="form-group-flex">
@@ -52,7 +43,6 @@
                             <ValidationMessage For="@(() => cita.IdPaciente)" />
                         </div>
 
-                        <!-- Motivo -->
                         <div class="input-group">
                             <label>Motivo <span class="required">*</span></label>
                             <input class="form-control" @bind="cita.Motivo" />
@@ -60,12 +50,16 @@
                         </div>
                     </div>
 
-                    <!-- FECHA Y HORA -->
+                    <div class="input-group mb-4">
+                        <label>Notas (Opcional)</label>
+                        <textarea class="form-control" rows="3" @bind="cita.NotasConsulta"></textarea>
+                    </div>
+
+
                     <div class="section-title">Fecha y Hora</div>
 
                     <div class="calendar-hour-container">
 
-                        <!-- CALENDARIO BONITO -->
                         <div class="calendar-box">
                             <label class="calendar-title">Seleccione Fecha</label>
 
@@ -80,10 +74,9 @@
                             <ValidationMessage For="@(() => cita.FechaHora)" />
                         </div>
 
-                        <!-- HORAS -->
                         <div class="hours-box">
                             <label class="hours-title">
-                                Horas Disponibles – @FechaCita.ToString("dddd d 'de' MMMM")
+                                Horas Disponibles – @FechaCita.ToString("dddd d 'de' MMMM", new System.Globalization.CultureInfo("es-ES"))
                             </label>
 
                             <div class="hours-grid">
@@ -105,23 +98,6 @@
                     </div>
 
 
-                    <!-- ESTADO -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Estado</label>
-                        <InputSelect @bind-Value="cita.Estado" class="form-select">
-                            <option value="Activo">Activo</option>
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="Cancelado">Cancelado</option>
-                        </InputSelect>
-                    </div>
-
-                    <!-- NOTAS (opcional) -->
-                    <div class="input-group">
-                        <label>Notas (Opcional)</label>
-                        <textarea class="form-control" rows="3" @bind="cita.NotasConsulta"></textarea>
-                    </div>
-
-                    <!-- BOTONES -->
                     <div class="form-actions">
                         <button class="btn btn-secondary" type="button" @onclick="Volver">Cancelar</button>
                         <button class="btn btn-primary" type="submit">Guardar Cita de Examen</button>
@@ -137,7 +113,6 @@
     </div>
 </EditForm>
 
-<!-- MODAL ÉXITO -->
 @if (mostrarExito)
 {
     <div class="modal-exito">
@@ -149,21 +124,25 @@
 }
 
 @code {
-    private CitaDTO cita = new()
-    {
-        TipoCita = "EXAMEN",
-        Estado = "Activo",
-        IdDoctor = null,
-        NotasConsulta = ""
-    };
+    private CitaDTO cita = new() { Estado = "Activa" };
 
     private EditContext editContext;
     private List<PacienteDTO> pacientes = new();
     private string textoBusquedaPaciente = string.Empty;
     private string errorMessage = string.Empty;
 
+    // AÑADIDO: Lista de feriados (Mes, Día)
+    private readonly List<(int Mes, int Dia)> feriados = new()
+    {
+        (1, 1),    // Año Nuevo
+        (5, 1),    // Día del Trabajo
+        (9, 15),   // Día de la Independencia (si aplica a tu país)
+        (12, 25)   // Navidad
+    };
+
     // Horas disponibles
     private List<string> HorasTodas = new();
+    // 🟢 ARREGLO CLAVE: Filtra HorasTodas para mostrar solo las que NO están en HorasOcupadasSet
     private List<string> HorasDisponibles => HorasTodas
         .Where(h => !HorasOcupadasSet.Contains(h))
         .ToList();
@@ -174,11 +153,23 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Se asegura que el estado sea "Activo" en la inicialización
+        cita = new CitaDTO()
+        {
+            TipoCita = "EXAMEN",
+            Estado = "Activo",
+            IdDoctor = null,
+            NotasConsulta = ""
+        };
+
         editContext = new EditContext(cita);
 
+        // Ajuste inicial para evitar domingos/feriados al cargar la página
         DateTime inicial = DateTime.Today;
-        if (inicial.DayOfWeek == DayOfWeek.Sunday)
+        while (inicial.DayOfWeek == DayOfWeek.Sunday || EsFeriado(inicial))
+        {
             inicial = inicial.AddDays(1);
+        }
 
         var prox = AjustarAlSiguienteBloque(DateTime.Now);
         cita.FechaHora = new DateTime(inicial.Year, inicial.Month, inicial.Day, prox.Hour, prox.Minute, 0);
@@ -187,39 +178,67 @@
         pacientes = await pacienteService.GetPacientes();
 
         await CargarHorasDisponibles();
-
-        cita = new CitaDTO();
-        cita.Estado = "Activo";   // ⬅⬅⬅ Por defecto siempre Activo
     }
 
     private string FechaMinimaString => DateTime.Today.ToString("yyyy-MM-dd");
+
+    // Método para verificar feriados
+    private bool EsFeriado(DateTime f)
+        => feriados.Any(x => x.Mes == f.Month && x.Dia == f.Day);
 
     private DateTime FechaCita
     {
         get => cita.FechaHora.Date;
         set
         {
+            // Validar la fecha seleccionada
             if (value.DayOfWeek == DayOfWeek.Sunday)
             {
-                errorMessage = "No se permiten citas los domingos. Se seleccionó el lunes siguiente.";
+                errorMessage = "❌ Los domingos no se atiende. Se seleccionó el lunes siguiente.";
+                // Buscar el siguiente día hábil después del domingo
                 value = value.AddDays(1);
+                while (value.DayOfWeek == DayOfWeek.Sunday || EsFeriado(value))
+                {
+                    value = value.AddDays(1);
+                }
+            }
+            else if (EsFeriado(value))
+            {
+                errorMessage = "🎌 Ese día es feriado. Se seleccionó el siguiente día hábil.";
+                // Buscar el siguiente día hábil
+                value = value.AddDays(1);
+                while (value.DayOfWeek == DayOfWeek.Sunday || EsFeriado(value))
+                {
+                    value = value.AddDays(1);
+                }
             }
             else
             {
                 errorMessage = "";
             }
 
+            // Asegurar que la nueva fecha no sea anterior a hoy
+            if (value < DateTime.Today)
+            {
+                value = DateTime.Today;
+                errorMessage = "No se puede agendar citas en días pasados.";
+            }
+
+            // Mantenemos la hora actual, pero cambiamos el día
             cita.FechaHora = new DateTime(
                 value.Year, value.Month, value.Day,
                 cita.FechaHora.Hour, cita.FechaHora.Minute, 0);
 
-            _ = CargarHorasDisponibles();
+            // Esto fuerza al InputDate a actualizarse si hubo un cambio de día (domingo/feriado)
+            StateHasChanged();
+            _ = CargarHorasDisponibles(); // Recargamos las horas para la nueva fecha
         }
     }
 
     private List<string> GenerarHoras15MinutosParaDia()
     {
         var lista = new List<string>();
+        // Horario de 07:00 a 11:45
         var inicio = new TimeSpan(7, 0, 0);
         var fin = new TimeSpan(12, 0, 0);
 
@@ -234,16 +253,20 @@
         HorasOcupadasSet.Clear();
         citasDelDia.Clear();
 
-        var todas = await citaService.GetCitas();
+        var todas = await citaService.GetCitas(); // Obtener todas las citas para el filtro
         var fecha = cita.FechaHora.Date;
 
-        citasDelDia = todas.Where(c => c.FechaHora.Date == fecha).ToList();
+        // Filtrar citas que coinciden con la fecha seleccionada
+        citasDelDia = todas
+            .Where(c => c.FechaHora.Date == fecha)
+            .ToList();
 
+        // Llenar el HashSet con las horas ocupadas (ej: "07:00")
         HorasOcupadasSet = citasDelDia
             .Select(c => c.FechaHora.ToString("HH:mm"))
             .ToHashSet();
 
-        StateHasChanged();
+        StateHasChanged(); // Refresca la UI para ocultar las horas
     }
 
     private string HoraCitaString
@@ -260,12 +283,7 @@
                 fecha.Year, fecha.Month, fecha.Day,
                 t.Hours, t.Minutes, 0);
 
-            if (nueva.DayOfWeek == DayOfWeek.Sunday)
-            {
-                errorMessage = "No se permiten citas los domingos.";
-                return;
-            }
-
+            // Validación de doble seguridad (aunque ya no debería aparecer en la lista si está ocupada)
             if (HorasOcupadasSet.Contains(value))
             {
                 errorMessage = "La hora seleccionada ya está ocupada.";
@@ -300,6 +318,7 @@
             cita.IdPaciente = encontrado.Id;
     }
 
+    // 🟢 ARREGLO CLAVE: Se actualiza el objeto cita y se recargan las horas después del éxito.
     private async Task GuardarCita()
     {
         errorMessage = "";
@@ -308,9 +327,10 @@
         if (!editContext.Validate())
             return;
 
-        if (cita.FechaHora.DayOfWeek == DayOfWeek.Sunday)
+        // Validaciones de día y hora...
+        if (cita.FechaHora.DayOfWeek == DayOfWeek.Sunday || EsFeriado(cita.FechaHora))
         {
-            errorMessage = "No se permiten citas los domingos.";
+            errorMessage = "No se permiten citas en este día (domingo/feriado).";
             return;
         }
 
@@ -320,6 +340,7 @@
             errorMessage = "La hora debe estar entre 07:00 y 11:45.";
             return;
         }
+        // ... fin de validaciones
 
         try
         {
@@ -328,12 +349,28 @@
 
             if (existe)
             {
-                errorMessage = "La hora ya fue ocupada por otro usuario.";
+                errorMessage = "La hora ya fue ocupada por otro usuario. Por favor, selecciona otra hora.";
                 await CargarHorasDisponibles();
                 return;
             }
 
+            // 1. Guardar
             await citaService.AddCita(cita);
+
+            // 2. Resetear el estado para la próxima posible cita
+            cita = new CitaDTO()
+            {
+                TipoCita = "EXAMEN",
+                Estado = "Activo",
+                IdDoctor = null,
+                NotasConsulta = ""
+            };
+            editContext = new EditContext(cita);
+            textoBusquedaPaciente = string.Empty;
+
+            // 3. Recargar horas ocupadas para ocultar la hora que acabamos de guardar
+            await CargarHorasDisponibles();
+
             mostrarExito = true;
         }
         catch (Exception ex)

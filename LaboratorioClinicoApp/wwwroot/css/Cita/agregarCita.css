@@ -1,265 +1,280 @@
 ﻿/* ============================================================
-         ESTILO PROFESIONAL AZUL – AGREGAR CITA
+    ESTILO PROFESIONAL AZUL – AGREGAR CITA
    ============================================================ */
-
-.main-container-form {
-    width: 100%;
-    padding: 10px 5px;
-}
-
-/* CONTENEDOR GENERAL */
+/* Contenedor principal para centrar el formulario */
 .form-wrapper {
     display: flex;
-    justify-content: center;
-    padding: 25px;
-    background: #f7f9fc;
+    justify-content: center; /* Centrar horizontalmente */
+    padding: 20px;
+    background-color: #f8f9fa; /* Color de fondo ligero */
+    min-height: calc(100vh - 56px); /* Para que ocupe casi toda la altura de la pantalla */
 }
 
+/* Contenedor principal del formulario (simula la hoja en blanco del ejemplo) */
 .form-contenedor {
+    background-color: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra elegante */
     width: 100%;
-    max-width: 850px;
+    max-width: 800px; /* Ancho máximo para mejor legibilidad */
+    margin: 20px 0;
 }
 
-/* TARJETA PRINCIPAL */
+/* Contenedor interno del formulario */
 .main-container-form {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 14px;
-    border: 1px solid #e6e9ef;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    padding: 0;
 }
 
-    /* TITULOS */
+    /* Títulos principales */
     .main-container-form h3 {
-        font-size: 1.45rem;
-        font-weight: 700;
-        color: #1f4fa6;
+        font-size: 1.8rem;
+        color: #007bff; /* Azul primario */
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+        margin-bottom: 5px;
     }
 
 .subtitle {
-    margin-top: -5px;
-    font-size: 0.95rem;
-    color: #66738a;
+    color: #6c757d;
+    margin-bottom: 25px;
+    font-style: italic;
 }
 
-/* SECCION DE FORMULARIO */
-.form-container {
-    margin-top: 20px;
-}
-
-/* TÍTULOS DE SECCIÓN */
+/* Títulos de sección */
 .section-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1f4fa6;
-    margin: 20px 0 10px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #343a40;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-left: 5px;
+    border-left: 4px solid #007bff;
 }
 
-/* =================================================================
-                       ESTILO DE INPUTS
-   ================================================================= */
+/* Campo requerido */
+.required {
+    color: #dc3545; /* Rojo */
+    font-weight: bold;
+}
+
+/*
+ * ESTILOS DE GRUPOS DE ENTRADA (INPUTS)
+ */
+
+/*
+ * ESTILOS DE GRUPOS DE ENTRADA (INPUTS)
+ * Enfocado en mejorar la apariencia de los inputs y textareas
+ */
+
+.input-group {
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+    .input-group label {
+        font-weight: 500;
+        color: #495057;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+/* Estilo para el contenedor de inputs en la misma fila (Paciente y Motivo) */
 .form-group-flex {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
 }
 
-.input-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-    .input-group label {
-        font-weight: 600;
-        margin-bottom: 5px;
-        color: #3a4a63;
-    }
-
+/* 🟢 CLAVE: Estilo Base para todos los inputs y textareas con clase .form-control */
 .form-control {
-    width: 100% !important;
-    min-height: 48px !important;
-    height: auto !important;
-    padding: 12px 14px !important;
-    font-size: 15px;
-    border-radius: 12px !important;
-    border: 1px solid #c9d5e3;
-    background: #f7f9ff !important;
+    /* Mantenemos el estilo Bootstrap, pero mejoramos la presentación */
+    border: 1px solid #ced4da; /* Borde visible y suave */
+    border-radius: 6px; /* Bordes redondeados */
+    padding: 10px 15px; /* Espacio interno adecuado */
+    box-shadow: none; /* Eliminar cualquier sombra no deseada */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    width: 100%; /* Ocupa el 100% de su contenedor */
+    box-sizing: border-box; /* Asegura que el padding no desborde el ancho */
 }
 
-
+    /* 🟢 CLAVE: Estilo al enfocar (focus) */
     .form-control:focus {
-        outline: none;
-        border-color: #1f6bff;
-        box-shadow: 0 0 0 3px rgba(31, 107, 255, 0.20);
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff; /* Borde azul suave de enfoque */
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Sombra de enfoque de Bootstrap */
     }
 
-/* INPUT DATE BONITO */
+/* Estilo para el textarea (Notas) */
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical; /* Permite solo redimensionamiento vertical */
+}
+
+/* Estilo para los mensajes de validación */
+.validation-message {
+    color: #dc3545; /* Rojo de error */
+    font-size: 0.85rem;
+    margin-top: 4px;
+    display: block;
+}
+
+/*
+ * ESTILOS DEL SELECTOR DE FECHA Y HORA
+ */
+
+.calendar-hour-container {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.calendar-box {
+    flex: 1 1 250px; /* Flexible, con base mínima de 250px */
+}
+
+.hours-box {
+    flex: 1 1 350px; /* Flexible, con base mínima de 350px */
+}
+
+.calendar-title, .hours-title {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Estilo para envolver el InputDate y el icono para que se vea como un campo de texto moderno */
 .pretty-date-wrapper {
-    position: relative;
-    width: 100%;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background-color: #fff;
+    padding: 0 5px;
 }
 
 .calendar-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 18px;
-    color: #1f4fa6;
+    font-size: 1.2rem;
+    padding: 0 5px;
+    color: #6c757d;
 }
 
 .calendar-control-beauty {
+    /* Estilo para Blazor InputDate */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 10px 10px 10px 0;
+    font-size: 1rem;
+    color: #495057;
     width: 100%;
-    padding: 12px 14px 12px 40px !important;
-    border-radius: 10px;
-    border: 1px solid #d0d7e2;
-    background: #ffffff;
-    transition: .2s;
 }
 
     .calendar-control-beauty:focus {
         outline: none;
-        border-color: #1f6bff;
-        box-shadow: 0 0 0 3px rgba(31, 107, 255, 0.25);
+        box-shadow: none;
     }
 
-    .calendar-control-beauty::-webkit-calendar-picker-indicator {
-        cursor: pointer;
-        filter: invert(35%) sepia(90%) saturate(1500%) hue-rotate(205deg);
-    }
-
-/* ============================================================
-                 FECHA Y HORAS — ESTILO ELEGANTE
-   ============================================================ */
-.calendar-hour-container {
-    display: flex;
-    gap: 25px;
-    flex-wrap: wrap;
-}
-
-/* CAJA CALENDARIO */
-.calendar-box {
-    flex: 1;
-    min-width: 260px;
-}
-
-.calendar-title {
-    font-weight: 700;
-    color: #1f4fa6;
-    margin-bottom: 8px;
-}
-
-/* CAJA HORAS */
-.hours-box {
-    flex: 1;
-    min-width: 260px;
-}
-
-.hours-title {
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #1f4fa6;
-}
-
-/* GRID DE HORAS */
+/* Estilo de la cuadrícula de horas */
 .hours-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Columnas flexibles de 80px min */
     gap: 10px;
+    padding: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background-color: #fff;
 }
 
-/* BOTÓN DE HORA */
 .hour-btn {
-    padding: 10px 8px;
-    border-radius: 10px;
-    background: #eef2fa;
-    border: 1px solid #d4d9e3;
+    /* Botones de hora */
+    background-color: #f1f1f1;
+    color: #495057;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 0;
     font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: .2s;
-    font-weight: 600;
+    transition: all 0.2s;
 }
 
     .hour-btn:hover {
-        background: #d9e6ff;
+        background-color: #e2e6ea;
+        border-color: #dae0e5;
     }
 
     .hour-btn.active {
-        background: #1f6bff !important;
-        color: white !important;
-        border-color: #1f6bff;
+        background-color: #007bff; /* Azul activo */
+        color: white;
+        border-color: #007bff;
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.4);
     }
 
-/* SIN HORAS DISPONIBLES */
 .sin-horas {
+    grid-column: 1 / -1; /* Ocupa todo el ancho */
     text-align: center;
-    padding: 10px;
-    color: #777;
-    font-size: 0.9rem;
+    color: #6c757d;
+    padding: 10px 0;
 }
 
-/* =================================================================
-                         BOTONES
-   ================================================================= */
+
+/*
+ * ESTILOS DE ACCIONES Y MODAL DE ÉXITO
+ */
+
 .form-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-end; /* Botones a la derecha */
     gap: 15px;
-    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+    margin-top: 30px;
 }
 
+/* Estilo para los botones de Bootstrap */
 .btn-primary {
-    background: #1f6bff !important;
-    border: none !important;
-    padding: 10px 20px;
-    border-radius: 10px !important;
-    font-weight: 700 !important;
+    background-color: #007bff;
+    border-color: #007bff;
+    font-weight: 600;
 }
-
-    .btn-primary:hover {
-        background: #1552cc !important;
-    }
 
 .btn-secondary {
-    background: #e4e8ef !important;
-    border: none !important;
-    padding: 10px 20px;
-    border-radius: 10px !important;
-    color: #333 !important;
-    font-weight: 600 !important;
+    font-weight: 600;
 }
 
-    .btn-secondary:hover {
-        background: #d7dde7 !important;
-    }
-
-/* =================================================================
-                           MODAL EXITO
-   ================================================================= */
+/* Modal de Éxito */
 .modal-exito {
     position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 10000;
+    z-index: 1050;
 }
 
 .modal-content {
-    background: #fff;
+    background: white;
     padding: 30px;
-    border-radius: 14px;
+    border-radius: 8px;
     text-align: center;
-    width: 330px;
-    border: 1px solid #e1e5ef;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
 }
 
     .modal-content h3 {
-        color: #1864d6;
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin-bottom: 18px;
+        color: #28a745; /* Verde de éxito */
+        font-size: 1.5rem;
+        margin-bottom: 20px;
     }
