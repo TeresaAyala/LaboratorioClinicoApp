@@ -1,5 +1,5 @@
 ﻿/* ============================================================
-    ESTILO PROFESIONAL AZUL — CLÍNICA / LABORATORIO
+   ESTILO PROFESIONAL AZUL — CLÍNICA / LABORATORIO
    ============================================================ */
 
 .citas-container {
@@ -14,9 +14,9 @@
 .encabezado-sticky {
     position: sticky;
     top: 0;
-    z-index: 1050;
+    z-index: 0;
     background: #ffffff;
-    padding: 12px 18px;
+    padding: 120px 20px 40px 20px;
     border-bottom: 1px solid rgba(0,0,0,0.06);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -25,6 +25,7 @@
     padding: 18px;
     flex-grow: 1;
 }
+
 
 /*
 |---------------------------------------------------------------
@@ -39,37 +40,36 @@
     border: 1px solid #e6e9ef;
 }
 
-/* 🟢 MODIFICACIÓN: Contenedor de Tabs sin borde inferior */
+/* Contenedor de Tabs */
 .tab-menu {
     display: flex;
-    /* Eliminamos border-bottom: 2px solid #eef0f2; */
     margin-top: 10px;
-    border-radius: 8px; /* Damos un borde redondeado al contenedor */
-    overflow: hidden; /* Esto es clave para que los tabs no sobresalgan */
-    border: 1px solid #007bff; /* Borde de color principal */
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #007bff;
 }
 
-/* 🟢 MODIFICACIÓN: Ajuste de estilo de cada Tab */
+/* Ajuste de estilo de cada Tab */
 .tab-item {
     padding: 10px 15px;
     cursor: pointer;
     font-weight: 600;
     color: #007bff;
     transition: background-color 0.2s, color 0.2s;
-    flex-grow: 1; /* Esto hace que ocupen el 50% cada uno */
+    flex-grow: 1;
     text-align: center;
-    background-color: #ffffff; /* Color de fondo por defecto */
+    background-color: #ffffff;
 }
 
     .tab-item:hover:not(.active) {
-        background-color: #e9f5ff; /* Azul muy claro al pasar el ratón */
+        background-color: #e9f5ff;
     }
 
-    /* 🟢 MODIFICACIÓN CLAVE: Tab Activo con fondo azul sólido */
+    /* Tab Activo con fondo azul sólido */
     .tab-item.active {
-        background-color: #007bff; /* Fondo azul principal */
-        color: #ffffff; /* Texto blanco */
-        border: none; /* Aseguramos que no haya bordes internos */
+        background-color: #007bff;
+        color: #ffffff;
+        border: none;
     }
 
 /*

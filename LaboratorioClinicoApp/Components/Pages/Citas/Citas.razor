@@ -45,12 +45,12 @@
 
         <!-- TABS -->
         <div class="tab-menu">
-            <div class="tab-item @(EsConsultas ? "active" : "")"
+            <div class="tab-item @(navManager.Uri.Contains("/citas") ? "active" : "")"
                  @onclick="@(() => navManager.NavigateTo("/citas"))">
                 Citas de Exámenes
             </div>
 
-            <div class="tab-item @(EsExamenes ? "active" : "")"
+            <div class="tab-item @(navManager.Uri.Contains("/consulta") ? "active" : "")"
                  @onclick="@(() => navManager.NavigateTo("/consulta"))">
                 Consultas Médicas
             </div>
